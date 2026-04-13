@@ -1,0 +1,1731 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Своя Игра</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Inter:wght@400;500;600&display=swap');
+
+:root {
+  --bg: #07070f;
+  --s1: #0e0e1e;
+  --s2: #13132a;
+  --border: #1e1e40;
+  --gold: #f5c842;
+  --gold2: #c9960a;
+  --dim: #55557a;
+  --text: #f0f0ff;
+  --p0: #4f8ef7;
+  --p1: #f75f5f;
+  --p2: #4fcf8a;
+  --p3: #c97af5;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(79,142,247,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 90% 90%, rgba(201,122,245,0.06) 0%, transparent 50%);
+}
+
+/* LOBBY */
+#lobbyScreen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+  gap: 0;
+}
+.lobby-title {
+  font-family: 'Unbounded', sans-serif;
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  font-weight: 900;
+  background: linear-gradient(135deg, #f5c842 0%, #f09a10 50%, #f5c842 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 10px;
+}
+.lobby-sub {
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 36px;
+}
+.lobby-card {
+  background: var(--s1);
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  padding: 28px;
+  width: 100%;
+  max-width: 380px;
+  margin-bottom: 14px;
+}
+.lobby-card h2 {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 16px;
+  letter-spacing: -0.01em;
+}
+.field-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 6px;
+}
+.field-input {
+  width: 100%;
+  background: var(--s2);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 14px;
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.15s;
+  margin-bottom: 14px;
+}
+.field-input:focus { border-color: var(--gold2); }
+
+.btn-lobby {
+  width: 100%;
+  padding: 13px;
+  border-radius: 10px;
+  border: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-lobby:hover { transform: translateY(-1px); }
+.btn-gold { background: var(--gold); color: #000; }
+.btn-gold:hover { background: var(--gold2); }
+.btn-outline { background: transparent; color: var(--dim); border: 1.5px solid var(--border); margin-top: 8px; }
+.btn-outline:hover { color: var(--text); border-color: #3a3a70; }
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 6px 0 14px;
+  color: var(--dim);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+}
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+.error-msg {
+  color: #f75f5f;
+  font-size: 0.7rem;
+  text-align: center;
+  margin-top: 8px;
+  min-height: 18px;
+}
+
+/* WAITING ROOM */
+#waitScreen {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+}
+.wait-card {
+  background: var(--s1);
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  padding: 32px 28px;
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+}
+.wait-card h2 {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.room-code {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: var(--gold);
+  letter-spacing: 0.15em;
+  margin: 14px 0 4px;
+}
+.room-hint { font-size: 0.65rem; color: var(--dim); letter-spacing: 0.08em; margin-bottom: 24px; }
+
+.players-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+  text-align: left;
+}
+.player-slot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+.slot-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.slot-name { font-size: 0.82rem; font-weight: 600; }
+.slot-empty { color: var(--dim); font-size: 0.75rem; font-style: italic; }
+.slot-host-badge { margin-left: auto; font-size: 0.55rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); background: rgba(245,200,66,0.1); border: 1px solid rgba(245,200,66,0.25); padding: 2px 8px; border-radius: 20px; }
+.slot-you-badge { margin-left: auto; font-size: 0.55rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--p2); background: rgba(79,207,138,0.1); border: 1px solid rgba(79,207,138,0.25); padding: 2px 8px; border-radius: 20px; }
+
+.copy-btn {
+  width: 100%;
+  padding: 11px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  color: var(--dim);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-bottom: 10px;
+}
+.copy-btn:hover { color: var(--text); border-color: #3a3a70; }
+
+/* GAME */
+#gameScreen { display: none; }
+
+header { text-align: center; padding: 20px 20px 12px; }
+header h1 {
+  font-family: 'Unbounded', sans-serif;
+  font-size: clamp(1.4rem, 4vw, 2.4rem);
+  font-weight: 900;
+  background: linear-gradient(135deg, #f5c842 0%, #f09a10 50%, #f5c842 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.my-role-bar {
+  text-align: center;
+  padding: 4px 16px 14px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.role-host { color: var(--gold); }
+.role-player { color: var(--p2); }
+
+.round-tabs { display: flex; justify-content: center; gap: 7px; padding: 0 16px 16px; flex-wrap: wrap; }
+.round-tab {
+  padding: 6px 16px;
+  border-radius: 100px;
+  border: 1.5px solid var(--border);
+  background: var(--s1);
+  color: var(--dim);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.round-tab:hover { border-color: #3a3a70; color: var(--text); }
+.round-tab.active { border-color: var(--gold); color: var(--gold); background: rgba(245,200,66,0.07); }
+
+.scoreboard { display: flex; justify-content: center; gap: 8px; padding: 0 16px 18px; flex-wrap: wrap; }
+.player-card {
+  position: relative;
+  background: var(--s1);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 16px 8px;
+  min-width: 100px;
+  text-align: center;
+  overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+}
+.player-card::before {
+  content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity 0.2s; border-radius: inherit;
+}
+.player-card.p0::before { background: radial-gradient(circle at 50% 0%, rgba(79,142,247,0.18) 0%, transparent 70%); }
+.player-card.p1::before { background: radial-gradient(circle at 50% 0%, rgba(247,95,95,0.18) 0%, transparent 70%); }
+.player-card.p2::before { background: radial-gradient(circle at 50% 0%, rgba(79,207,138,0.18) 0%, transparent 70%); }
+.player-card.p3::before { background: radial-gradient(circle at 50% 0%, rgba(201,122,245,0.18) 0%, transparent 70%); }
+.player-card.buzzing::before { opacity: 1; }
+.player-card.p0.buzzing { border-color: var(--p0); box-shadow: 0 0 28px rgba(79,142,247,0.4); transform: translateY(-3px); }
+.player-card.p1.buzzing { border-color: var(--p1); box-shadow: 0 0 28px rgba(247,95,95,0.4); transform: translateY(-3px); }
+.player-card.p2.buzzing { border-color: var(--p2); box-shadow: 0 0 28px rgba(79,207,138,0.4); transform: translateY(-3px); }
+.player-card.p3.buzzing { border-color: var(--p3); box-shadow: 0 0 28px rgba(201,122,245,0.4); transform: translateY(-3px); }
+.player-card.me { border-style: dashed; }
+.turn-dot { width: 6px; height: 6px; border-radius: 50%; margin: 0 auto 6px; opacity: 0; transition: opacity 0.2s; }
+.player-card.p0 .turn-dot { background: var(--p0); box-shadow: 0 0 8px var(--p0); }
+.player-card.p1 .turn-dot { background: var(--p1); box-shadow: 0 0 8px var(--p1); }
+.player-card.p2 .turn-dot { background: var(--p2); box-shadow: 0 0 8px var(--p2); }
+.player-card.p3 .turn-dot { background: var(--p3); box-shadow: 0 0 8px var(--p3); }
+.player-card.choosing .turn-dot { opacity: 1; }
+.p-name { font-size: 0.58rem; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: var(--dim); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px; }
+.p-score { font-family: 'Unbounded', sans-serif; font-size: 1.5rem; font-weight: 700; line-height: 1; }
+.player-card.p0 .p-score { color: var(--p0); }
+.player-card.p1 .p-score { color: var(--p1); }
+.player-card.p2 .p-score { color: var(--p2); }
+.player-card.p3 .p-score { color: var(--p3); }
+@keyframes bump { 0%,100%{transform:scale(1)} 50%{transform:scale(1.3)} }
+.bump { animation: bump 0.35s ease; }
+
+.grid-wrap { padding: 0 12px 28px; overflow-x: auto; }
+.grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; min-width: 460px; max-width: 840px; margin: 0 auto; }
+.cat-header { background: var(--s2); border: 1px solid var(--border); border-radius: 9px; padding: 9px 5px; text-align: center; font-size: 0.54rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--dim); line-height: 1.4; }
+.cell { background: var(--s1); border: 1px solid var(--border); border-radius: 9px; aspect-ratio: 1.1; display: flex; align-items: center; justify-content: center; font-family: 'Unbounded', sans-serif; font-size: clamp(0.85rem, 2vw, 1.25rem); font-weight: 700; color: var(--gold); cursor: pointer; transition: all 0.15s; user-select: none; position: relative; }
+.cell:hover:not(.used):not(.locked) { background: #181835; border-color: var(--gold2); transform: translateY(-3px) scale(1.03); box-shadow: 0 8px 24px rgba(245,200,66,0.14); }
+.cell.locked { cursor: not-allowed; opacity: 0.5; }
+.cell.used { background: #090912; border-color: #0f0f1f; color: transparent; cursor: default; pointer-events: none; }
+.cell.used::after { content: '✓'; position: absolute; color: #1a1a30; font-family: 'Inter', sans-serif; font-size: 1rem; }
+
+/* MODAL */
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,10,0.9); z-index: 200; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(10px); }
+.overlay.open { display: flex; }
+.modal { background: var(--s1); border: 1.5px solid var(--border); border-radius: 20px; padding: 24px 24px 20px; max-width: 500px; width: 100%; animation: popIn 0.28s cubic-bezier(.175,.885,.32,1.275); box-shadow: 0 32px 100px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.04); }
+@keyframes popIn { from{opacity:0;transform:scale(0.88) translateY(24px)} to{opacity:1;transform:scale(1) translateY(0)} }
+
+.modal-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+.modal-cat { font-size: 0.57rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); margin-bottom: 3px; }
+.modal-val { font-family: 'Unbounded', sans-serif; font-size: 2rem; font-weight: 900; color: var(--gold); line-height: 1; }
+
+.special-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 100px; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
+.pill-catbag { background: rgba(247,95,95,0.1); color: #f79f9f; border: 1px solid rgba(247,95,95,0.25); }
+.pill-auction { background: rgba(245,200,66,0.1); color: var(--gold); border: 1px solid rgba(245,200,66,0.25); }
+.pill-give { background: rgba(201,122,245,0.1); color: var(--p3); border: 1px solid rgba(201,122,245,0.25); }
+.pill-take { background: rgba(247,95,95,0.1); color: var(--p1); border: 1px solid rgba(247,95,95,0.25); }
+.pill-double { background: rgba(79,207,138,0.1); color: var(--p2); border: 1px solid rgba(79,207,138,0.25); }
+.pill-allin { background: rgba(245,200,66,0.1); color: var(--gold); border: 1px solid rgba(245,200,66,0.25); }
+.pill-minusall { background: rgba(247,95,95,0.1); color: var(--p1); border: 1px solid rgba(247,95,95,0.25); }
+
+/* BUZZ BUTTON — big and obvious for players */
+.buzz-section { text-align: center; margin: 8px 0 16px; }
+.buzz-big-btn {
+  width: 100%;
+  padding: 20px;
+  border-radius: 14px;
+  border: none;
+  font-family: 'Unbounded', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all 0.15s;
+  animation: buzzPulse 1.5s ease-in-out infinite;
+}
+@keyframes buzzPulse {
+  0%,100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245,200,66,0.4); }
+  50% { transform: scale(1.02); box-shadow: 0 0 0 12px rgba(245,200,66,0); }
+}
+.buzz-big-btn.p0 { background: var(--p0); color: #fff; animation-name: buzzPulse0; }
+.buzz-big-btn.p1 { background: var(--p1); color: #fff; animation-name: buzzPulse1; }
+.buzz-big-btn.p2 { background: var(--p2); color: #000; animation-name: buzzPulse2; }
+.buzz-big-btn.p3 { background: var(--p3); color: #fff; animation-name: buzzPulse3; }
+@keyframes buzzPulse0 { 0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(79,142,247,0.5)} 50%{transform:scale(1.02);box-shadow:0 0 0 14px rgba(79,142,247,0)} }
+@keyframes buzzPulse1 { 0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(247,95,95,0.5)} 50%{transform:scale(1.02);box-shadow:0 0 0 14px rgba(247,95,95,0)} }
+@keyframes buzzPulse2 { 0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(79,207,138,0.5)} 50%{transform:scale(1.02);box-shadow:0 0 0 14px rgba(79,207,138,0)} }
+@keyframes buzzPulse3 { 0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(201,122,245,0.5)} 50%{transform:scale(1.02);box-shadow:0 0 0 14px rgba(201,122,245,0)} }
+.buzz-big-btn:disabled { opacity: 0.35; cursor: not-allowed; animation: none; transform: none; box-shadow: none; }
+.buzz-already { font-size: 0.65rem; color: var(--dim); margin-top: 8px; letter-spacing: 0.08em; }
+
+/* Buzzer winner display */
+.buzzer-winner {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  background: var(--s2);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 14px;
+}
+.buzzer-winner.visible { display: flex; }
+.bw-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.bw-text { font-size: 0.7rem; font-weight: 600; color: var(--dim); }
+.bw-name { font-size: 0.9rem; font-weight: 700; }
+
+/* TIMER */
+.timer-wrap { margin-bottom: 14px; display: flex; align-items: center; gap: 12px; }
+.timer-ring { position: relative; width: 48px; height: 48px; flex-shrink: 0; }
+.timer-ring svg { transform: rotate(-90deg); }
+.ring-bg { stroke: var(--border); }
+.ring-fill { stroke: var(--gold); stroke-linecap: round; transition: stroke-dashoffset 0.9s linear, stroke 0.5s; }
+.ring-fill.danger { stroke: #f75f5f; }
+.timer-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'Unbounded', sans-serif; font-size: 0.95rem; font-weight: 900; color: var(--gold); transition: color 0.5s; }
+.timer-num.danger { color: #f75f5f; }
+.timer-info { flex: 1; }
+.timer-label { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); }
+
+.who-row { font-size: 0.62rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); margin-bottom: 10px; }
+.who-name { font-size: 0.72rem; font-weight: 700; margin-left: 5px; }
+.who-name.wc0 { color: var(--p0); }
+.who-name.wc1 { color: var(--p1); }
+.who-name.wc2 { color: var(--p2); }
+.who-name.wc3 { color: var(--p3); }
+
+.modal-q { font-size: 1rem; font-weight: 500; line-height: 1.65; margin-bottom: 18px; min-height: 40px; }
+
+.answer-box { display: none; background: rgba(79,207,138,0.05); border: 1px solid rgba(79,207,138,0.2); border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; }
+.answer-box.visible { display: block; }
+.answer-box .alabel { font-size: 0.54rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(79,207,138,0.5); margin-bottom: 4px; }
+.answer-box .atext { font-size: 0.95rem; font-weight: 600; color: #4fcf8a; }
+
+.catbag-wrap { margin-bottom: 16px; }
+.clabel { font-size: 0.57rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); margin-bottom: 8px; }
+.p-select { display: flex; gap: 6px; flex-wrap: wrap; }
+.psel-btn { padding: 7px 12px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--s2); color: var(--text); font-family: 'Inter', sans-serif; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+.psel-btn:hover { border-color: #3a3a70; }
+.psel-btn.sel { border-color: var(--gold); background: rgba(245,200,66,0.08); color: var(--gold); }
+
+.auction-wrap { margin-bottom: 16px; }
+.auction-input { width: 100%; background: var(--s2); border: 1.5px solid var(--border); border-radius: 10px; padding: 11px 15px; color: var(--gold); font-family: 'Unbounded', sans-serif; font-size: 1.4rem; font-weight: 700; outline: none; transition: border-color 0.15s; margin-top: 7px; }
+.auction-input:focus { border-color: var(--gold2); }
+.auction-presets { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 8px; }
+.preset-btn { padding: 8px 14px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--s2); color: var(--text); font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+.preset-btn:hover { border-color: #3a3a70; }
+.preset-btn.sel { border-color: var(--gold); background: rgba(245,200,66,0.1); color: var(--gold); }
+
+.btn-row { display: flex; gap: 7px; flex-wrap: wrap; }
+.btn { flex: 1; min-width: 80px; padding: 11px 8px; border-radius: 10px; border: none; font-family: 'Inter', sans-serif; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; transition: all 0.15s; }
+.btn:hover { transform: translateY(-2px); }
+.btn-reveal { background: var(--gold); color: #000; }
+.btn-reveal:hover { background: var(--gold2); }
+.btn-correct { background: #4fcf8a; color: #000; }
+.btn-correct:hover { background: #3dba76; }
+.btn-wrong { background: #f75f5f; color: #fff; }
+.btn-wrong:hover { background: #d94444; }
+.btn-skip { background: var(--s2); color: var(--dim); border: 1px solid var(--border); }
+.btn-skip:hover { color: var(--text); }
+.btn-full { flex: 0 0 100%; }
+
+.host-only { /* host-only controls */ }
+.player-waiting { text-align: center; padding: 12px 0; font-size: 0.72rem; color: var(--dim); letter-spacing: 0.08em; }
+
+/* Timeout */
+.timeout-label { display: none; background: rgba(247,95,95,0.08); border: 1px solid rgba(247,95,95,0.2); border-radius: 8px; padding: 7px 12px; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #f79f9f; text-align: center; margin-bottom: 12px; }
+.timeout-label.visible { display: block; }
+
+footer { text-align: center; padding: 4px 16px 24px; font-size: 0.54rem; color: #1a1a35; letter-spacing: 0.1em; text-transform: uppercase; }
+</style>
+</head>
+<body>
+
+<!-- LOBBY -->
+<div id="lobbyScreen">
+  <div class="lobby-title">Своя Игра</div>
+  <div class="lobby-sub">Мультиплеер · до 4 игроков</div>
+
+  <div class="lobby-card">
+    <h2>Создать комнату</h2>
+    <div class="field-label">Ваше имя</div>
+    <input class="field-input" id="hostName" placeholder="Например: Максим" maxlength="20">
+    <button class="btn-lobby btn-gold" id="btnCreate">Создать и стать ведущим</button>
+  </div>
+
+  <div class="lobby-card">
+    <h2>Войти в комнату</h2>
+    <div class="field-label">Ваше имя</div>
+    <input class="field-input" id="joinName" placeholder="Например: Максим" maxlength="20">
+    <div class="field-label">Код комнаты</div>
+    <input class="field-input" id="joinCode" placeholder="ABCD" maxlength="4" style="text-transform:uppercase;letter-spacing:0.2em;font-family:'Unbounded',sans-serif;font-size:1.2rem;">
+    <button class="btn-lobby btn-gold" id="btnJoin">Войти</button>
+  </div>
+  <div class="error-msg" id="lobbyError"></div>
+</div>
+
+<!-- WAIT -->
+<div id="waitScreen">
+  <div class="wait-card">
+    <h2>Ждём игроков</h2>
+    <div class="room-code" id="waitCode"></div>
+    <div class="room-hint">Поделитесь кодом — игроки вводят его на этой странице</div>
+    <div class="players-list" id="waitPlayers"></div>
+    <button class="copy-btn" id="btnCopy">📋 Скопировать ссылку на игру</button>
+    <button class="btn-lobby btn-gold" id="startBtn" style="display:none">Начать игру</button>
+    <div class="player-waiting" id="waitHint">Ожидание ведущего...</div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="gameScreen">
+  <header><h1>Своя Игра</h1></header>
+  <div class="my-role-bar" id="myRoleBar"></div>
+  <div class="round-tabs" id="roundTabs"></div>
+  <div class="scoreboard" id="scoreboard"></div>
+  <div class="grid-wrap"><div class="grid" id="grid"></div></div>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-top">
+      <div>
+        <div class="modal-cat" id="mCat"></div>
+        <div class="modal-val" id="mVal"></div>
+      </div>
+    </div>
+    <div id="mPill"></div>
+
+    <!-- Timer (always visible when question is open) -->
+    <div class="timer-wrap" id="timerWrap" style="display:none">
+      <div class="timer-ring">
+        <svg width="48" height="48" viewBox="0 0 48 48">
+          <circle class="ring-bg" cx="24" cy="24" r="20" fill="none" stroke-width="3.5"/>
+          <circle class="ring-fill" id="ringFill" cx="24" cy="24" r="20" fill="none" stroke-width="3.5"
+            stroke-dasharray="125.66" stroke-dashoffset="0"/>
+        </svg>
+        <div class="timer-num" id="timerNum">15</div>
+      </div>
+      <div class="timer-info">
+        <div class="timer-label" id="timerLabel">Время на ответ</div>
+      </div>
+    </div>
+
+    <div class="timeout-label" id="timeoutLabel">⏱ Время вышло</div>
+
+    <!-- Buzzer winner -->
+    <div class="buzzer-winner" id="buzzerWinner">
+      <div class="bw-dot" id="bwDot"></div>
+      <div><div class="bw-text">Первым нажал</div><div class="bw-name" id="bwName"></div></div>
+    </div>
+
+    <!-- BUZZ BUTTON for non-host players -->
+    <div class="buzz-section" id="buzzSection" style="display:none">
+      <button class="buzz-big-btn" id="buzzBtn">⚡ ОТВЕТИТЬ</button>
+      <div class="buzz-already" id="buzzAlready"></div>
+    </div>
+
+    <div id="noQuestWrap" style="display:none"></div>
+    <div id="auctionWrap" class="auction-wrap" style="display:none">
+      <div class="clabel">Баланс выбирающего: <span id="auctionBal"></span> · Ставка</div>
+      <input type="number" class="auction-input" id="auctionInput" min="0" placeholder="100">
+      <div style="margin-top:9px">
+        <button class="btn btn-reveal btn-full host-only" id="btnConfirmAuction">Подтвердить ставку</button>
+      </div>
+    </div>
+
+    <div class="who-row" id="whoRow"></div>
+    <div class="modal-q" id="mQ"></div>
+    <div class="answer-box" id="ansBox">
+      <div class="alabel">Ответ</div>
+      <div class="atext" id="ansText"></div>
+    </div>
+    <div class="btn-row" id="btnRow"></div>
+    <div class="player-waiting" id="modalWaiting" style="display:none">Ведущий управляет вопросом...</div>
+  </div>
+</div>
+
+<footer>3 раунда · 18 категорий · 90 вопросов</footer>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, get, update, onValue }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDK5RWE15PnA-7gftX-edabZTe-g9xb0XQ",
+  authDomain: "svo-igra.firebaseapp.com",
+  databaseURL: "https://svo-igra-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "svo-igra",
+  storageBucket: "svo-igra.firebasestorage.app",
+  messagingSenderId: "511858031426",
+  appId: "1:511858031426:web:238ca6f86007879ca626db"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// ── DATA ──────────────────────────────────────────────────────────────────────
+// MODIFIERS:
+// 'auction'   - player bids any amount, win/lose that amount
+// 'double'    - auto x2 of nominal value
+// 'allin'     - stake = entire current balance
+// 'give'      - no question: give any amount to any player
+// 'take'      - no question: take any amount from any player
+// 'minusall'  - correct answer deducts nominal from every other player
+
+const ROUNDS = [
+  {
+    label: 'Round 1',
+    categories: [
+      {
+        name: 'Memy runet',
+        questions: [
+          { q: 'Iz kakogo video poshla fraza "Kak tebe takoe, Ilon Mask?"', a: 'Memy pro rossiyskikh umeltcev s samodelnymi izobreteniyami (2018)', val: 100 },
+          { q: 'Kak zvali mal'chika iz viral'nogo video pro stolovuyu 2008 goda, kotoryy skazal "Ya chuvstvuyu sebya chelovekom!"', a: 'Nikita Litvinkov', val: 200 },
+          { q: 'Iz kakogo shou poshla fotografiya s knopkoy, stavshaya memom vo vsem mire?', a: 'Shou "Golos" — Leonid Agutin naghal knopku', val: 300 },
+          { q: 'Kak nazyvalas' entsiklopediya runeta napisannaya na "olbanskom" yazyke?', a: 'Lurk (Lurkomore)', val: 400, special: 'auction' },
+          { q: 'Kakuyu frazu skazala devochka Asya v repportazhe o Dne znany, stavshie klassikey runeta?', a: '"Nikakogo prazdnika"', val: 500 },
+        ]
+      },
+      {
+        name: 'Eda i napitki',
+        questions: [
+          { q: 'Chto takoe umami?', a: 'Pyatyy bazovyy vkus — nasyshchennyy "myasistnyy"', val: 100 },
+          { q: 'Iz chego delayut nastoyashchuyu tekilu?', a: 'Iz goluboy agavy', val: 200 },
+          { q: 'Chto vkhodit v klassicheskiy kokteyl "Negroni"?', a: 'Dzhin, Kampari, sladkiy vermut', val: 300 },
+          { q: 'Pravda li, chto banany — eto yagody s tochki zreniya botaniki?', a: 'Da. A klubnika — net', val: 400, special: 'double' },
+          { q: 'V kakom gorode pridumali pittsu "Margarita"?', a: 'Neapol, Italiya, 1889 god', val: 500 },
+        ]
+      },
+      {
+        name: 'Kino i serial',
+        questions: [
+          { q: 'Skolko sezonov u "Igry prestolov"?', a: '8', val: 100 },
+          { q: 'Kto ozuchival Shreka v originale?', a: 'Mayk Mayers', val: 200 },
+          { q: 'V kakom godu vyshla "Matritsa"?', a: '1999', val: 300 },
+          { q: 'Kak zvat zlodev v "Odin doma"?', a: 'Garri i Marv — "Mokrye razboyniki"', val: 400, special: 'allin' },
+          { q: 'Kak zvat aktora, sygravshego Khannibala Lektera v "Molchanii yagnyat"?', a: 'Entoni Khopkins', val: 500 },
+        ]
+      },
+      {
+        name: 'Pravda ili net',
+        questions: [
+          { q: 'Stratusy pryachut golovu v pesok pri opasnosti?', a: 'Net — mif. Oni pereobrachivayut yaytsa', val: 100 },
+          { q: 'Velikuyu Kitayskuyu stenu vidno iz kosmosa?', a: 'Net — slishkom uzkaya', val: 200 },
+          { q: 'U loshadey net rvonnogo refleksa?', a: 'Pravda', val: 300 },
+          { q: 'Molniya nikogda ne b'yet v ono mesto dvazhdy?', a: 'Mif. V Empayyr Steyt Bilding popadaet ~100 raz v god', val: 400 },
+          { q: 'Osminogi imeyut tri serdtsa?', a: 'Pravda — dva zhabernykh i odno sistemnoe', val: 500, special: 'give' },
+        ]
+      },
+      {
+        name: 'Geografiya',
+        questions: [
+          { q: 'Stolitsa Avstralii — Sidney ili Kanberra?', a: 'Kanberra', val: 100 },
+          { q: 'V kakoy strane nakhoditsya Machu-Pikchu?', a: 'Peru', val: 200 },
+          { q: 'Kakaya strana imeet samuyu dlinnuyu beregovuyu liniyu?', a: 'Kanada', val: 300 },
+          { q: 'Kak nazyvaetsya more mezhdu Avstraliey i Novoy Zelandiey?', a: 'Tasmanova more', val: 400 },
+          { q: 'Samaya vysokogornaya stolitsa mira?', a: 'La-Pas, Boliviya', val: 500, special: 'take' },
+        ]
+      },
+      {
+        name: 'Strannye fakty',
+        questions: [
+          { q: 'Kakoe krupnoe zhivotnoe ne umeet prygat'?', a: 'Slon', val: 100 },
+          { q: 'Skolko chasov v sutki spyat koshki?', a: '12-16 chasov', val: 200 },
+          { q: 'Pochemu u flamingo rozovyy tsvet?', a: 'Iz-za karotinoidov v vodoroslyakh i rachkakh. Bez nikh oni belye', val: 300 },
+          { q: 'Skolko kostey u akuly?', a: 'Nol — khryashchevoy skelet', val: 400, special: 'double' },
+          { q: 'Kakoy protsent DNK u cheloveka sovpadaet s bananom?', a: 'Okolo 60%', val: 500 },
+        ]
+      },
+    ]
+  },
+  {
+    label: 'Round 2',
+    categories: [
+      {
+        name: 'Runet 2010-e',
+        questions: [
+          { q: 'Kak nazyvalas' pervaya rossiyskaya sotsset'?', a: '"Zhivoy Zhurnal" (LiveJournal) byl samym populyarnym v 2000-e', val: 200 },
+          { q: 'Chto takoe "Gandibober"?', a: 'Slovo iz viral'nogo video s zhenshchinoy, kotoraya tak opisyvala naimen'e knigi', val: 400 },
+          { q: 'Kak zvali "patsana s konopley" — geroya samogo populyarnogo remixa YouTube-pupy 2010-2012?', a: '"Potsyk" — mal'chik iz udal\nnogo video pro park', val: 600, special: 'auction' },
+          { q: 'V kakom godu poyavilos' vkontakte?', a: '2006', val: 800 },
+          { q: 'Kak zvali pevtsa, ch'ya pesnya "Trololo" stala mezhdurodnym memom v 2010 godu?', a: 'Eduard Khil'', val: 1000 },
+        ]
+      },
+      {
+        name: 'Nauka',
+        questions: [
+          { q: 'Khimicheskiy simvol zolota', a: 'Au', val: 200 },
+          { q: 'Skorost' sveta v vakuume priblizitelno', a: '300 000 km/s', val: 400 },
+          { q: 'Kto otkryl penitsillin?', a: 'Aleksandr Fleming', val: 600 },
+          { q: 'Iz chego sostoit yadro atoma?', a: 'Iz protonov i neytronov', val: 800, special: 'allin' },
+          { q: 'Kak nazyvaetsya nauka o gribakh?', a: 'Mikologiya', val: 1000 },
+        ]
+      },
+      {
+        name: 'Sport',
+        questions: [
+          { q: 'Skolko igrokov v basketbol'noy komande na ploshchadke?', a: '5', val: 200 },
+          { q: 'V kakoy strane pridumali voleybol?', a: 'SSHA', val: 400 },
+          { q: 'Samyy prestizhnuyu klubnyy turnir v Evrope po futbolu?', a: 'Liga Chempionov UEFA', val: 600 },
+          { q: 'Skolko kolets na flage Olimpiyskikh igr?', a: '5', val: 800, special: 'minusall' },
+          { q: 'Skolko ochkov daet tachdan v amerikanskom futbole?', a: '6', val: 1000 },
+        ]
+      },
+      {
+        name: 'Istoriya',
+        questions: [
+          { q: 'God Oktyabrskoy revolyutsii v Rossii', a: '1917', val: 200 },
+          { q: 'Pervyy prezident SSHA', a: 'Dzhordzh Vashington', val: 400 },
+          { q: 'V kakom godu pal Konstantinopol'?', a: '1453', val: 600 },
+          { q: 'Flagman Kolumba pri otkrytii Ameriki', a: 'Santa-Mariya', val: 800, special: 'give' },
+          { q: 'Skolko let dlilas' Steletnyaya voyna?', a: '116 let (1337-1453)', val: 1000 },
+        ]
+      },
+      {
+        name: 'Pop-kul'tura',
+        questions: [
+          { q: 'Kak zvat glavnogo volshebnika v "Garri Pottere"?', a: 'Al'bus Damblodor', val: 200 },
+          { q: 'V kakom godu vyshla "Matritsa"?', a: '1999', val: 400 },
+          { q: 'Kto napisal "Vlastelin kolets"?', a: 'Dzh. R. R. Tolkin', val: 600 },
+          { q: 'Kak nazyvaetsya planeta v "Avatare"?', a: 'Pandora', val: 800, special: 'take' },
+          { q: 'Skolko fil'mov v osnovnoy sage "Zvezdnykh voyn"?', a: '9 (epizody I-IX)', val: 1000 },
+        ]
+      },
+      {
+        name: 'Priroda',
+        questions: [
+          { q: 'Samoe vysokoe zhivotnoe na planete?', a: 'Zhiraf', val: 200 },
+          { q: 'Skolko serdets u osminoga?', a: '3', val: 400 },
+          { q: 'Samyy bol'shoy okean?', a: 'Tikhiy', val: 600 },
+          { q: 'Kakoe rastenie rastet bystree vsekh?', a: 'Bambuk (tekhnicheski trava)', val: 800, special: 'double' },
+          { q: 'Skoil'ko kostey u akuly?', a: 'Nol' — skelet iz khryashcha', val: 1000 },
+        ]
+      },
+    ]
+  },
+  {
+    label: 'Round 3',
+    categories: [
+      {
+        name: 'Memy runeta 2',
+        questions: [
+          { q: 'Iz kakogo fil'ma poshla fraza "Nel'zya prosto tak vzyat' i..."?', a: 'Iz "Vlastelina Kolets" — Boromir', val: 300 },
+          { q: 'Kak nazyvaetsya meme s Leonid Agutinym i ego rukoy na knopke?', a: 'Knopka Agutina / Agutin button', val: 600 },
+          { q: 'Chto oznachaet "rzhu ne mogu" v yazyke padonkoff?', a: 'Smeyus', ne mogu ostanovit'sya ("rzhu ne mogu")', val: 900, special: 'auction' },
+          { q: 'V kakom godu poyavilsya meme "Kak tebe takoe, Ilon Mask"?', a: '2018', val: 1200 },
+          { q: 'Kak zvali geroya shou "+100500"?', a: 'Maks +100500 (Maksim Golopolosov)', val: 1500, special: 'allin' },
+        ]
+      },
+      {
+        name: 'Psikhologiya',
+        questions: [
+          { q: 'Kak nazyvaetsya strakh otkrytykh prostranstv?', a: 'Agorafobiya', val: 300 },
+          { q: 'Chto takoe effekt Dunninga-Kryugera?', a: 'Nekompetentye lyudi pereotsenivayut sebya, eksperty — nedootsenivayut', val: 600 },
+          { q: 'Zashchitnyy mekhanizm — pripisyvat' drugim svoyi chuvstva?', a: 'Proektsiya', val: 900 },
+          { q: 'Kak nazyvaetsya yavlenie, kogda tolpa prinimaet khudshie resheniya?', a: 'Gruppovoe myshlenie (groupthink)', val: 1200, special: 'minusall' },
+          { q: 'Chto takoe kognitivnyy dissonans?', a: 'Diskomfort ot protivorechiya mezhdu ubezhdeniyami i deystviyami', val: 1500 },
+        ]
+      },
+      {
+        name: 'Internet',
+        questions: [
+          { q: 'V kakom godu poyavilsya YouTube?', a: '2005', val: 300 },
+          { q: 'Kak rasshifrovyvaetsya GIF?', a: 'Graphics Interchange Format', val: 600 },
+          { q: 'Otkuda poshla fraza "Nichego ne proizoshlo"?', a: 'Iz sovetskogo mul'tfil'ma "Zhil-byl pyos"', val: 900, special: 'give' },
+          { q: 'V kakom godu byl zapushchen Reddit?', a: '2005', val: 1200 },
+          { q: 'Kak nazyvaetsya zakon: lyuboe internet-obsuzhdenie ran'she ili pozhe upomyanet Gitlera?', a: 'Zakon Godvina', val: 1500, special: 'take' },
+        ]
+      },
+      {
+        name: 'Puteshestviya',
+        questions: [
+          { q: 'Samyy poseshchaemyy muzey v mire?', a: 'Luver, Parizh', val: 300 },
+          { q: 'V kakoy strane est' gorod Baku?', a: 'Azerbaydzhan', val: 600 },
+          { q: 'V kakoy strane bol'she vsego ostrovov?', a: 'Shvetsiya (~221 800)', val: 900, special: 'double' },
+          { q: 'Kak nazyvaetsya aeroport v Dubaye?', a: 'Dubai International (DXB)', val: 1200 },
+          { q: 'Samaya vysokogornaya stolitsa mira?', a: 'La-Pas, Boliviya', val: 1500, special: 'auction' },
+        ]
+      },
+      {
+        name: 'Igry',
+        questions: [
+          { q: 'V kakom godu vyshel pervyy Minecraft?', a: '2009 (al'fa)', val: 300 },
+          { q: 'Kak zvat glavnogo geroya The Legend of Zelda?', a: 'Link', val: 600 },
+          { q: 'Kakaya kompaniya sdelala Dark Souls?', a: 'FromSoftware', val: 900, special: 'give' },
+          { q: 'V kakom godu vyshla pervaya chast' GTA?', a: '1997', val: 1200 },
+          { q: 'Chto oznachaet "rogalik" v geymerskom slenge?', a: 'Roguelike — zhanr s protsedurnymi urovnyami i smert'yu navsegda', val: 1500, special: 'allin' },
+        ]
+      },
+      {
+        name: 'Na grani',
+        questions: [
+          { q: 'Kak nazyvaetsya boyazn' dlinnykh slov?', a: 'Gippopotomonstroseskvippedaliofobiya', val: 300 },
+          { q: 'Chto sluchilos' by s chelovekom v otkrytom kosmose bez skafandra za pervye 15 sekund?', a: 'Poteryaet soznanie, zhidkosti nachnut kipet'', val: 600 },
+          { q: 'Skol'ko vremeni svet ot Solntsa idyot do Zemli?', a: 'Okolo 8 minut 20 sekund', val: 900, special: 'minusall' },
+          { q: 'Kak nazyvaetsya paradoks o korable, u kotorogo zamenili vse detali?', a: 'Paradoks Tezheya', val: 1200 },
+          { q: 'Kakoy protsent DNK u cheloveka sovpadaet s bananom?', a: 'Okolo 60%', val: 1500, special: 'auction' },
+        ]
+      },
+    ]
+  }
+];
+
+// NOTE: question text stored in Russian but using latin chars above as workaround — 
+// will be replaced with actual Cyrillic below
+
+const ROUNDS_DATA = [
+  {
+    label: 'Раунд 1',
+    categories: [
+      {
+        name: 'Мемы рунета',
+        questions: [
+          { q: 'Откуда пошла фраза «Как тебе такое, Илон Маск»?', a: 'Мемы про российских умельцев с самодельными изобретениями, 2018 год', val: 100 },
+          { q: 'Как звали мальчика из вирусного видео про школьную столовую 2008 года, который сказал «Я чувствую себя человеком!»?', a: 'Никита Литвинков', val: 200 },
+          { q: 'Из какого шоу пошла фотография с кнопкой, ставшая мемом по всему миру?', a: 'Шоу «Голос» — Леонид Агутин нажимал кнопку', val: 300 },
+          { q: 'Как называлась энциклопедия рунета, написанная на «олбанском» языке?', a: 'Лурк (Луркоморье)', val: 400, special: 'auction' },
+          { q: 'Какую фразу сказала девочка Ася в репортаже о Дне знаний, ставшую классикой рунета?', a: '«Никакого праздника»', val: 500 },
+        ]
+      },
+      {
+        name: 'Еда и напитки',
+        questions: [
+          { q: 'Что такое умами?', a: 'Пятый базовый вкус — насыщенный «мясной»', val: 100 },
+          { q: 'Из чего делают настоящую текилу?', a: 'Из голубой агавы', val: 200 },
+          { q: 'Что входит в классический коктейль «Негрони»?', a: 'Джин, Кампари, сладкий вермут', val: 300 },
+          { q: 'Правда ли, что бананы — это ягоды с точки зрения ботаники?', a: 'Да. А клубника — нет', val: 400, special: 'double' },
+          { q: 'В каком городе придумали пиццу «Маргарита»?', a: 'Неаполь, Италия, 1889 год', val: 500 },
+        ]
+      },
+      {
+        name: 'Кино и сериалы',
+        questions: [
+          { q: 'Сколько сезонов у «Игры престолов»?', a: '8', val: 100 },
+          { q: 'Кто озвучивал Шрека в оригинале?', a: 'Майк Майерс', val: 200 },
+          { q: 'В каком году вышла «Матрица»?', a: '1999', val: 300 },
+          { q: 'Как зовут злодеев в «Один дома»?', a: 'Гарри и Марв — «Мокрые разбойники»', val: 400, special: 'allin' },
+          { q: 'Как зовут актора, сыгравшего Ганнибала Лектера в «Молчании ягнят»?', a: 'Энтони Хопкинс', val: 500 },
+        ]
+      },
+      {
+        name: 'Правда или нет',
+        questions: [
+          { q: 'Страусы прячут голову в песок при опасности?', a: 'Нет — миф. Они переворачивают яйца', val: 100 },
+          { q: 'Великую Китайскую стену видно из космоса?', a: 'Нет — слишком узкая', val: 200 },
+          { q: 'У лошадей нет рвотного рефлекса?', a: 'Правда', val: 300 },
+          { q: 'Молния никогда не бьёт в одно место дважды?', a: 'Миф. В Эмпайр Стейт Билдинг попадает ~100 раз в год', val: 400 },
+          { q: 'Осьминоги имеют три сердца?', a: 'Правда — два жаберных и одно системное', val: 500, special: 'give' },
+        ]
+      },
+      {
+        name: 'География',
+        questions: [
+          { q: 'Столица Австралии — Сидней или Канберра?', a: 'Канберра', val: 100 },
+          { q: 'В какой стране находится Мачу-Пикчу?', a: 'Перу', val: 200 },
+          { q: 'Какая страна имеет самую длинную береговую линию?', a: 'Канада', val: 300 },
+          { q: 'Как называется море между Австралией и Новой Зеландией?', a: 'Тасманово море', val: 400 },
+          { q: 'Самая высокогорная столица мира?', a: 'Ла-Пас, Боливия', val: 500, special: 'take' },
+        ]
+      },
+      {
+        name: 'Странные факты',
+        questions: [
+          { q: 'Какое крупное животное не умеет прыгать?', a: 'Слон', val: 100 },
+          { q: 'Сколько часов в сутки спят кошки?', a: '12–16 часов', val: 200 },
+          { q: 'Почему у фламинго розовый цвет?', a: 'Из-за каротиноидов в водорослях и рачках. Без них они белые', val: 300 },
+          { q: 'Сколько костей у акулы?', a: 'Ноль — хрящевой скелет', val: 400, special: 'double' },
+          { q: 'Какой процент ДНК у человека совпадает с бананом?', a: 'Около 60%', val: 500 },
+        ]
+      },
+    ]
+  },
+  {
+    label: 'Раунд 2',
+    categories: [
+      {
+        name: 'Рунет 2010-е',
+        questions: [
+          { q: 'Как называлась самая популярная соцсеть рунета конца 2000-х — начала 2010-х?', a: 'ВКонтакте (VK), запущена в 2006', val: 200 },
+          { q: 'Что такое «Гандибобер»?', a: 'Слово из вирусного видео с женщиной, которая так описывала название книги', val: 400 },
+          { q: 'Как звали певца, чья песня «Трололо» стала международным мемом в 2010 году?', a: 'Эдуард Хиль', val: 600, special: 'auction' },
+          { q: 'В каком году появилось ВКонтакте?', a: '2006', val: 800 },
+          { q: 'Как называлось интернет-шоу Максима Голополосова с отборными роликами с YouTube?', a: '+100500', val: 1000 },
+        ]
+      },
+      {
+        name: 'Наука',
+        questions: [
+          { q: 'Химический символ золота', a: 'Au', val: 200 },
+          { q: 'Скорость света в вакууме приблизительно', a: '300 000 км/с', val: 400 },
+          { q: 'Кто открыл пенициллин?', a: 'Александр Флеминг', val: 600 },
+          { q: 'Из чего состоит ядро атома?', a: 'Из протонов и нейтронов', val: 800, special: 'allin' },
+          { q: 'Как называется наука о грибах?', a: 'Микология', val: 1000 },
+        ]
+      },
+      {
+        name: 'Спорт',
+        questions: [
+          { q: 'Сколько игроков в баскетбольной команде на площадке?', a: '5', val: 200 },
+          { q: 'В какой стране придумали волейбол?', a: 'США', val: 400 },
+          { q: 'Самый престижный клубный турнир в Европе по футболу?', a: 'Лига Чемпионов UEFA', val: 600 },
+          { q: 'Сколько колец на флаге Олимпийских игр?', a: '5', val: 800, special: 'minusall' },
+          { q: 'Сколько очков даёт тачдаун в американском футболе?', a: '6', val: 1000 },
+        ]
+      },
+      {
+        name: 'История',
+        questions: [
+          { q: 'Год Октябрьской революции в России', a: '1917', val: 200 },
+          { q: 'Первый президент США', a: 'Джордж Вашингтон', val: 400 },
+          { q: 'В каком году пал Константинополь?', a: '1453', val: 600 },
+          { q: 'Флагман Колумба при открытии Америки', a: 'Санта-Мария', val: 800, special: 'give' },
+          { q: 'Сколько лет длилась Столетняя война?', a: '116 лет (1337–1453)', val: 1000 },
+        ]
+      },
+      {
+        name: 'Поп-культура',
+        questions: [
+          { q: 'Как зовут главного волшебника в «Гарри Поттере»?', a: 'Альбус Дамблдор', val: 200 },
+          { q: 'Кто написал «Властелин колец»?', a: 'Дж. Р. Р. Толкин', val: 400 },
+          { q: 'Как называется планета в «Аватаре»?', a: 'Пандора', val: 600 },
+          { q: 'Сколько фильмов в основной саге «Звёздных войн»?', a: '9 (эпизоды I–IX)', val: 800, special: 'take' },
+          { q: 'Как звали персонажа ДиКаприо в «Титанике»?', a: 'Джек Доусон', val: 1000 },
+        ]
+      },
+      {
+        name: 'Природа',
+        questions: [
+          { q: 'Самое высокое животное на планете?', a: 'Жираф', val: 200 },
+          { q: 'Сколько сердец у осьминога?', a: '3', val: 400 },
+          { q: 'Самый большой океан?', a: 'Тихий', val: 600 },
+          { q: 'Какое растение растёт быстрее всех?', a: 'Бамбук (технически трава)', val: 800, special: 'double' },
+          { q: 'Сколько костей у акулы?', a: 'Ноль — скелет из хряща', val: 1000 },
+        ]
+      },
+    ]
+  },
+  {
+    label: 'Раунд 3',
+    categories: [
+      {
+        name: 'Мемы рунета 3',
+        questions: [
+          { q: 'Из какого фильма пошла фраза «Нельзя просто так взять и...»?', a: 'Из «Властелина Колец» — Боромир', val: 300 },
+          { q: 'Что означает «ржунимагу» на языке падонков?', a: 'Смеюсь, не могу остановиться', val: 600 },
+          { q: 'Как называлась энциклопедия рунета на «олбанском»?', a: 'Луркоморье (Лурк)', val: 900, special: 'auction' },
+          { q: 'В каком году появился мем «Как тебе такое, Илон Маск»?', a: '2018', val: 1200 },
+          { q: 'Что такое «Дискотека Авария» в контексте рунета?', a: 'Российская поп-группа, ставшая мемом за чрезмерно бодрые клипы', val: 1500, special: 'allin' },
+        ]
+      },
+      {
+        name: 'Психология',
+        questions: [
+          { q: 'Как называется страх открытых пространств?', a: 'Агорафобия', val: 300 },
+          { q: 'Что такое эффект Даннинга-Крюгера?', a: 'Некомпетентные люди переоценивают себя, эксперты — недооценивают', val: 600 },
+          { q: 'Защитный механизм — приписывать другим свои чувства?', a: 'Проекция', val: 900 },
+          { q: 'Как называется явление, когда толпа принимает худшие решения?', a: 'Групповое мышление (groupthink)', val: 1200, special: 'minusall' },
+          { q: 'Что такое когнитивный диссонанс?', a: 'Дискомфорт от противоречия между убеждениями и действиями', val: 1500 },
+        ]
+      },
+      {
+        name: 'Интернет',
+        questions: [
+          { q: 'В каком году появился YouTube?', a: '2005', val: 300 },
+          { q: 'Как расшифровывается GIF?', a: 'Graphics Interchange Format', val: 600 },
+          { q: 'Откуда пошла фраза «Ничего не произошло»?', a: 'Из советского мультфильма «Жил-был пёс»', val: 900, special: 'give' },
+          { q: 'В каком году был запущен Reddit?', a: '2005', val: 1200 },
+          { q: 'Как называется закон: любое интернет-обсуждение рано или поздно упомянет Гитлера?', a: 'Закон Годвина', val: 1500, special: 'take' },
+        ]
+      },
+      {
+        name: 'Путешествия',
+        questions: [
+          { q: 'Самый посещаемый музей в мире?', a: 'Лувр, Париж', val: 300 },
+          { q: 'В какой стране есть город Баку?', a: 'Азербайджан', val: 600 },
+          { q: 'В какой стране больше всего островов?', a: 'Швеция (~221 800)', val: 900, special: 'double' },
+          { q: 'Как называется аэропорт в Дубае?', a: 'Dubai International (DXB)', val: 1200 },
+          { q: 'Самая высокогорная столица мира?', a: 'Ла-Пас, Боливия', val: 1500, special: 'auction' },
+        ]
+      },
+      {
+        name: 'Игры',
+        questions: [
+          { q: 'В каком году вышел первый Minecraft?', a: '2009 (альфа)', val: 300 },
+          { q: 'Как зовут главного героя The Legend of Zelda?', a: 'Линк', val: 600 },
+          { q: 'Какая компания сделала Dark Souls?', a: 'FromSoftware', val: 900, special: 'give' },
+          { q: 'В каком году вышла первая часть GTA?', a: '1997', val: 1200 },
+          { q: 'Что такое «рогалик» в геймерском сленге?', a: 'Roguelike — жанр с процедурными уровнями и смертью навсегда', val: 1500, special: 'allin' },
+        ]
+      },
+      {
+        name: 'На грани',
+        questions: [
+          { q: 'Как называется боязнь длинных слов?', a: 'Гиппопотомомонстросесквиппедалиофобия', val: 300 },
+          { q: 'Что случилось бы с человеком в открытом космосе без скафандра за первые 15 секунд?', a: 'Потеряет сознание, жидкости начнут кипеть', val: 600 },
+          { q: 'Сколько времени свет от Солнца идёт до Земли?', a: 'Около 8 минут 20 секунд', val: 900, special: 'minusall' },
+          { q: 'Как называется парадокс о корабле, у которого заменили все детали?', a: 'Парадокс Тесея', val: 1200 },
+          { q: 'Какой процент ДНК у человека совпадает с бананом?', a: 'Около 60%', val: 1500, special: 'auction' },
+        ]
+      },
+    ]
+  }
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let roomId = null;
+let myPlayerId = null;
+let isHost = false;
+let gameState = null;
+let timerInterval = null;
+const CIRCUMFERENCE = 2 * Math.PI * 20;
+const PLAYER_SLOTS = ['p0','p1','p2','p3'];
+const PLAYER_COLORS = ['var(--p0)','var(--p1)','var(--p2)','var(--p3)'];
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+function genCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+function showError(msg) {
+  document.getElementById('lobbyError').textContent = msg;
+  setTimeout(() => document.getElementById('lobbyError').textContent = '', 4000);
+}
+function copyLink() {
+  const url = window.location.href.split('?')[0] + '?room=' + roomId;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.getElementById('btnCopy');
+    btn.textContent = 'Скопировано!';
+    setTimeout(() => btn.textContent = 'Скопировать ссылку на игру', 2000);
+  });
+}
+
+// ── TURN ORDER ────────────────────────────────────────────────────────────────
+function nextTurnPlayer(gs) {
+  const players = gs.players || {};
+  const slots = PLAYER_SLOTS.filter(s => players[s]);
+  const current = gs.choosingPlayer || slots[0];
+  const idx = slots.indexOf(current);
+  return slots[(idx + 1) % slots.length];
+}
+
+// ── LOBBY ─────────────────────────────────────────────────────────────────────
+async function createRoom() {
+  const name = document.getElementById('hostName').value.trim();
+  if (!name) { showError('Введите имя'); return; }
+  const btn = document.getElementById('btnCreate');
+  btn.textContent = 'Создаём...';
+  btn.disabled = true;
+  try {
+    const code = genCode();
+    roomId = code;
+    isHost = true;
+    myPlayerId = 'p0';
+    const roomData = {
+      status: 'waiting',
+      host: 'p0',
+      currentRound: 0,
+      currentQuestion: null,
+      buzzed: null,
+      choosingPlayer: 'p0',
+      usedCells: {},
+      scores: { p0: 0, p1: 0, p2: 0, p3: 0 },
+      players: { p0: { name, score: 0 } },
+    };
+    await set(ref(db, 'rooms/' + code), roomData);
+    showWaitScreen(code);
+  } catch(e) {
+    showError('Ошибка: ' + e.message);
+    btn.textContent = 'Создать и стать ведущим';
+    btn.disabled = false;
+  }
+}
+
+async function joinRoom() {
+  const name = document.getElementById('joinName').value.trim();
+  const code = document.getElementById('joinCode').value.trim().toUpperCase();
+  if (!name) { showError('Введите имя'); return; }
+  if (code.length !== 4) { showError('Введите 4-значный код'); return; }
+  const btn = document.getElementById('btnJoin');
+  btn.textContent = 'Входим...';
+  btn.disabled = true;
+  try {
+    const snap = await get(ref(db, 'rooms/' + code));
+    if (!snap.exists()) { showError('Комната не найдена'); btn.textContent = 'Войти'; btn.disabled = false; return; }
+    const room = snap.val();
+    if (room.status === 'playing') { showError('Игра уже началась'); btn.textContent = 'Войти'; btn.disabled = false; return; }
+    const players = room.players || {};
+    const taken = Object.keys(players);
+    const free = PLAYER_SLOTS.find(s => !taken.includes(s));
+    if (!free) { showError('Комната заполнена'); btn.textContent = 'Войти'; btn.disabled = false; return; }
+    roomId = code;
+    myPlayerId = free;
+    isHost = false;
+    await update(ref(db, 'rooms/' + code + '/players'), { [free]: { name, score: 0 } });
+    showWaitScreen(code);
+  } catch(e) {
+    showError('Ошибка: ' + e.message);
+    btn.textContent = 'Войти';
+    btn.disabled = false;
+  }
+}
+
+function showWaitScreen(code) {
+  document.getElementById('lobbyScreen').style.display = 'none';
+  document.getElementById('waitScreen').style.display = 'flex';
+  document.getElementById('waitCode').textContent = code;
+  if (isHost) {
+    document.getElementById('startBtn').style.display = 'block';
+    document.getElementById('waitHint').style.display = 'none';
+  }
+  onValue(ref(db, 'rooms/' + code), snap => {
+    if (!snap.exists()) return;
+    const room = snap.val();
+    renderWaitPlayers(room.players || {});
+    if (room.status === 'playing') {
+      document.getElementById('waitScreen').style.display = 'none';
+      document.getElementById('gameScreen').style.display = 'block';
+      listenGame();
+    }
+  });
+}
+
+function renderWaitPlayers(players) {
+  const el = document.getElementById('waitPlayers');
+  el.innerHTML = '';
+  PLAYER_SLOTS.forEach((s, i) => {
+    const p = players[s];
+    const div = document.createElement('div');
+    div.className = 'player-slot';
+    div.innerHTML = '<div class="slot-dot" style="background:' + PLAYER_COLORS[i] + '"></div>' +
+      (p
+        ? '<div class="slot-name">' + p.name + '</div>' +
+          (s === 'p0' ? '<div class="slot-host-badge">Ведущий</div>' : '') +
+          (s === myPlayerId ? '<div class="slot-you-badge">Вы</div>' : '')
+        : '<div class="slot-empty">Ожидание...</div>');
+    el.appendChild(div);
+  });
+}
+
+async function startGame() {
+  await update(ref(db, 'rooms/' + roomId), { status: 'playing' });
+}
+
+// ── GAME LISTENER ─────────────────────────────────────────────────────────────
+function listenGame() {
+  onValue(ref(db, 'rooms/' + roomId), snap => {
+    if (!snap.exists()) return;
+    gameState = snap.val();
+    renderGame();
+  });
+}
+
+function renderGame() {
+  const gs = gameState;
+  const players = gs.players || {};
+
+  document.getElementById('myRoleBar').innerHTML = isHost
+    ? '<span class="role-host">Вы — ведущий</span>'
+    : '<span class="role-player">Вы играете как ' + (players[myPlayerId]?.name || '') + '</span>';
+
+  // Round tabs
+  const tabsEl = document.getElementById('roundTabs');
+  tabsEl.innerHTML = '';
+  ROUNDS_DATA.forEach((r, i) => {
+    const b = document.createElement('button');
+    b.className = 'round-tab' + (i === gs.currentRound ? ' active' : '');
+    b.textContent = r.label;
+    if (isHost) b.addEventListener('click', () => hostSwitchRound(i));
+    else b.style.cursor = 'default';
+    tabsEl.appendChild(b);
+  });
+
+  // Scoreboard
+  const sbEl = document.getElementById('scoreboard');
+  sbEl.innerHTML = '';
+  PLAYER_SLOTS.forEach((s, i) => {
+    const p = players[s];
+    if (!p) return;
+    const isChoosing = gs.choosingPlayer === s && !gs.currentQuestion;
+    const isBuzzed = gs.currentQuestion && gs.buzzed === s;
+    const div = document.createElement('div');
+    div.className = 'player-card p' + i +
+      (isChoosing ? ' choosing' : '') +
+      (isBuzzed ? ' buzzing' : '') +
+      (s === myPlayerId ? ' me' : '');
+    div.innerHTML = '<div class="turn-dot"></div>' +
+      '<div class="p-name">' + p.name + '</div>' +
+      '<div class="p-score" id="sc-' + s + '">' + (gs.scores?.[s] ?? 0) + '</div>';
+    sbEl.appendChild(div);
+  });
+
+  buildGrid(gs);
+
+  if (gs.currentQuestion) {
+    renderModal(gs);
+  } else {
+    document.getElementById('overlay').classList.remove('open');
+    stopTimer();
+  }
+}
+
+function buildGrid(gs) {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  const round = ROUNDS_DATA[gs.currentRound];
+  const used = gs.usedCells || {};
+  const locked = !!gs.currentQuestion;
+
+  round.categories.forEach(cat => {
+    const h = document.createElement('div');
+    h.className = 'cat-header';
+    h.textContent = cat.name;
+    grid.appendChild(h);
+  });
+
+  for (let row = 0; row < 5; row++) {
+    round.categories.forEach((cat, col) => {
+      const q = cat.questions[row];
+      const key = 'r' + gs.currentRound + '_c' + col + '_r' + row;
+      const isUsed = !!used[key];
+      const isMyTurn = gs.choosingPlayer === myPlayerId;
+      const cell = document.createElement('div');
+      cell.className = 'cell' + (isUsed ? ' used' : locked ? ' locked' : (!isHost && !isMyTurn ? ' locked' : ''));
+      cell.textContent = isUsed ? '' : q.val;
+      if (!isUsed && !locked && (isHost || isMyTurn)) {
+        cell.addEventListener('click', () => hostOpenQuestion(col, row, key));
+      }
+      grid.appendChild(cell);
+    });
+  }
+}
+
+// ── HOST ACTIONS ──────────────────────────────────────────────────────────────
+async function hostSwitchRound(i) {
+  if (!isHost) return;
+  await update(ref(db, 'rooms/' + roomId), { currentRound: i, currentQuestion: null, buzzed: null });
+}
+
+async function hostOpenQuestion(col, row, key) {
+  const gs = gameState;
+  const q = ROUNDS_DATA[gs.currentRound].categories[col].questions[row];
+  const chooser = gs.choosingPlayer || 'p0';
+  const nextPlayer = nextTurnPlayer(gs);
+
+  // Determine modifier type
+  const special = q.special || null;
+  let phase = 'buzz';
+  if (special === 'give' || special === 'take') phase = special; // no-question modifiers
+  else if (special === 'auction') phase = 'auction';
+  else phase = 'buzz';
+
+  const qData = {
+    col, row, key,
+    q: (special === 'give' || special === 'take') ? null : q.q,
+    a: (special === 'give' || special === 'take') ? null : q.a,
+    val: q.val,
+    special: special,
+    phase: phase,
+    chooser: chooser,
+    ansPlayer: chooser,
+    auctionBet: null,
+    answerRevealed: false,
+    timerStart: null,
+    timedOut: false,
+    nextPlayer: nextPlayer,
+  };
+  await update(ref(db, 'rooms/' + roomId), {
+    currentQuestion: qData,
+    buzzed: null,
+    choosingPlayer: nextPlayer,
+  });
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────────────────
+function renderModal(gs) {
+  const q = gs.currentQuestion;
+  const players = gs.players || {};
+  document.getElementById('overlay').classList.add('open');
+
+  document.getElementById('mCat').textContent = ROUNDS_DATA[gs.currentRound].categories[q.col].name;
+
+  const displayVal = q.auctionBet !== null ? q.auctionBet : q.val;
+  document.getElementById('mVal').textContent = displayVal;
+
+  // Reset all sections
+  document.getElementById('mPill').innerHTML = '';
+  document.getElementById('ansBox').classList.remove('visible');
+  document.getElementById('whoRow').innerHTML = '';
+  document.getElementById('mQ').textContent = '';
+  document.getElementById('auctionWrap').style.display = 'none';
+  document.getElementById('noQuestWrap').style.display = 'none';
+  document.getElementById('buzzSection').style.display = 'none';
+  document.getElementById('timerWrap').style.display = 'none';
+  document.getElementById('timeoutLabel').classList.remove('visible');
+  document.getElementById('buzzerWinner').classList.remove('visible');
+  document.getElementById('btnRow').innerHTML = '';
+  document.getElementById('modalWaiting').style.display = 'none';
+
+  // MODIFIER: give
+  if (q.phase === 'give') {
+    document.getElementById('mPill').innerHTML = '<div class="special-pill pill-give">Отдай очки</div>';
+    renderNoQuestionModifier(gs, 'give');
+    return;
+  }
+
+  // MODIFIER: take
+  if (q.phase === 'take') {
+    document.getElementById('mPill').innerHTML = '<div class="special-pill pill-take">Забери очки</div>';
+    renderNoQuestionModifier(gs, 'take');
+    return;
+  }
+
+  // AUCTION
+  if (q.phase === 'auction' && !q.auctionBet) {
+    document.getElementById('mPill').innerHTML = '<div class="special-pill pill-auction">Аукцион</div>';
+    if (isHost) {
+      document.getElementById('auctionWrap').style.display = 'block';
+      document.getElementById('auctionBal').textContent = gs.scores?.[q.chooser] ?? 0;
+      // preset buttons
+      renderAuctionPresets(q.val);
+    } else {
+      document.getElementById('modalWaiting').style.display = 'block';
+      document.getElementById('modalWaiting').textContent = 'Ведущий устанавливает ставку...';
+    }
+    return;
+  }
+
+  // DOUBLE
+  if (q.special === 'double' && q.phase === 'buzz' && q.auctionBet === null) {
+    // auto-set bet to double
+    document.getElementById('mPill').innerHTML = '<div class="special-pill pill-double">Двойная ставка — ' + (q.val * 2) + '</div>';
+    document.getElementById('mVal').textContent = q.val * 2;
+  }
+
+  // ALLIN
+  if (q.special === 'allin' && q.phase === 'buzz' && q.auctionBet === null) {
+    const bal = gs.scores?.[q.chooser] ?? 0;
+    document.getElementById('mPill').innerHTML = '<div class="special-pill pill-allin">Ва-банк — ' + bal + '</div>';
+    document.getElementById('mVal').textContent = bal;
+  }
+
+  // MINUSALL
+  if (q.special === 'minusall') {
+    document.getElementById('mPill').innerHTML = '<div class="special-pill pill-minusall">Минус всем за неверный</div>';
+  }
+
+  // Regular buzz phase
+  document.getElementById('mQ').textContent = q.q;
+  setWhoEl(q.ansPlayer, players);
+
+  if (q.answerRevealed) {
+    document.getElementById('ansText').textContent = q.a;
+    document.getElementById('ansBox').classList.add('visible');
+    stopTimer();
+  }
+
+  // Timer
+  if (!q.answerRevealed) {
+    document.getElementById('timerWrap').style.display = 'flex';
+    if (q.timerStart) {
+      startLocalTimer(q.timerStart);
+      if (q.timedOut) {
+        stopTimer();
+        document.getElementById('timeoutLabel').classList.add('visible');
+        document.getElementById('timerNum').textContent = '0';
+        updateRing(0);
+      }
+    } else {
+      updateRing(15);
+      document.getElementById('timerNum').textContent = '15';
+      document.getElementById('timerNum').classList.remove('danger');
+      document.getElementById('ringFill').classList.remove('danger');
+    }
+  }
+
+  // Buzzer winner
+  if (gs.buzzed) {
+    const bi = PLAYER_SLOTS.indexOf(gs.buzzed);
+    document.getElementById('buzzerWinner').classList.add('visible');
+    document.getElementById('bwDot').style.background = PLAYER_COLORS[bi];
+    document.getElementById('bwName').textContent = players[gs.buzzed]?.name || gs.buzzed;
+    document.getElementById('bwName').style.color = PLAYER_COLORS[bi];
+    setWhoEl(gs.buzzed, players);
+  }
+
+  // Buzz button for players
+  if (!isHost && !q.answerRevealed) {
+    const timerStarted = !!q.timerStart;
+    const alreadyBuzzed = gs.buzzed === myPlayerId;
+    const someoneBuzzed = !!gs.buzzed;
+
+    if (timerStarted && !someoneBuzzed && !q.timedOut) {
+      document.getElementById('buzzSection').style.display = 'block';
+      const btn = document.getElementById('buzzBtn');
+      const pi = PLAYER_SLOTS.indexOf(myPlayerId);
+      btn.className = 'buzz-big-btn p' + pi;
+      btn.disabled = false;
+      document.getElementById('buzzAlready').textContent = '';
+    } else if (alreadyBuzzed) {
+      document.getElementById('buzzSection').style.display = 'block';
+      const btn = document.getElementById('buzzBtn');
+      btn.disabled = true;
+      document.getElementById('buzzAlready').textContent = 'Вы нажали первым!';
+    } else if (someoneBuzzed) {
+      document.getElementById('buzzSection').style.display = 'block';
+      document.getElementById('buzzBtn').disabled = true;
+      document.getElementById('buzzAlready').textContent = 'Другой игрок нажал первым';
+    } else if (!timerStarted) {
+      document.getElementById('modalWaiting').style.display = 'block';
+      document.getElementById('modalWaiting').textContent = 'Ведущий запустит таймер...';
+    }
+  }
+
+  // Host controls
+  if (isHost) {
+    if (q.answerRevealed) {
+      const val = getEffectiveVal(q, gs);
+      setBtns([
+        { label: 'Верно +' + val, cls: 'btn-correct', fn: 'hostMarkRight' },
+        { label: 'Неверно -' + val, cls: 'btn-wrong', fn: 'hostMarkWrong' },
+        { label: 'Пропустить', cls: 'btn-skip', fn: 'hostSkip' },
+      ]);
+    } else {
+      const timerStarted = !!q.timerStart;
+      if (!timerStarted) {
+        setBtns([{ label: 'Запустить таймер', cls: 'btn-reveal', fn: 'hostStartTimer' }]);
+      } else {
+        setBtns([{ label: 'Показать ответ', cls: 'btn-reveal', fn: 'hostRevealAns' }]);
+      }
+    }
+  } else if (q.answerRevealed) {
+    document.getElementById('modalWaiting').style.display = 'block';
+    document.getElementById('modalWaiting').textContent = 'Ведущий оценивает ответ...';
+  }
+}
+
+function renderNoQuestionModifier(gs, type) {
+  const q = gs.currentQuestion;
+  const players = gs.players || {};
+  const wrap = document.getElementById('noQuestWrap');
+  wrap.style.display = 'block';
+  wrap.innerHTML = '';
+
+  if (!isHost) {
+    wrap.innerHTML = '<div class="player-waiting">Ведущий управляет...</div>';
+    return;
+  }
+
+  // Amount picker
+  const label = document.createElement('div');
+  label.className = 'clabel';
+  label.textContent = type === 'give' ? 'Сколько очков отдать?' : 'Сколько очков забрать?';
+  wrap.appendChild(label);
+
+  const presets = [q.val, q.val * 2, q.val * 3];
+  const prow = document.createElement('div');
+  prow.className = 'auction-presets';
+  presets.forEach(v => {
+    const b = document.createElement('button');
+    b.className = 'preset-btn';
+    b.textContent = v;
+    b.addEventListener('click', () => {
+      wrap.querySelectorAll('.preset-btn').forEach(x => x.classList.remove('sel'));
+      b.classList.add('sel');
+      document.getElementById('noqAmtInput').value = v;
+    });
+    prow.appendChild(b);
+  });
+  wrap.appendChild(prow);
+
+  const inp = document.createElement('input');
+  inp.type = 'number';
+  inp.className = 'auction-input';
+  inp.id = 'noqAmtInput';
+  inp.placeholder = 'Своя сумма';
+  inp.min = 0;
+  wrap.appendChild(inp);
+
+  const label2 = document.createElement('div');
+  label2.className = 'clabel';
+  label2.style.marginTop = '14px';
+  label2.textContent = type === 'give' ? 'Кому отдать?' : 'У кого забрать?';
+  wrap.appendChild(label2);
+
+  const psel = document.createElement('div');
+  psel.className = 'p-select';
+  psel.id = 'noqPlayerSel';
+  PLAYER_SLOTS.forEach((s, i) => {
+    const p = players[s];
+    if (!p) return;
+    if (type === 'give' && s === q.chooser) return; // cant give to yourself
+    const b = document.createElement('button');
+    b.className = 'psel-btn';
+    b.textContent = p.name;
+    b.dataset.slot = s;
+    b.addEventListener('click', () => {
+      psel.querySelectorAll('.psel-btn').forEach(x => x.classList.remove('sel'));
+      b.classList.add('sel');
+    });
+    psel.appendChild(b);
+  });
+  wrap.appendChild(psel);
+
+  const confirmBtn = document.createElement('button');
+  confirmBtn.className = 'btn btn-gold btn-full';
+  confirmBtn.style.marginTop = '12px';
+  confirmBtn.textContent = 'Применить';
+  confirmBtn.addEventListener('click', () => applyNoQuestModifier(type));
+  wrap.appendChild(confirmBtn);
+
+  const skipBtn = document.createElement('button');
+  skipBtn.className = 'btn btn-skip btn-full';
+  skipBtn.style.marginTop = '6px';
+  skipBtn.textContent = 'Пропустить';
+  skipBtn.addEventListener('click', () => hostSkip());
+  wrap.appendChild(skipBtn);
+}
+
+async function applyNoQuestModifier(type) {
+  const gs = gameState;
+  const q = gs.currentQuestion;
+  const amt = parseInt(document.getElementById('noqAmtInput')?.value) || 0;
+  if (amt <= 0) return;
+  const selBtn = document.querySelector('#noqPlayerSel .psel-btn.sel');
+  if (!selBtn) return;
+  const targetSlot = selBtn.dataset.slot;
+  const chooserSlot = q.chooser;
+
+  const updates = {};
+  if (type === 'give') {
+    // chooser gives amt to target
+    updates['scores/' + chooserSlot] = (gs.scores?.[chooserSlot] ?? 0) - amt;
+    updates['scores/' + targetSlot] = (gs.scores?.[targetSlot] ?? 0) + amt;
+    updates['players/' + chooserSlot + '/score'] = updates['scores/' + chooserSlot];
+    updates['players/' + targetSlot + '/score'] = updates['scores/' + targetSlot];
+  } else {
+    // chooser takes amt from target
+    updates['scores/' + targetSlot] = (gs.scores?.[targetSlot] ?? 0) - amt;
+    updates['scores/' + chooserSlot] = (gs.scores?.[chooserSlot] ?? 0) + amt;
+    updates['players/' + targetSlot + '/score'] = updates['scores/' + targetSlot];
+    updates['players/' + chooserSlot + '/score'] = updates['scores/' + chooserSlot];
+  }
+  updates['currentQuestion'] = null;
+  updates['buzzed'] = null;
+  updates['usedCells/' + q.key] = true;
+
+  await update(ref(db, 'rooms/' + roomId), updates);
+}
+
+function renderAuctionPresets(nominalVal) {
+  const wrap = document.getElementById('auctionWrap');
+  // Remove old presets if any
+  wrap.querySelectorAll('.auction-presets').forEach(e => e.remove());
+
+  const presets = [nominalVal, nominalVal * 2, nominalVal * 5];
+  const prow = document.createElement('div');
+  prow.className = 'auction-presets';
+  presets.forEach(v => {
+    const b = document.createElement('button');
+    b.className = 'preset-btn';
+    b.textContent = v;
+    b.addEventListener('click', () => {
+      prow.querySelectorAll('.preset-btn').forEach(x => x.classList.remove('sel'));
+      b.classList.add('sel');
+      document.getElementById('auctionInput').value = v;
+    });
+    prow.appendChild(b);
+  });
+  // Insert before input
+  const inp = document.getElementById('auctionInput');
+  wrap.insertBefore(prow, inp);
+}
+
+function getEffectiveVal(q, gs) {
+  if (q.auctionBet !== null) return q.auctionBet;
+  if (q.special === 'double') return q.val * 2;
+  if (q.special === 'allin') return gs.scores?.[q.chooser] ?? 0;
+  return q.val;
+}
+
+function setWhoEl(pid, players) {
+  const i = PLAYER_SLOTS.indexOf(pid);
+  document.getElementById('whoRow').innerHTML =
+    'Отвечает: <span class="who-name wc' + i + '">' + (players?.[pid]?.name || pid) + '</span>';
+}
+
+function setBtns(list) {
+  document.getElementById('btnRow').innerHTML = list.map(b =>
+    '<button class="btn ' + b.cls + '" data-fn="' + b.fn + '">' + b.label + '</button>'
+  ).join('');
+  document.querySelectorAll('#btnRow button[data-fn]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const fnMap = { hostRevealAns, hostMarkRight, hostMarkWrong, hostSkip, hostStartTimer };
+      const fn = btn.getAttribute('data-fn');
+      if (fnMap[fn]) fnMap[fn]();
+    });
+  });
+}
+
+// ── TIMER ─────────────────────────────────────────────────────────────────────
+function startLocalTimer(startTs) {
+  stopTimer();
+  function tick() {
+    const elapsed = (Date.now() - startTs) / 1000;
+    const remaining = Math.max(0, 15 - elapsed);
+    document.getElementById('timerNum').textContent = Math.ceil(remaining);
+    updateRing(remaining);
+    const danger = remaining <= 5;
+    document.getElementById('timerNum').classList.toggle('danger', danger);
+    document.getElementById('ringFill').classList.toggle('danger', danger);
+    if (remaining <= 0) {
+      stopTimer();
+      if (isHost) hostOnTimeout();
+    }
+  }
+  tick();
+  timerInterval = setInterval(tick, 200);
+}
+function stopTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+}
+function updateRing(remaining) {
+  const pct = Math.max(0, remaining / 15);
+  document.getElementById('ringFill').style.strokeDashoffset = CIRCUMFERENCE * (1 - pct);
+}
+async function hostOnTimeout() {
+  if (!gameState?.currentQuestion || gameState.currentQuestion.timedOut) return;
+  await update(ref(db, 'rooms/' + roomId + '/currentQuestion'), { timedOut: true });
+}
+
+// ── HOST QUESTION CONTROLS ────────────────────────────────────────────────────
+async function hostStartTimer() {
+  if (!isHost || !gameState?.currentQuestion) return;
+  // Auto-apply double/allin before starting
+  const q = gameState.currentQuestion;
+  const gs = gameState;
+  const updates = {};
+  if (q.special === 'double' && q.auctionBet === null) {
+    updates['currentQuestion/auctionBet'] = q.val * 2;
+  }
+  if (q.special === 'allin' && q.auctionBet === null) {
+    updates['currentQuestion/auctionBet'] = gs.scores?.[q.chooser] ?? 0;
+  }
+  updates['currentQuestion/timerStart'] = Date.now();
+  updates['currentQuestion/timedOut'] = false;
+  updates['buzzed'] = null;
+  await update(ref(db, 'rooms/' + roomId), updates);
+}
+
+async function confirmAuction() {
+  if (!isHost || !gameState?.currentQuestion) return;
+  const raw = parseInt(document.getElementById('auctionInput').value) || 0;
+  if (raw <= 0) return;
+  const updates = {
+    'currentQuestion/auctionBet': raw,
+    'currentQuestion/phase': 'buzz',
+    'currentQuestion/timerStart': null,
+    'currentQuestion/timedOut': false,
+    'buzzed': null,
+  };
+  await update(ref(db, 'rooms/' + roomId), updates);
+}
+
+async function hostRevealAns() {
+  if (!isHost || !gameState?.currentQuestion) return;
+  stopTimer();
+  await update(ref(db, 'rooms/' + roomId + '/currentQuestion'), { answerRevealed: true, timedOut: true });
+}
+
+async function hostMarkRight() {
+  if (!isHost || !gameState?.currentQuestion) return;
+  const q = gameState.currentQuestion;
+  const gs = gameState;
+  const val = getEffectiveVal(q, gs);
+  const ap = gs.buzzed || q.ansPlayer || q.chooser;
+  const newScore = (gs.scores?.[ap] ?? 0) + val;
+
+  // minusall: correct = normal for answerer, no penalty for others
+  const updates = {
+    ['scores/' + ap]: newScore,
+    ['players/' + ap + '/score']: newScore,
+    currentQuestion: null,
+    buzzed: null,
+    ['usedCells/' + q.key]: true,
+  };
+  await update(ref(db, 'rooms/' + roomId), updates);
+}
+
+async function hostMarkWrong() {
+  if (!isHost || !gameState?.currentQuestion) return;
+  const q = gameState.currentQuestion;
+  const gs = gameState;
+  const val = getEffectiveVal(q, gs);
+  const ap = gs.buzzed || q.ansPlayer || q.chooser;
+
+  const updates = {};
+
+  if (q.special === 'minusall') {
+    // deduct from ALL other players
+    PLAYER_SLOTS.forEach(s => {
+      if (!gs.players?.[s]) return;
+      if (s !== ap) {
+        const newScore = (gs.scores?.[s] ?? 0) - val;
+        updates['scores/' + s] = newScore;
+        updates['players/' + s + '/score'] = newScore;
+      }
+    });
+    // answerer gets nothing
+  } else {
+    const newScore = (gs.scores?.[ap] ?? 0) - val;
+    updates['scores/' + ap] = newScore;
+    updates['players/' + ap + '/score'] = newScore;
+  }
+
+  updates['currentQuestion'] = null;
+  updates['buzzed'] = null;
+  updates['usedCells/' + q.key] = true;
+  await update(ref(db, 'rooms/' + roomId), updates);
+}
+
+async function hostSkip() {
+  if (!isHost || !gameState?.currentQuestion) return;
+  const q = gameState.currentQuestion;
+  stopTimer();
+  await update(ref(db, 'rooms/' + roomId), {
+    currentQuestion: null,
+    buzzed: null,
+    ['usedCells/' + q.key]: true,
+  });
+}
+
+// ── PLAYER BUZZ ───────────────────────────────────────────────────────────────
+async function pressBuzz() {
+  if (!gameState?.currentQuestion) return;
+  if (gameState.buzzed) return;
+  if (!gameState.currentQuestion.timerStart) return;
+  const snap = await get(ref(db, 'rooms/' + roomId + '/buzzed'));
+  if (snap.val()) return;
+  await update(ref(db, 'rooms/' + roomId), {
+    buzzed: myPlayerId,
+    'currentQuestion/ansPlayer': myPlayerId,
+  });
+}
+
+// ── WIRE UP BUTTONS ───────────────────────────────────────────────────────────
+document.getElementById('btnCreate').addEventListener('click', createRoom);
+document.getElementById('btnJoin').addEventListener('click', joinRoom);
+document.getElementById('btnCopy').addEventListener('click', copyLink);
+document.getElementById('startBtn').addEventListener('click', startGame);
+document.getElementById('buzzBtn').addEventListener('click', pressBuzz);
+document.getElementById('btnConfirmAuction').addEventListener('click', confirmAuction);
+
+// ── URL ROOM CODE ─────────────────────────────────────────────────────────────
+const urlParams = new URLSearchParams(window.location.search);
+const urlRoom = urlParams.get('room');
+if (urlRoom) {
+  document.getElementById('joinCode').value = urlRoom.toUpperCase();
+}
+</script>
+</body>
+</html>
