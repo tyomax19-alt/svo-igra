@@ -408,9 +408,9 @@ function toast(msg){
   clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),2200);
 }
 function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  const el=$(id); el.classList.add('active');
-  if(id==='gameScreen'){ el.style.display='flex'; }
+  // сбрасываем и класс, и возможный inline-стиль, иначе старый экран остаётся видимым
+  document.querySelectorAll('.screen').forEach(s=>{ s.classList.remove('active'); s.style.display=''; });
+  $(id).classList.add('active');
 }
 function colorOf(pid){
   const p = room && room.players && room.players[pid];
