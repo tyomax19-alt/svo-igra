@@ -99,7 +99,10 @@ body{
 /* ── GAME ─────────────────────────────────────────────────── */
 #gameScreen{ display:none; }
 #gameScreen.active{ display:flex; }
-.topbar{ text-align:center; padding:16px 16px 8px; }
+.topbar{ position:relative; text-align:center; padding:16px 16px 8px; }
+.restart-btn{ position:absolute; top:14px; right:14px; background:transparent; border:1.5px solid var(--border); color:var(--dim2); font-family:'Inter',sans-serif; font-size:0.6rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; padding:7px 12px; border-radius:8px; cursor:pointer; transition:all .15s; }
+.restart-btn:hover{ color:var(--red); border-color:var(--red); }
+@media (max-width:520px){ .restart-btn{ position:static; display:inline-block; margin-top:10px; } }
 .topbar .title{ font-size:clamp(1.3rem,4vw,2rem); }
 .round-pills{ display:flex; justify-content:center; gap:7px; padding:10px 16px; flex-wrap:wrap; }
 .round-pill{
@@ -290,7 +293,10 @@ footer{ text-align:center; padding:10px 16px 24px; font-size:0.56rem; color:#222
 
 <!-- ── GAME ────────────────────────────────────────────── -->
 <div id="gameScreen" class="screen">
-  <div class="topbar"><div class="title gold-text">Своя Игра</div></div>
+  <div class="topbar">
+    <div class="title gold-text">Своя Игра</div>
+    <button class="restart-btn" id="btnHostRestart" style="display:none">Перезапустить</button>
+  </div>
   <div class="round-pills" id="roundPills"></div>
   <div class="turn-banner" id="turnBanner"></div>
   <div class="scoreboard-wrap"><div class="scoreboard" id="scoreboard"></div></div>
@@ -309,7 +315,8 @@ footer{ text-align:center; padding:10px 16px 24px; font-size:0.56rem; color:#222
 <div id="finishScreen" class="screen">
   <div class="win-stage" id="winStage"></div>
   <div class="standings" id="standings"></div>
-  <button class="btn btn-ghost" id="btnNewGame" style="max-width:300px;margin:24px auto 0;">В главное меню</button>
+  <button class="btn btn-red" id="btnHostRestartFin" style="max-width:300px;margin:24px auto 0;display:none">Перезапустить игру</button>
+  <button class="btn btn-ghost" id="btnNewGame" style="max-width:300px;margin:10px auto 0;">В главное меню</button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -867,6 +874,7 @@ function renderGame(){
   showScreen('gameScreen');
   const gs = room.gameState;
   const board = room.board;
+  $('btnHostRestart').style.display = (myId===gs.hostId) ? 'inline-block' : 'none';
   if(!board){ return; }
 
   $('roundPills').innerHTML = board.rounds.map((r,i)=>
@@ -1112,6 +1120,16 @@ async function finalizeTurn(aq){
 }
 
 // безопасный пропуск хода, если текущий игрок не в сети (защита от зависания)
+// перезапуск игры создателем: закрывает комнату — все игроки возвращаются в меню создания комнаты
+async function closeRoomToMenu(){
+  if(!room || !roomId || myId!==room.gameState.hostId) return;
+  if(!confirm('Перезапустить игру? Комната будет закрыта, и все игроки вернутся в меню.')) return;
+  try{
+    await remove(ref(db,`rooms/${roomId}`));
+    // onValue заметит удаление и вызовет resetToStart у всех (включая создателя)
+  }catch(e){ toast('Ошибка: '+e.message); }
+}
+
 async function skipTurn(){
   const gs = room.gameState;
   if(gs.status!=='playing' || room.activeQuestion) return;
@@ -1381,6 +1399,8 @@ function renderFinish(){
       <div class="stand-score" style="color:${colorOf(p.id)}">${p.score}</div>
     </div>`).join('');
 
+  $('btnHostRestartFin').style.display = (myId===room.gameState.hostId) ? 'block' : 'none';
+
   if(!finishCelebrated){
     finishCelebrated=true;
     confettiBurst();
@@ -1424,6 +1444,8 @@ $('fileInput').addEventListener('change', e=>{ if(e.target.files[0]) handleFile(
 $('btnDefault').addEventListener('click', loadDefault);
 $('btnStart').addEventListener('click', startGame);
 $('btnNewGame').addEventListener('click', ()=>{ clearSession(); location.href = location.origin+location.pathname; });
+$('btnHostRestart').addEventListener('click', closeRoomToMenu);
+$('btnHostRestartFin').addEventListener('click', closeRoomToMenu);
 
 /* ════════════════════════════════ INIT ═════════════════════════════════ */
 onValue(ref(db,'.info/serverTimeOffset'), s=>{ const v=s.val(); if(typeof v==='number') serverOffset=v; });
