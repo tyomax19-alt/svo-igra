@@ -153,7 +153,8 @@ body{
 .who{ font-size:0.64rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--dim2); margin-bottom:12px; }
 .who b{ font-weight:700; }
 .m-q{ font-size:1.05rem; font-weight:500; line-height:1.6; margin-bottom:18px; }
-.ansbox{ background:rgba(79,207,138,0.06); border:1px solid rgba(79,207,138,0.22); border-radius:10px; padding:13px 16px; margin-bottom:16px; animation:popIn .3s; }
+.ansbox{ background:rgba(79,207,138,0.06); border:1px solid rgba(79,207,138,0.22); border-radius:10px; padding:13px 16px; margin-bottom:16px; animation:ansFade .25s ease; }
+@keyframes ansFade{ from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
 .ansbox .al{ font-size:0.54rem; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:rgba(79,207,138,0.55); margin-bottom:4px; }
 .ansbox .at{ font-size:1rem; font-weight:600; color:var(--green); line-height:1.4; }
 .btn-row{ display:flex; gap:8px; flex-wrap:wrap; }
@@ -783,6 +784,7 @@ function subscribeRoom(){
 function resetToStart(){
   if(unsub){ unsub(); unsub=null; }
   room=null; roomId=null; myId=null; prevScores={}; shownModForKey=null; scheduledModForKey=null; finishCelebrated=false;
+  lastModalSig=null;
   stopBuzzTick(); hideModOverlay();
   showScreen('startScreen');
 }
@@ -1218,6 +1220,7 @@ async function confirmTransfer(){
 }
 
 /* ════════════════════════════════ MODAL RENDER ═════════════════════════ */
+let lastModalSig = null;   // подпись содержимого модалки — чтобы не перерисовывать без необходимости
 function renderModal(){
   const aq = room.activeQuestion;
   const overlay = $('overlay');
@@ -1227,10 +1230,23 @@ function renderModal(){
   if(!aq || aq.phase==='modifier'){
     overlay.classList.remove('open');
     stopBuzzTick();
+    lastModalSig = null;
     return;
   }
   hideModOverlay();
   overlay.classList.add('open');
+
+  // подпись зависит только от того, что реально видно в модалке.
+  // Изменения, не влияющие на разметку (resolved, очки, presence), НЕ вызывают перерисовку —
+  // это убирает «дёрганье» и повторный проигрыш анимации ответа.
+  const sig = [aq.phase, aq.key, aq.revealed?1:0, aq.answerer||'', aq.buzzWinner||'',
+               aq.returned?1:0, aq.allowNoKnow?1:0, selectedTarget||''].join('|');
+  if(sig===lastModalSig){
+    // ничего не изменилось: не трогаем DOM. Только поддерживаем таймер борьбы.
+    if(aq.phase==='buzzing' && !buzzTick) startBuzzTick(aq);
+    return;
+  }
+  lastModalSig = sig;
 
   const board = room.board;
   const cat = board.rounds[aq.round].categories[aq.col];
