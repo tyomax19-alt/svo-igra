@@ -1,0 +1,23 @@
+# Netlify configuration for "Своя Игра"
+# Статический сайт из одного index.html (Firebase подключается через CDN).
+# Сборка не требуется.
+
+[build]
+  # Корень репозитория публикуется как есть
+  publish = "."
+  # Команда сборки отсутствует — это чистый статический сайт
+  command = ""
+
+# SPA-подобный фолбэк: любой путь (включая ?room=КОД) отдаёт index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Базовые заголовки безопасности
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
