@@ -2,1529 +2,1440 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Своя Игра</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Своя Игра — Мультиплеер</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap');
 
-:root {
-  --bg: #07070f;
-  --s1: #0e0e1e;
-  --s2: #13132a;
-  --border: #1e1e40;
-  --gold: #f5c842;
-  --gold2: #c9960a;
-  --dim: #55557a;
-  --text: #f0f0ff;
-  --p0: #4f8ef7;
-  --p1: #f75f5f;
-  --p2: #4fcf8a;
-  --p3: #c97af5;
+:root{
+  --bg:#07070f; --s1:#0e0e1e; --s2:#13132a; --s3:#191934;
+  --border:#1e1e40; --border2:#2a2a55;
+  --gold:#f5c842; --gold2:#c9960a;
+  --dim:#55557a; --dim2:#8a8ab0; --text:#f0f0ff;
+  --green:#4fcf8a; --red:#f75f5f;
+  --radius:16px;
 }
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Inter', sans-serif;
-  min-height: 100vh;
+*{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:'Inter',sans-serif; min-height:100vh;
   background-image:
     radial-gradient(ellipse 80% 50% at 50% -10%, rgba(79,142,247,0.08) 0%, transparent 60%),
     radial-gradient(ellipse 60% 40% at 90% 90%, rgba(201,122,245,0.06) 0%, transparent 50%);
+  overflow-x:hidden;
 }
-
-/* LOBBY */
-#lobbyScreen {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  padding: 24px;
-  gap: 0;
+.gold-text{
+  font-family:'Unbounded',sans-serif; font-weight:900;
+  background:linear-gradient(135deg,#f5c842 0%,#f09a10 50%,#f5c842 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
 }
-.lobby-title {
-  font-family: 'Unbounded', sans-serif;
-  font-size: clamp(1.8rem, 5vw, 3rem);
-  font-weight: 900;
-  background: linear-gradient(135deg, #f5c842 0%, #f09a10 50%, #f5c842 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 10px;
+.screen{display:none; min-height:100vh; flex-direction:column;}
+.screen.active{display:flex;}
+
+/* ── START / JOIN ─────────────────────────────────────────── */
+#startScreen{align-items:center; justify-content:center; padding:24px;}
+.brand{ text-align:center; margin-bottom:30px; }
+.brand .title{ font-size:clamp(2rem,7vw,3.4rem); }
+.brand .sub{ font-size:0.68rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--dim); margin-top:8px;}
+.card{
+  background:var(--s1); border:1.5px solid var(--border); border-radius:var(--radius);
+  padding:26px; width:100%; max-width:400px; margin-bottom:14px;
 }
-.lobby-sub {
-  font-size: 0.7rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--dim);
-  margin-bottom: 36px;
+.card h2{ font-family:'Unbounded',sans-serif; font-size:0.85rem; font-weight:700; margin-bottom:16px; }
+.field-label{ font-size:0.6rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--dim); margin-bottom:6px; }
+.input{
+  width:100%; background:var(--s2); border:1.5px solid var(--border); border-radius:10px;
+  padding:12px 14px; color:var(--text); font-family:'Inter',sans-serif; font-size:0.95rem;
+  outline:none; transition:border-color .15s; margin-bottom:14px;
 }
-.lobby-card {
-  background: var(--s1);
-  border: 1.5px solid var(--border);
-  border-radius: 20px;
-  padding: 28px;
-  width: 100%;
-  max-width: 380px;
-  margin-bottom: 14px;
+.input:focus{ border-color:var(--gold2); }
+.input.code{ text-transform:uppercase; letter-spacing:0.22em; font-family:'Unbounded',sans-serif; font-size:1.25rem; text-align:center; }
+.btn{
+  width:100%; padding:14px; border-radius:10px; border:none;
+  font-family:'Inter',sans-serif; font-size:0.78rem; font-weight:700;
+  letter-spacing:0.07em; text-transform:uppercase; cursor:pointer; transition:transform .12s, background .15s, opacity .15s;
 }
-.lobby-card h2 {
-  font-family: 'Unbounded', sans-serif;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--text);
-  margin-bottom: 16px;
-  letter-spacing: -0.01em;
+.btn:active{ transform:scale(0.98); }
+.btn:disabled{ opacity:0.5; cursor:not-allowed; }
+.btn-gold{ background:var(--gold); color:#000; }
+.btn-gold:hover:not(:disabled){ background:var(--gold2); }
+.btn-ghost{ background:transparent; color:var(--dim2); border:1.5px solid var(--border); }
+.btn-ghost:hover:not(:disabled){ color:var(--text); border-color:var(--border2); }
+.btn-green{ background:var(--green); color:#001b0e; }
+.btn-red{ background:var(--red); color:#fff; }
+.divider{ display:flex; align-items:center; gap:12px; margin:4px 0 16px; color:var(--dim); font-size:0.62rem; letter-spacing:0.12em; text-transform:uppercase; }
+.divider::before,.divider::after{ content:''; flex:1; height:1px; background:var(--border); }
+.err{ color:var(--red); font-size:0.72rem; text-align:center; min-height:18px; margin-top:6px; }
+
+/* ── LOBBY ────────────────────────────────────────────────── */
+#lobbyScreen{ align-items:center; padding:24px; }
+.lobby-wrap{ width:100%; max-width:520px; margin:auto 0; }
+.lobby-head{ text-align:center; margin-bottom:18px; }
+.room-code{ font-family:'Unbounded',sans-serif; font-size:2.4rem; font-weight:900; color:var(--gold); letter-spacing:0.18em; }
+.room-hint{ font-size:0.64rem; color:var(--dim); letter-spacing:0.06em; margin-top:4px; }
+.link-box{ display:flex; gap:8px; margin:16px 0; }
+.link-box input{ flex:1; background:var(--s2); border:1.5px solid var(--border); border-radius:10px; padding:10px 12px; color:var(--dim2); font-size:0.78rem; outline:none; }
+.link-box button{ width:auto; padding:10px 16px; flex-shrink:0; }
+.players-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:8px; margin-bottom:18px; }
+.pslot{ display:flex; align-items:center; gap:10px; background:var(--s2); border:1px solid var(--border); border-radius:10px; padding:11px 13px; }
+.pdot{ width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.pslot .pname{ font-size:0.85rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.badge{ margin-left:auto; font-size:0.52rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; padding:2px 7px; border-radius:20px; flex-shrink:0; }
+.badge-host{ color:var(--gold); background:rgba(245,200,66,0.1); border:1px solid rgba(245,200,66,0.25); }
+.badge-you{ color:var(--green); background:rgba(79,207,138,0.1); border:1px solid rgba(79,207,138,0.25); }
+.badge-off{ color:var(--dim); background:var(--s3); border:1px solid var(--border); }
+.upload-card{ background:var(--s1); border:1.5px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:14px; }
+.upload-card h3{ font-family:'Unbounded',sans-serif; font-size:0.78rem; margin-bottom:6px; }
+.upload-card p{ font-size:0.72rem; color:var(--dim2); line-height:1.6; margin-bottom:12px; }
+.file-row{ display:flex; gap:8px; flex-wrap:wrap; }
+.file-row .btn{ width:auto; flex:1; min-width:130px; }
+.valid-list{ margin-top:12px; max-height:180px; overflow-y:auto; }
+.valid-ok{ color:var(--green); font-size:0.78rem; font-weight:600; padding:8px 0; }
+.valid-err-item{ color:var(--red); font-size:0.72rem; padding:4px 0 4px 14px; position:relative; line-height:1.5; }
+.valid-err-item::before{ content:'•'; position:absolute; left:2px; }
+.valid-title{ font-size:0.62rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--red); margin:10px 0 6px; }
+
+/* ── GAME ─────────────────────────────────────────────────── */
+#gameScreen{ display:none; }
+#gameScreen.active{ display:flex; }
+.topbar{ text-align:center; padding:16px 16px 8px; }
+.topbar .title{ font-size:clamp(1.3rem,4vw,2rem); }
+.round-pills{ display:flex; justify-content:center; gap:7px; padding:10px 16px; flex-wrap:wrap; }
+.round-pill{
+  padding:6px 16px; border-radius:100px; border:1.5px solid var(--border); background:var(--s1);
+  color:var(--dim); font-size:0.64rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
 }
-.field-label {
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--dim);
-  margin-bottom: 6px;
+.round-pill.active{ border-color:var(--gold); color:var(--gold); background:rgba(245,200,66,0.07); }
+.turn-banner{ text-align:center; font-size:0.72rem; padding:2px 16px 10px; color:var(--dim2); letter-spacing:0.04em; }
+.turn-banner b{ font-weight:700; }
+
+.scoreboard-wrap{ overflow-x:auto; padding:0 12px 14px; -webkit-overflow-scrolling:touch; }
+.scoreboard{ display:flex; gap:8px; min-width:min-content; justify-content:flex-start; padding:2px 4px; }
+.scoreboard.center{ justify-content:center; }
+.pcard{
+  position:relative; background:var(--s1); border:1.5px solid var(--border); border-radius:12px;
+  padding:9px 14px 8px; min-width:96px; text-align:center; flex-shrink:0; transition:border-color .2s,box-shadow .2s,transform .15s; overflow:hidden;
 }
-.field-input {
-  width: 100%;
-  background: var(--s2);
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  padding: 11px 14px;
-  color: var(--text);
-  font-family: 'Inter', sans-serif;
-  font-size: 0.9rem;
-  outline: none;
-  transition: border-color 0.15s;
-  margin-bottom: 14px;
+.pcard .turndot{ width:6px; height:6px; border-radius:50%; margin:0 auto 5px; background:transparent; transition:background .2s, box-shadow .2s; }
+.pcard.turn{ transform:translateY(-2px); }
+.pcard.turn .turndot{ box-shadow:0 0 8px currentColor; }
+.pcard.answerer{ box-shadow:0 0 22px rgba(245,200,66,0.25); }
+.pcard.me{ border-style:dashed; }
+.pcard.off{ opacity:0.45; }
+.pcard .pn{ font-size:0.56rem; font-weight:600; letter-spacing:0.07em; text-transform:uppercase; color:var(--dim2); margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:96px; }
+.pcard .ps{ font-family:'Unbounded',sans-serif; font-size:1.35rem; font-weight:700; line-height:1; }
+@keyframes bump{ 0%,100%{transform:scale(1)} 45%{transform:scale(1.32)} }
+.bump{ animation:bump .45s cubic-bezier(.2,1.4,.5,1); }
+
+.board-wrap{ padding:0 10px 30px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.board{ display:grid; grid-template-columns:repeat(6,1fr); gap:6px; min-width:520px; max-width:880px; margin:0 auto; }
+.cat-h{ background:var(--s2); border:1px solid var(--border); border-radius:9px; padding:9px 5px; text-align:center; font-size:0.55rem; font-weight:600; letter-spacing:0.04em; text-transform:uppercase; color:var(--dim2); line-height:1.35; display:flex; align-items:center; justify-content:center; min-height:42px; }
+.cell{
+  background:var(--s1); border:1px solid var(--border); border-radius:9px; aspect-ratio:1.15;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Unbounded',sans-serif; font-size:clamp(0.85rem,2.2vw,1.3rem); font-weight:700; color:var(--gold);
+  cursor:pointer; transition:all .15s; user-select:none; position:relative;
 }
-.field-input:focus { border-color: var(--gold2); }
+.cell.pickable:hover{ background:var(--s3); border-color:var(--gold2); transform:translateY(-3px) scale(1.03); box-shadow:0 8px 24px rgba(245,200,66,0.14); }
+.cell.locked{ cursor:default; }
+.cell.used{ background:#080810; border-color:#0e0e1c; color:transparent; cursor:default; pointer-events:none; animation:cellGone .4s ease forwards; }
+@keyframes cellGone{ from{opacity:1;transform:scale(1)} to{opacity:0.25;transform:scale(0.92)} }
 
-.btn-lobby {
-  width: 100%;
-  padding: 13px;
-  border-radius: 10px;
-  border: none;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.btn-lobby:hover { transform: translateY(-1px); }
-.btn-gold { background: var(--gold); color: #000; }
-.btn-gold:hover { background: var(--gold2); }
-.btn-outline { background: transparent; color: var(--dim); border: 1.5px solid var(--border); margin-top: 8px; }
-.btn-outline:hover { color: var(--text); border-color: #3a3a70; }
+/* ── MODAL ────────────────────────────────────────────────── */
+.overlay{ display:none; position:fixed; inset:0; background:rgba(0,0,8,0.92); z-index:200; align-items:center; justify-content:center; padding:16px; backdrop-filter:blur(10px); }
+.overlay.open{ display:flex; }
+.modal{ background:var(--s1); border:1.5px solid var(--border); border-radius:20px; padding:24px; max-width:540px; width:100%; max-height:92vh; overflow-y:auto; box-shadow:0 32px 100px rgba(0,0,0,0.8); animation:popIn .3s cubic-bezier(.175,.885,.32,1.275); }
+@keyframes popIn{ from{opacity:0;transform:scale(.88) translateY(24px)} to{opacity:1;transform:scale(1) translateY(0)} }
+.m-top{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; gap:12px; }
+.m-cat{ font-size:0.58rem; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:var(--dim); margin-bottom:3px; }
+.m-val{ font-family:'Unbounded',sans-serif; font-size:2rem; font-weight:900; color:var(--gold); line-height:1; }
+.who{ font-size:0.64rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--dim2); margin-bottom:12px; }
+.who b{ font-weight:700; }
+.m-q{ font-size:1.05rem; font-weight:500; line-height:1.6; margin-bottom:18px; }
+.ansbox{ background:rgba(79,207,138,0.06); border:1px solid rgba(79,207,138,0.22); border-radius:10px; padding:13px 16px; margin-bottom:16px; animation:popIn .3s; }
+.ansbox .al{ font-size:0.54rem; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:rgba(79,207,138,0.55); margin-bottom:4px; }
+.ansbox .at{ font-size:1rem; font-weight:600; color:var(--green); line-height:1.4; }
+.btn-row{ display:flex; gap:8px; flex-wrap:wrap; }
+.btn-row .btn{ flex:1; min-width:120px; padding:14px 8px; font-size:0.72rem; }
+.btn-row .btn.full{ flex:0 0 100%; }
+.wait-note{ text-align:center; padding:14px 0 4px; font-size:0.74rem; color:var(--dim2); letter-spacing:0.03em; }
 
-.divider {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 6px 0 14px;
-  color: var(--dim);
-  font-size: 0.65rem;
-  letter-spacing: 0.1em;
-}
-.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+/* big buzz button */
+.buzz-big{ width:100%; padding:26px; border-radius:16px; border:none; font-family:'Unbounded',sans-serif; font-size:1.3rem; font-weight:900; letter-spacing:0.04em; color:#000; background:var(--gold); cursor:pointer; animation:buzzPulse 1.3s ease-in-out infinite; }
+@keyframes buzzPulse{ 0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(245,200,66,0.5)} 50%{transform:scale(1.02);box-shadow:0 0 0 16px rgba(245,200,66,0)} }
+.buzz-big:disabled{ animation:none; opacity:0.4; cursor:not-allowed; box-shadow:none; transform:none; }
+.buzz-note{ text-align:center; font-size:0.7rem; color:var(--dim2); margin-top:10px; }
 
-.error-msg {
-  color: #f75f5f;
-  font-size: 0.7rem;
-  text-align: center;
-  margin-top: 8px;
-  min-height: 18px;
-}
+/* timer */
+.timer{ display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+.timer .tnum{ font-family:'Unbounded',sans-serif; font-size:1.5rem; font-weight:900; color:var(--gold); width:54px; text-align:center; flex-shrink:0; transition:color .3s; }
+.timer .tnum.danger{ color:var(--red); }
+.timer .tbar{ flex:1; height:8px; background:var(--s3); border-radius:6px; overflow:hidden; }
+.timer .tfill{ height:100%; background:var(--gold); border-radius:6px; transition:width .25s linear, background .3s; }
+.timer .tfill.danger{ background:var(--red); }
+.timer .tlabel{ font-size:0.56rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--dim); margin-bottom:3px; }
 
-/* WAITING ROOM */
-#waitScreen {
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  padding: 24px;
-}
-.wait-card {
-  background: var(--s1);
-  border: 1.5px solid var(--border);
-  border-radius: 20px;
-  padding: 32px 28px;
-  width: 100%;
-  max-width: 420px;
-  text-align: center;
-}
-.wait-card h2 {
-  font-family: 'Unbounded', sans-serif;
-  font-size: 1rem;
-  font-weight: 700;
-  margin-bottom: 6px;
-}
-.room-code {
-  font-family: 'Unbounded', sans-serif;
-  font-size: 2.2rem;
-  font-weight: 900;
-  color: var(--gold);
-  letter-spacing: 0.15em;
-  margin: 14px 0 4px;
-}
-.room-hint { font-size: 0.65rem; color: var(--dim); letter-spacing: 0.08em; margin-bottom: 24px; }
+.buzz-winner{ display:flex; align-items:center; gap:10px; background:var(--s2); border:1.5px solid var(--border); border-radius:10px; padding:11px 15px; margin-bottom:14px; }
+.buzz-winner .bd{ width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.buzz-winner .bt{ font-size:0.66rem; color:var(--dim2); }
+.buzz-winner .bn{ font-size:0.92rem; font-weight:700; }
 
-.players-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 24px;
-  text-align: left;
-}
-.player-slot {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: var(--s2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 14px;
-}
-.slot-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.slot-name { font-size: 0.82rem; font-weight: 600; }
-.slot-empty { color: var(--dim); font-size: 0.75rem; font-style: italic; }
-.slot-host-badge { margin-left: auto; font-size: 0.55rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); background: rgba(245,200,66,0.1); border: 1px solid rgba(245,200,66,0.25); padding: 2px 8px; border-radius: 20px; }
-.slot-you-badge { margin-left: auto; font-size: 0.55rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--p2); background: rgba(79,207,138,0.1); border: 1px solid rgba(79,207,138,0.25); padding: 2px 8px; border-radius: 20px; }
+.target-sel{ margin-bottom:16px; }
+.target-sel .tl{ font-size:0.6rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--dim); margin-bottom:8px; }
+.target-btns{ display:flex; gap:7px; flex-wrap:wrap; }
+.tbtn{ padding:9px 14px; border-radius:9px; border:1.5px solid var(--border); background:var(--s2); color:var(--text); font-size:0.78rem; font-weight:600; cursor:pointer; transition:all .15s; }
+.tbtn.sel{ border-color:var(--gold); background:rgba(245,200,66,0.1); color:var(--gold); }
 
-.copy-btn {
-  width: 100%;
-  padding: 11px;
-  border-radius: 10px;
-  border: 1.5px solid var(--border);
-  background: transparent;
-  color: var(--dim);
-  font-family: 'Inter', sans-serif;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.15s;
-  margin-bottom: 10px;
-}
-.copy-btn:hover { color: var(--text); border-color: #3a3a70; }
+/* modifier animation overlay */
+.mod-overlay{ display:none; position:fixed; inset:0; z-index:300; align-items:center; justify-content:center; background:rgba(0,0,8,0.95); backdrop-filter:blur(14px); overflow:hidden; }
+.mod-overlay.open{ display:flex; }
+.mod-card{ position:relative; text-align:center; padding:30px; z-index:2; }
+.mod-kicker{ font-size:0.7rem; font-weight:700; letter-spacing:0.3em; text-transform:uppercase; color:var(--dim2); margin-bottom:14px; animation:fadeUp .5s ease; }
+.mod-name{ font-family:'Unbounded',sans-serif; font-weight:900; font-size:clamp(2rem,9vw,4rem); animation:modPop .6s cubic-bezier(.2,1.5,.4,1); color:var(--gold); }
+.mod-desc{ font-size:0.9rem; color:var(--dim2); margin-top:14px; max-width:380px; margin-left:auto; margin-right:auto; animation:fadeUp .6s ease .15s both; }
+@keyframes modPop{ 0%{opacity:0;transform:scale(.4) rotate(-8deg)} 60%{transform:scale(1.12) rotate(2deg)} 100%{opacity:1;transform:scale(1) rotate(0)} }
+@keyframes fadeUp{ from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+.mod-allin .mod-name{ background:linear-gradient(135deg,#f5c842,#ff5e5e,#f5c842); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; animation:allinPulse 1s ease infinite, modPop .6s; }
+@keyframes allinPulse{ 0%,100%{filter:drop-shadow(0 0 18px rgba(245,200,66,0.6))} 50%{filter:drop-shadow(0 0 40px rgba(255,94,94,0.9))} }
+.mod-allin-bg{ position:absolute; inset:0; z-index:1; background:radial-gradient(circle at 50% 50%, rgba(255,94,94,0.2), transparent 60%); animation:allinFlash 1s ease infinite; }
+@keyframes allinFlash{ 0%,100%{opacity:0.4} 50%{opacity:1} }
+.spark{ position:absolute; width:6px; height:6px; border-radius:50%; background:var(--gold); z-index:1; animation:spark 1.1s ease-out forwards; }
+@keyframes spark{ from{opacity:1; transform:translate(0,0) scale(1)} to{opacity:0; transform:translate(var(--dx),var(--dy)) scale(0)} }
 
-/* GAME */
-#gameScreen { display: none; }
+/* ── FINISH ───────────────────────────────────────────────── */
+#finishScreen{ align-items:center; justify-content:flex-start; padding:30px 20px 50px; }
+.win-stage{ text-align:center; margin:30px 0 24px; }
+.win-kicker{ font-size:0.72rem; font-weight:700; letter-spacing:0.28em; text-transform:uppercase; color:var(--dim2); margin-bottom:14px; animation:fadeUp .6s ease; }
+.win-name{ font-family:'Unbounded',sans-serif; font-weight:900; font-size:clamp(2.2rem,10vw,4.5rem); animation:winIn 1s cubic-bezier(.2,1.4,.4,1); }
+.win-score{ font-family:'Unbounded',sans-serif; font-size:1.6rem; color:var(--gold); margin-top:8px; animation:fadeUp .8s ease .3s both; }
+@keyframes winIn{ 0%{opacity:0; transform:scale(.5) translateY(40px)} 60%{transform:scale(1.08)} 100%{opacity:1; transform:scale(1) translateY(0)} }
+.standings{ width:100%; max-width:460px; }
+.stand-row{ display:flex; align-items:center; gap:14px; background:var(--s1); border:1.5px solid var(--border); border-radius:12px; padding:14px 18px; margin-bottom:9px; animation:fadeUp .5s ease both; }
+.stand-row.first{ border-color:var(--gold); background:rgba(245,200,66,0.06); }
+.stand-rank{ font-family:'Unbounded',sans-serif; font-size:1.3rem; font-weight:900; width:34px; flex-shrink:0; color:var(--dim2); }
+.stand-row.first .stand-rank{ color:var(--gold); }
+.stand-name{ font-size:1rem; font-weight:600; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.stand-score{ font-family:'Unbounded',sans-serif; font-size:1.2rem; font-weight:700; }
+.confetti{ position:fixed; top:-12px; width:10px; height:16px; z-index:5; opacity:0.9; animation:fall linear forwards; pointer-events:none; }
+@keyframes fall{ to{ transform:translateY(110vh) rotate(720deg); opacity:0; } }
 
-header { text-align: center; padding: 20px 20px 12px; }
-header h1 {
-  font-family: 'Unbounded', sans-serif;
-  font-size: clamp(1.4rem, 4vw, 2.4rem);
-  font-weight: 900;
-  background: linear-gradient(135deg, #f5c842 0%, #f09a10 50%, #f5c842 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.my-role-bar {
-  text-align: center;
-  padding: 4px 16px 14px;
-  font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-.role-host { color: var(--gold); }
-.role-player { color: var(--p2); }
-
-.round-tabs { display: flex; justify-content: center; gap: 7px; padding: 0 16px 16px; flex-wrap: wrap; }
-.round-tab {
-  padding: 6px 16px;
-  border-radius: 100px;
-  border: 1.5px solid var(--border);
-  background: var(--s1);
-  color: var(--dim);
-  font-family: 'Inter', sans-serif;
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.18s;
-}
-.round-tab:hover { border-color: #3a3a70; color: var(--text); }
-.round-tab.active { border-color: var(--gold); color: var(--gold); background: rgba(245,200,66,0.07); }
-
-.scoreboard { display: flex; justify-content: center; gap: 8px; padding: 0 16px 18px; flex-wrap: wrap; }
-.player-card {
-  position: relative;
-  background: var(--s1);
-  border: 1.5px solid var(--border);
-  border-radius: 12px;
-  padding: 10px 16px 8px;
-  min-width: 100px;
-  text-align: center;
-  overflow: hidden;
-  transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
-}
-.player-card::before {
-  content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity 0.2s; border-radius: inherit;
-}
-.player-card.p0::before { background: radial-gradient(circle at 50% 0%, rgba(79,142,247,0.18) 0%, transparent 70%); }
-.player-card.p1::before { background: radial-gradient(circle at 50% 0%, rgba(247,95,95,0.18) 0%, transparent 70%); }
-.player-card.p2::before { background: radial-gradient(circle at 50% 0%, rgba(79,207,138,0.18) 0%, transparent 70%); }
-.player-card.p3::before { background: radial-gradient(circle at 50% 0%, rgba(201,122,245,0.18) 0%, transparent 70%); }
-.player-card.buzzing::before { opacity: 1; }
-.player-card.p0.buzzing { border-color: var(--p0); box-shadow: 0 0 28px rgba(79,142,247,0.4); transform: translateY(-3px); }
-.player-card.p1.buzzing { border-color: var(--p1); box-shadow: 0 0 28px rgba(247,95,95,0.4); transform: translateY(-3px); }
-.player-card.p2.buzzing { border-color: var(--p2); box-shadow: 0 0 28px rgba(79,207,138,0.4); transform: translateY(-3px); }
-.player-card.p3.buzzing { border-color: var(--p3); box-shadow: 0 0 28px rgba(201,122,245,0.4); transform: translateY(-3px); }
-.player-card.me { border-style: dashed; }
-.turn-dot { width: 6px; height: 6px; border-radius: 50%; margin: 0 auto 6px; opacity: 0; transition: opacity 0.2s; }
-.player-card.p0 .turn-dot { background: var(--p0); box-shadow: 0 0 8px var(--p0); }
-.player-card.p1 .turn-dot { background: var(--p1); box-shadow: 0 0 8px var(--p1); }
-.player-card.p2 .turn-dot { background: var(--p2); box-shadow: 0 0 8px var(--p2); }
-.player-card.p3 .turn-dot { background: var(--p3); box-shadow: 0 0 8px var(--p3); }
-.player-card.choosing .turn-dot { opacity: 1; }
-.p-name { font-size: 0.58rem; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: var(--dim); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px; }
-.p-score { font-family: 'Unbounded', sans-serif; font-size: 1.5rem; font-weight: 700; line-height: 1; }
-.player-card.p0 .p-score { color: var(--p0); }
-.player-card.p1 .p-score { color: var(--p1); }
-.player-card.p2 .p-score { color: var(--p2); }
-.player-card.p3 .p-score { color: var(--p3); }
-@keyframes bump { 0%,100%{transform:scale(1)} 50%{transform:scale(1.3)} }
-.bump { animation: bump 0.35s ease; }
-
-.grid-wrap { padding: 0 12px 28px; overflow-x: auto; }
-.grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; min-width: 460px; max-width: 840px; margin: 0 auto; }
-.cat-header { background: var(--s2); border: 1px solid var(--border); border-radius: 9px; padding: 9px 5px; text-align: center; font-size: 0.54rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--dim); line-height: 1.4; }
-.cell { background: var(--s1); border: 1px solid var(--border); border-radius: 9px; aspect-ratio: 1.1; display: flex; align-items: center; justify-content: center; font-family: 'Unbounded', sans-serif; font-size: clamp(0.85rem, 2vw, 1.25rem); font-weight: 700; color: var(--gold); cursor: pointer; transition: all 0.15s; user-select: none; position: relative; }
-.cell:hover:not(.used):not(.locked) { background: #181835; border-color: var(--gold2); transform: translateY(-3px) scale(1.03); box-shadow: 0 8px 24px rgba(245,200,66,0.14); }
-.cell.locked { cursor: not-allowed; opacity: 0.5; }
-.cell.used { background: #090912; border-color: #0f0f1f; color: transparent; cursor: default; pointer-events: none; }
-.cell.used::after { content: '✓'; position: absolute; color: #1a1a30; font-family: 'Inter', sans-serif; font-size: 1rem; }
-
-/* MODAL */
-.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,10,0.9); z-index: 200; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(10px); }
-.overlay.open { display: flex; }
-.modal { background: var(--s1); border: 1.5px solid var(--border); border-radius: 20px; padding: 24px 24px 20px; max-width: 500px; width: 100%; animation: popIn 0.28s cubic-bezier(.175,.885,.32,1.275); box-shadow: 0 32px 100px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.04); }
-@keyframes popIn { from{opacity:0;transform:scale(0.88) translateY(24px)} to{opacity:1;transform:scale(1) translateY(0)} }
-
-.modal-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
-.modal-cat { font-size: 0.57rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); margin-bottom: 3px; }
-.modal-val { font-family: 'Unbounded', sans-serif; font-size: 2rem; font-weight: 900; color: var(--gold); line-height: 1; }
-
-.special-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 100px; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
-.pill-catbag { background: rgba(247,95,95,0.1); color: #f79f9f; border: 1px solid rgba(247,95,95,0.25); }
-.pill-auction { background: rgba(245,200,66,0.1); color: var(--gold); border: 1px solid rgba(245,200,66,0.25); }
-.pill-give { background: rgba(201,122,245,0.1); color: var(--p3); border: 1px solid rgba(201,122,245,0.25); }
-.pill-take { background: rgba(247,95,95,0.1); color: var(--p1); border: 1px solid rgba(247,95,95,0.25); }
-.pill-double { background: rgba(79,207,138,0.1); color: var(--p2); border: 1px solid rgba(79,207,138,0.25); }
-.pill-allin { background: rgba(245,200,66,0.1); color: var(--gold); border: 1px solid rgba(245,200,66,0.25); }
-.pill-minusall { background: rgba(247,95,95,0.1); color: var(--p1); border: 1px solid rgba(247,95,95,0.25); }
-
-/* BUZZ BUTTON — big and obvious for players */
-.buzz-section { text-align: center; margin: 8px 0 16px; }
-.buzz-big-btn {
-  width: 100%;
-  padding: 20px;
-  border-radius: 14px;
-  border: none;
-  font-family: 'Unbounded', sans-serif;
-  font-size: 1.1rem;
-  font-weight: 900;
-  letter-spacing: 0.04em;
-  cursor: pointer;
-  transition: all 0.15s;
-  animation: buzzPulse 1.5s ease-in-out infinite;
-}
-@keyframes buzzPulse {
-  0%,100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245,200,66,0.4); }
-  50% { transform: scale(1.02); box-shadow: 0 0 0 12px rgba(245,200,66,0); }
-}
-.buzz-big-btn.p0 { background: var(--p0); color: #fff; animation-name: buzzPulse0; }
-.buzz-big-btn.p1 { background: var(--p1); color: #fff; animation-name: buzzPulse1; }
-.buzz-big-btn.p2 { background: var(--p2); color: #000; animation-name: buzzPulse2; }
-.buzz-big-btn.p3 { background: var(--p3); color: #fff; animation-name: buzzPulse3; }
-@keyframes buzzPulse0 { 0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(79,142,247,0.5)} 50%{transform:scale(1.02);box-shadow:0 0 0 14px rgba(79,142,247,0)} }
-@keyframes buzzPulse1 { 0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(247,95,95,0.5)} 50%{transform:scale(1.02);box-shadow:0 0 0 14px rgba(247,95,95,0)} }
-@keyframes buzzPulse2 { 0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(79,207,138,0.5)} 50%{transform:scale(1.02);box-shadow:0 0 0 14px rgba(79,207,138,0)} }
-@keyframes buzzPulse3 { 0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(201,122,245,0.5)} 50%{transform:scale(1.02);box-shadow:0 0 0 14px rgba(201,122,245,0)} }
-.buzz-big-btn:disabled { opacity: 0.35; cursor: not-allowed; animation: none; transform: none; box-shadow: none; }
-.buzz-already { font-size: 0.65rem; color: var(--dim); margin-top: 8px; letter-spacing: 0.08em; }
-
-/* Buzzer winner display */
-.buzzer-winner {
-  display: none;
-  align-items: center;
-  gap: 10px;
-  background: var(--s2);
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  padding: 12px 16px;
-  margin-bottom: 14px;
-}
-.buzzer-winner.visible { display: flex; }
-.bw-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-.bw-text { font-size: 0.7rem; font-weight: 600; color: var(--dim); }
-.bw-name { font-size: 0.9rem; font-weight: 700; }
-
-/* TIMER */
-.timer-wrap { margin-bottom: 14px; display: flex; align-items: center; gap: 12px; }
-.timer-ring { position: relative; width: 48px; height: 48px; flex-shrink: 0; }
-.timer-ring svg { transform: rotate(-90deg); }
-.ring-bg { stroke: var(--border); }
-.ring-fill { stroke: var(--gold); stroke-linecap: round; transition: stroke-dashoffset 0.9s linear, stroke 0.5s; }
-.ring-fill.danger { stroke: #f75f5f; }
-.timer-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'Unbounded', sans-serif; font-size: 0.95rem; font-weight: 900; color: var(--gold); transition: color 0.5s; }
-.timer-num.danger { color: #f75f5f; }
-.timer-info { flex: 1; }
-.timer-label { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); }
-
-.who-row { font-size: 0.62rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); margin-bottom: 10px; }
-.who-name { font-size: 0.72rem; font-weight: 700; margin-left: 5px; }
-.who-name.wc0 { color: var(--p0); }
-.who-name.wc1 { color: var(--p1); }
-.who-name.wc2 { color: var(--p2); }
-.who-name.wc3 { color: var(--p3); }
-
-.modal-q { font-size: 1rem; font-weight: 500; line-height: 1.65; margin-bottom: 18px; min-height: 40px; }
-
-.answer-box { display: none; background: rgba(79,207,138,0.05); border: 1px solid rgba(79,207,138,0.2); border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; }
-.answer-box.visible { display: block; }
-.answer-box .alabel { font-size: 0.54rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(79,207,138,0.5); margin-bottom: 4px; }
-.answer-box .atext { font-size: 0.95rem; font-weight: 600; color: #4fcf8a; }
-
-.catbag-wrap { margin-bottom: 16px; }
-.clabel { font-size: 0.57rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); margin-bottom: 8px; }
-.p-select { display: flex; gap: 6px; flex-wrap: wrap; }
-.psel-btn { padding: 7px 12px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--s2); color: var(--text); font-family: 'Inter', sans-serif; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.15s; }
-.psel-btn:hover { border-color: #3a3a70; }
-.psel-btn.sel { border-color: var(--gold); background: rgba(245,200,66,0.08); color: var(--gold); }
-
-.auction-wrap { margin-bottom: 16px; }
-.auction-input { width: 100%; background: var(--s2); border: 1.5px solid var(--border); border-radius: 10px; padding: 11px 15px; color: var(--gold); font-family: 'Unbounded', sans-serif; font-size: 1.4rem; font-weight: 700; outline: none; transition: border-color 0.15s; margin-top: 7px; }
-.auction-input:focus { border-color: var(--gold2); }
-.auction-presets { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 8px; }
-.preset-btn { padding: 8px 14px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--s2); color: var(--text); font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.15s; }
-.preset-btn:hover { border-color: #3a3a70; }
-.preset-btn.sel { border-color: var(--gold); background: rgba(245,200,66,0.1); color: var(--gold); }
-
-.btn-row { display: flex; gap: 7px; flex-wrap: wrap; }
-.btn { flex: 1; min-width: 80px; padding: 11px 8px; border-radius: 10px; border: none; font-family: 'Inter', sans-serif; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; transition: all 0.15s; }
-.btn:hover { transform: translateY(-2px); }
-.btn-reveal { background: var(--gold); color: #000; }
-.btn-reveal:hover { background: var(--gold2); }
-.btn-correct { background: #4fcf8a; color: #000; }
-.btn-correct:hover { background: #3dba76; }
-.btn-wrong { background: #f75f5f; color: #fff; }
-.btn-wrong:hover { background: #d94444; }
-.btn-skip { background: var(--s2); color: var(--dim); border: 1px solid var(--border); }
-.btn-skip:hover { color: var(--text); }
-.btn-full { flex: 0 0 100%; }
-
-.host-only { /* host-only controls */ }
-.player-waiting { text-align: center; padding: 12px 0; font-size: 0.72rem; color: var(--dim); letter-spacing: 0.08em; }
-
-/* Timeout */
-.timeout-label { display: none; background: rgba(247,95,95,0.08); border: 1px solid rgba(247,95,95,0.2); border-radius: 8px; padding: 7px 12px; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #f79f9f; text-align: center; margin-bottom: 12px; }
-.timeout-label.visible { display: block; }
-
-footer { text-align: center; padding: 4px 16px 24px; font-size: 0.54rem; color: #1a1a35; letter-spacing: 0.1em; text-transform: uppercase; }
+footer{ text-align:center; padding:10px 16px 24px; font-size:0.56rem; color:#222244; letter-spacing:0.1em; text-transform:uppercase; }
+.toast{ position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--s3); border:1.5px solid var(--border2); color:var(--text); padding:12px 22px; border-radius:30px; font-size:0.8rem; font-weight:600; z-index:500; opacity:0; transition:all .3s; pointer-events:none; }
+.toast.show{ transform:translateX(-50%) translateY(0); opacity:1; }
+@media (max-width:420px){ .modal{ padding:18px; } .btn-row .btn{ min-width:100px; } }
 </style>
 </head>
 <body>
 
-<!-- LOBBY -->
-<div id="lobbyScreen">
-  <div class="lobby-title">Своя Игра</div>
-  <div class="lobby-sub">Мультиплеер · до 4 игроков</div>
-
-  <div class="lobby-card">
+<!-- ── START ───────────────────────────────────────────── -->
+<div id="startScreen" class="screen active">
+  <div class="brand">
+    <div class="title gold-text">Своя Игра</div>
+    <div class="sub">Мультиплеер · до 10 игроков</div>
+  </div>
+  <div class="card">
     <h2>Создать комнату</h2>
     <div class="field-label">Ваше имя</div>
-    <input class="field-input" id="hostName" placeholder="Например: Максим" maxlength="20">
-    <button class="btn-lobby btn-gold" id="btnCreate">Создать и стать ведущим</button>
+    <input class="input" id="createName" placeholder="Например: Максим" maxlength="20" autocomplete="off">
+    <button class="btn btn-gold" id="btnCreate">Создать комнату</button>
   </div>
-
-  <div class="lobby-card">
+  <div class="divider">или</div>
+  <div class="card">
     <h2>Войти в комнату</h2>
     <div class="field-label">Ваше имя</div>
-    <input class="field-input" id="joinName" placeholder="Например: Максим" maxlength="20">
+    <input class="input" id="joinName" placeholder="Например: Максим" maxlength="20" autocomplete="off">
     <div class="field-label">Код комнаты</div>
-    <input class="field-input" id="joinCode" placeholder="ABCD" maxlength="4" style="text-transform:uppercase;letter-spacing:0.2em;font-family:'Unbounded',sans-serif;font-size:1.2rem;">
-    <button class="btn-lobby btn-gold" id="btnJoin">Войти</button>
+    <input class="input code" id="joinCode" placeholder="ABCD12" maxlength="6" autocomplete="off">
+    <button class="btn btn-gold" id="btnJoin">Войти</button>
   </div>
-  <div class="error-msg" id="lobbyError"></div>
+  <div class="err" id="startErr"></div>
 </div>
 
-<!-- WAIT -->
-<div id="waitScreen">
-  <div class="wait-card">
-    <h2>Ждём игроков</h2>
-    <div class="room-code" id="waitCode"></div>
-    <div class="room-hint">Поделитесь кодом — игроки вводят его на этой странице</div>
-    <div class="players-list" id="waitPlayers"></div>
-    <button class="copy-btn" id="btnCopy">📋 Скопировать ссылку на игру</button>
-    <button class="btn-lobby btn-gold" id="startBtn" style="display:none">Начать игру</button>
-    <div class="player-waiting" id="waitHint">Ожидание ведущего...</div>
+<!-- ── LOBBY ───────────────────────────────────────────── -->
+<div id="lobbyScreen" class="screen">
+  <div class="lobby-wrap">
+    <div class="lobby-head">
+      <div class="field-label" style="margin-bottom:8px;">Код комнаты</div>
+      <div class="room-code" id="lobbyCode"></div>
+      <div class="room-hint">Поделитесь кодом или ссылкой — игроки войдут на этой странице</div>
+    </div>
+    <div class="link-box">
+      <input id="inviteLink" readonly>
+      <button class="btn btn-ghost" id="btnCopy">Копировать</button>
+    </div>
+
+    <div class="field-label" style="margin-bottom:8px;">Игроки <span id="playerCount"></span></div>
+    <div class="players-grid" id="playersGrid"></div>
+
+    <div class="upload-card" id="uploadCard" style="display:none;">
+      <h3>Загрузка вопросов</h3>
+      <p>Загрузите свой JSON (3 раунда · 6 категорий · 5 вопросов) или используйте набор по умолчанию. Запуск возможен только при валидном наборе.</p>
+      <div class="file-row">
+        <button class="btn btn-ghost" id="btnPickFile">Выбрать JSON-файл</button>
+        <button class="btn btn-ghost" id="btnDefault">Набор по умолчанию</button>
+      </div>
+      <input type="file" id="fileInput" accept=".json,application/json" style="display:none;">
+      <div class="valid-list" id="validList"></div>
+    </div>
+
+    <div id="hostControls" style="display:none;">
+      <button class="btn btn-gold" id="btnStart" style="margin-bottom:10px;">Начать игру</button>
+    </div>
+    <div class="wait-note" id="lobbyWait">Ожидание, пока создатель начнёт игру...</div>
+    <div class="err" id="lobbyErr"></div>
   </div>
 </div>
 
-<!-- GAME -->
-<div id="gameScreen">
-  <header><h1>Своя Игра</h1></header>
-  <div class="my-role-bar" id="myRoleBar"></div>
-  <div class="round-tabs" id="roundTabs"></div>
-  <div class="scoreboard" id="scoreboard"></div>
-  <div class="grid-wrap"><div class="grid" id="grid"></div></div>
+<!-- ── GAME ────────────────────────────────────────────── -->
+<div id="gameScreen" class="screen">
+  <div class="topbar"><div class="title gold-text">Своя Игра</div></div>
+  <div class="round-pills" id="roundPills"></div>
+  <div class="turn-banner" id="turnBanner"></div>
+  <div class="scoreboard-wrap"><div class="scoreboard" id="scoreboard"></div></div>
+  <div class="board-wrap"><div class="board" id="board"></div></div>
 </div>
 
-<!-- MODAL -->
+<!-- ── QUESTION MODAL ──────────────────────────────────── -->
 <div class="overlay" id="overlay">
-  <div class="modal">
-    <div class="modal-top">
-      <div>
-        <div class="modal-cat" id="mCat"></div>
-        <div class="modal-val" id="mVal"></div>
-      </div>
-    </div>
-    <div id="mPill"></div>
-
-    <!-- Timer (always visible when question is open) -->
-    <div class="timer-wrap" id="timerWrap" style="display:none">
-      <div class="timer-ring">
-        <svg width="48" height="48" viewBox="0 0 48 48">
-          <circle class="ring-bg" cx="24" cy="24" r="20" fill="none" stroke-width="3.5"/>
-          <circle class="ring-fill" id="ringFill" cx="24" cy="24" r="20" fill="none" stroke-width="3.5"
-            stroke-dasharray="125.66" stroke-dashoffset="0"/>
-        </svg>
-        <div class="timer-num" id="timerNum">15</div>
-      </div>
-      <div class="timer-info">
-        <div class="timer-label" id="timerLabel">Время на ответ</div>
-      </div>
-    </div>
-
-    <div class="timeout-label" id="timeoutLabel">⏱ Время вышло</div>
-
-    <!-- Buzzer winner -->
-    <div class="buzzer-winner" id="buzzerWinner">
-      <div class="bw-dot" id="bwDot"></div>
-      <div><div class="bw-text">Первым нажал</div><div class="bw-name" id="bwName"></div></div>
-    </div>
-
-    <!-- BUZZ BUTTON for non-host players -->
-    <div class="buzz-section" id="buzzSection" style="display:none">
-      <button class="buzz-big-btn" id="buzzBtn">⚡ ОТВЕТИТЬ</button>
-      <div class="buzz-already" id="buzzAlready"></div>
-    </div>
-
-    <div id="noQuestWrap" style="display:none"></div>
-    <div id="auctionWrap" class="auction-wrap" style="display:none">
-      <div class="clabel">Баланс выбирающего: <span id="auctionBal"></span> · Ставка</div>
-      <input type="number" class="auction-input" id="auctionInput" min="0" placeholder="100">
-      <div style="margin-top:9px">
-        <button class="btn btn-reveal btn-full host-only" id="btnConfirmAuction">Подтвердить ставку</button>
-      </div>
-    </div>
-
-    <div class="who-row" id="whoRow"></div>
-    <div class="modal-q" id="mQ"></div>
-    <div class="answer-box" id="ansBox">
-      <div class="alabel">Ответ</div>
-      <div class="atext" id="ansText"></div>
-    </div>
-    <div class="btn-row" id="btnRow"></div>
-    <div class="player-waiting" id="modalWaiting" style="display:none">Ведущий управляет вопросом...</div>
-  </div>
+  <div class="modal" id="modalInner"></div>
 </div>
 
-<footer>3 раунда · 18 категорий · 90 вопросов</footer>
+<!-- ── MODIFIER ANIMATION ──────────────────────────────── -->
+<div class="mod-overlay" id="modOverlay"><div class="mod-card" id="modCard"></div></div>
 
-<!-- FIREBASE -->
+<!-- ── FINISH ──────────────────────────────────────────── -->
+<div id="finishScreen" class="screen">
+  <div class="win-stage" id="winStage"></div>
+  <div class="standings" id="standings"></div>
+  <button class="btn btn-ghost" id="btnNewGame" style="max-width:300px;margin:24px auto 0;">В главное меню</button>
+</div>
+
+<div class="toast" id="toast"></div>
+<footer>Своя Игра · 3 раунда · 18 категорий · 90 вопросов</footer>
+
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, get, update, onValue }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
+/* ════════════════════════════════════════════════════════════════════════
+   FIREBASE
+   ────────────────────────────────────────────────────────────────────────
+   ВАЖНО: вставьте сюда параметры ВАШЕГО проекта Firebase.
+   Где взять значения:
+     1. Откройте https://console.firebase.google.com
+     2. Создайте проект (или выберите существующий).
+     3. Build → Realtime Database → Create Database (выберите регион,
+        запустите в тестовом режиме или настройте правила доступа).
+     4. Project settings (шестерёнка) → раздел "Your apps" → Web app (</>)
+        → зарегистрируйте приложение → скопируйте поля firebaseConfig.
+     5. Замените значения ниже на свои (apiKey, authDomain, databaseURL,
+        projectId, storageBucket, messagingSenderId, appId).
+   ОБЯЗАТЕЛЬНО используется именно Realtime Database (НЕ Firestore).
+   Поле databaseURL обязательно — без него игра не подключится к базе.
+═══════════════════════════════════════════════════════════════════════════ */
 const firebaseConfig = {
-  apiKey: "AIzaSyDK5RWE15PnA-7gftX-edabZTe-g9xb0XQ",
-  authDomain: "svo-igra.firebaseapp.com",
-  databaseURL: "https://svo-igra-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "svo-igra",
-  storageBucket: "svo-igra.firebasestorage.app",
-  messagingSenderId: "511858031426",
-  appId: "1:511858031426:web:238ca6f86007879ca626db"
+  apiKey: "AIzaSyD2BJ0Stblry4i3wD_ml0d7WqVsPDwW8RM",
+  authDomain: "svoua-igra.firebaseapp.com",
+  databaseURL: "https://svoua-igra-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "svoua-igra",
+  storageBucket: "svoua-igra.firebasestorage.app",
+  messagingSenderId: "305949396075",
+  appId: "1:305949396075:web:a283c2f4778b29fb14352e"
 };
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getDatabase, ref, set, get, update, onValue, runTransaction,
+  remove, onDisconnect
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// ── DATA ──────────────────────────────────────────────────────────────────────
-// MODIFIERS:
-// 'auction'   - player bids any amount, win/lose that amount
-// 'double'    - auto x2 of nominal value
-// 'allin'     - stake = entire current balance
-// 'give'      - no question: give any amount to any player
-// 'take'      - no question: take any amount from any player
-// 'minusall'  - correct answer deducts nominal from every other player
-
-const ROUNDS_DATA = [
-  {
-    label: 'Раунд 1',
-    categories: [
-      {
-        name: 'Мемы рунета',
-        questions: [
-          { q: 'Откуда пошла фраза «Как тебе такое, Илон Маск»?', a: 'Мемы про российских умельцев с самодельными изобретениями, 2018 год', val: 100 },
-          { q: 'Как звали мальчика из вирусного видео про школьную столовую 2008 года, который сказал «Я чувствую себя человеком!»?', a: 'Никита Литвинков', val: 200 },
-          { q: 'Из какого шоу пошла фотография с кнопкой, ставшая мемом по всему миру?', a: 'Шоу «Голос» — Леонид Агутин нажимал кнопку', val: 300 },
-          { q: 'Как называлась энциклопедия рунета, написанная на «олбанском» языке?', a: 'Лурк (Луркоморье)', val: 400, special: 'auction' },
-          { q: 'Какую фразу сказала девочка Ася в репортаже о Дне знаний, ставшую классикой рунета?', a: '«Никакого праздника»', val: 500 },
-        ]
-      },
-      {
-        name: 'Еда и напитки',
-        questions: [
-          { q: 'Что такое умами?', a: 'Пятый базовый вкус — насыщенный «мясной»', val: 100 },
-          { q: 'Из чего делают настоящую текилу?', a: 'Из голубой агавы', val: 200 },
-          { q: 'Что входит в классический коктейль «Негрони»?', a: 'Джин, Кампари, сладкий вермут', val: 300 },
-          { q: 'Правда ли, что бананы — это ягоды с точки зрения ботаники?', a: 'Да. А клубника — нет', val: 400, special: 'double' },
-          { q: 'В каком городе придумали пиццу «Маргарита»?', a: 'Неаполь, Италия, 1889 год', val: 500 },
-        ]
-      },
-      {
-        name: 'Кино и сериалы',
-        questions: [
-          { q: 'Сколько сезонов у «Игры престолов»?', a: '8', val: 100 },
-          { q: 'Кто озвучивал Шрека в оригинале?', a: 'Майк Майерс', val: 200 },
-          { q: 'В каком году вышла «Матрица»?', a: '1999', val: 300 },
-          { q: 'Как зовут злодеев в «Один дома»?', a: 'Гарри и Марв — «Мокрые разбойники»', val: 400, special: 'allin' },
-          { q: 'Как зовут актора, сыгравшего Ганнибала Лектера в «Молчании ягнят»?', a: 'Энтони Хопкинс', val: 500 },
-        ]
-      },
-      {
-        name: 'Правда или нет',
-        questions: [
-          { q: 'Страусы прячут голову в песок при опасности?', a: 'Нет — миф. Они переворачивают яйца', val: 100 },
-          { q: 'Великую Китайскую стену видно из космоса?', a: 'Нет — слишком узкая', val: 200 },
-          { q: 'У лошадей нет рвотного рефлекса?', a: 'Правда', val: 300 },
-          { q: 'Молния никогда не бьёт в одно место дважды?', a: 'Миф. В Эмпайр Стейт Билдинг попадает ~100 раз в год', val: 400 },
-          { q: 'Осьминоги имеют три сердца?', a: 'Правда — два жаберных и одно системное', val: 500, special: 'give' },
-        ]
-      },
-      {
-        name: 'География',
-        questions: [
-          { q: 'Столица Австралии — Сидней или Канберра?', a: 'Канберра', val: 100 },
-          { q: 'В какой стране находится Мачу-Пикчу?', a: 'Перу', val: 200 },
-          { q: 'Какая страна имеет самую длинную береговую линию?', a: 'Канада', val: 300 },
-          { q: 'Как называется море между Австралией и Новой Зеландией?', a: 'Тасманово море', val: 400 },
-          { q: 'Самая высокогорная столица мира?', a: 'Ла-Пас, Боливия', val: 500, special: 'take' },
-        ]
-      },
-      {
-        name: 'Странные факты',
-        questions: [
-          { q: 'Какое крупное животное не умеет прыгать?', a: 'Слон', val: 100 },
-          { q: 'Сколько часов в сутки спят кошки?', a: '12–16 часов', val: 200 },
-          { q: 'Почему у фламинго розовый цвет?', a: 'Из-за каротиноидов в водорослях и рачках. Без них они белые', val: 300 },
-          { q: 'Сколько костей у акулы?', a: 'Ноль — хрящевой скелет', val: 400, special: 'double' },
-          { q: 'Какой процент ДНК у человека совпадает с бананом?', a: 'Около 60%', val: 500 },
-        ]
-      },
-    ]
-  },
-  {
-    label: 'Раунд 2',
-    categories: [
-      {
-        name: 'Рунет 2010-е',
-        questions: [
-          { q: 'Как называлась самая популярная соцсеть рунета конца 2000-х — начала 2010-х?', a: 'ВКонтакте (VK), запущена в 2006', val: 200 },
-          { q: 'Что такое «Гандибобер»?', a: 'Слово из вирусного видео с женщиной, которая так описывала название книги', val: 400 },
-          { q: 'Как звали певца, чья песня «Трололо» стала международным мемом в 2010 году?', a: 'Эдуард Хиль', val: 600, special: 'auction' },
-          { q: 'В каком году появилось ВКонтакте?', a: '2006', val: 800 },
-          { q: 'Как называлось интернет-шоу Максима Голополосова с отборными роликами с YouTube?', a: '+100500', val: 1000 },
-        ]
-      },
-      {
-        name: 'Наука',
-        questions: [
-          { q: 'Химический символ золота', a: 'Au', val: 200 },
-          { q: 'Скорость света в вакууме приблизительно', a: '300 000 км/с', val: 400 },
-          { q: 'Кто открыл пенициллин?', a: 'Александр Флеминг', val: 600 },
-          { q: 'Из чего состоит ядро атома?', a: 'Из протонов и нейтронов', val: 800, special: 'allin' },
-          { q: 'Как называется наука о грибах?', a: 'Микология', val: 1000 },
-        ]
-      },
-      {
-        name: 'Спорт',
-        questions: [
-          { q: 'Сколько игроков в баскетбольной команде на площадке?', a: '5', val: 200 },
-          { q: 'В какой стране придумали волейбол?', a: 'США', val: 400 },
-          { q: 'Самый престижный клубный турнир в Европе по футболу?', a: 'Лига Чемпионов UEFA', val: 600 },
-          { q: 'Сколько колец на флаге Олимпийских игр?', a: '5', val: 800, special: 'minusall' },
-          { q: 'Сколько очков даёт тачдаун в американском футболе?', a: '6', val: 1000 },
-        ]
-      },
-      {
-        name: 'История',
-        questions: [
-          { q: 'Год Октябрьской революции в России', a: '1917', val: 200 },
-          { q: 'Первый президент США', a: 'Джордж Вашингтон', val: 400 },
-          { q: 'В каком году пал Константинополь?', a: '1453', val: 600 },
-          { q: 'Флагман Колумба при открытии Америки', a: 'Санта-Мария', val: 800, special: 'give' },
-          { q: 'Сколько лет длилась Столетняя война?', a: '116 лет (1337–1453)', val: 1000 },
-        ]
-      },
-      {
-        name: 'Поп-культура',
-        questions: [
-          { q: 'Как зовут главного волшебника в «Гарри Поттере»?', a: 'Альбус Дамблдор', val: 200 },
-          { q: 'Кто написал «Властелин колец»?', a: 'Дж. Р. Р. Толкин', val: 400 },
-          { q: 'Как называется планета в «Аватаре»?', a: 'Пандора', val: 600 },
-          { q: 'Сколько фильмов в основной саге «Звёздных войн»?', a: '9 (эпизоды I–IX)', val: 800, special: 'take' },
-          { q: 'Как звали персонажа ДиКаприо в «Титанике»?', a: 'Джек Доусон', val: 1000 },
-        ]
-      },
-      {
-        name: 'Природа',
-        questions: [
-          { q: 'Самое высокое животное на планете?', a: 'Жираф', val: 200 },
-          { q: 'Сколько сердец у осьминога?', a: '3', val: 400 },
-          { q: 'Самый большой океан?', a: 'Тихий', val: 600 },
-          { q: 'Какое растение растёт быстрее всех?', a: 'Бамбук (технически трава)', val: 800, special: 'double' },
-          { q: 'Сколько костей у акулы?', a: 'Ноль — скелет из хряща', val: 1000 },
-        ]
-      },
-    ]
-  },
-  {
-    label: 'Раунд 3',
-    categories: [
-      {
-        name: 'Мемы рунета 3',
-        questions: [
-          { q: 'Из какого фильма пошла фраза «Нельзя просто так взять и...»?', a: 'Из «Властелина Колец» — Боромир', val: 300 },
-          { q: 'Что означает «ржунимагу» на языке падонков?', a: 'Смеюсь, не могу остановиться', val: 600 },
-          { q: 'Как называлась энциклопедия рунета на «олбанском»?', a: 'Луркоморье (Лурк)', val: 900, special: 'auction' },
-          { q: 'В каком году появился мем «Как тебе такое, Илон Маск»?', a: '2018', val: 1200 },
-          { q: 'Что такое «Дискотека Авария» в контексте рунета?', a: 'Российская поп-группа, ставшая мемом за чрезмерно бодрые клипы', val: 1500, special: 'allin' },
-        ]
-      },
-      {
-        name: 'Психология',
-        questions: [
-          { q: 'Как называется страх открытых пространств?', a: 'Агорафобия', val: 300 },
-          { q: 'Что такое эффект Даннинга-Крюгера?', a: 'Некомпетентные люди переоценивают себя, эксперты — недооценивают', val: 600 },
-          { q: 'Защитный механизм — приписывать другим свои чувства?', a: 'Проекция', val: 900 },
-          { q: 'Как называется явление, когда толпа принимает худшие решения?', a: 'Групповое мышление (groupthink)', val: 1200, special: 'minusall' },
-          { q: 'Что такое когнитивный диссонанс?', a: 'Дискомфорт от противоречия между убеждениями и действиями', val: 1500 },
-        ]
-      },
-      {
-        name: 'Интернет',
-        questions: [
-          { q: 'В каком году появился YouTube?', a: '2005', val: 300 },
-          { q: 'Как расшифровывается GIF?', a: 'Graphics Interchange Format', val: 600 },
-          { q: 'Откуда пошла фраза «Ничего не произошло»?', a: 'Из советского мультфильма «Жил-был пёс»', val: 900, special: 'give' },
-          { q: 'В каком году был запущен Reddit?', a: '2005', val: 1200 },
-          { q: 'Как называется закон: любое интернет-обсуждение рано или поздно упомянет Гитлера?', a: 'Закон Годвина', val: 1500, special: 'take' },
-        ]
-      },
-      {
-        name: 'Путешествия',
-        questions: [
-          { q: 'Самый посещаемый музей в мире?', a: 'Лувр, Париж', val: 300 },
-          { q: 'В какой стране есть город Баку?', a: 'Азербайджан', val: 600 },
-          { q: 'В какой стране больше всего островов?', a: 'Швеция (~221 800)', val: 900, special: 'double' },
-          { q: 'Как называется аэропорт в Дубае?', a: 'Dubai International (DXB)', val: 1200 },
-          { q: 'Самая высокогорная столица мира?', a: 'Ла-Пас, Боливия', val: 1500, special: 'auction' },
-        ]
-      },
-      {
-        name: 'Игры',
-        questions: [
-          { q: 'В каком году вышел первый Minecraft?', a: '2009 (альфа)', val: 300 },
-          { q: 'Как зовут главного героя The Legend of Zelda?', a: 'Линк', val: 600 },
-          { q: 'Какая компания сделала Dark Souls?', a: 'FromSoftware', val: 900, special: 'give' },
-          { q: 'В каком году вышла первая часть GTA?', a: '1997', val: 1200 },
-          { q: 'Что такое «рогалик» в геймерском сленге?', a: 'Roguelike — жанр с процедурными уровнями и смертью навсегда', val: 1500, special: 'allin' },
-        ]
-      },
-      {
-        name: 'На грани',
-        questions: [
-          { q: 'Как называется боязнь длинных слов?', a: 'Гиппопотомомонстросесквиппедалиофобия', val: 300 },
-          { q: 'Что случилось бы с человеком в открытом космосе без скафандра за первые 15 секунд?', a: 'Потеряет сознание, жидкости начнут кипеть', val: 600 },
-          { q: 'Сколько времени свет от Солнца идёт до Земли?', a: 'Около 8 минут 20 секунд', val: 900, special: 'minusall' },
-          { q: 'Как называется парадокс о корабле, у которого заменили все детали?', a: 'Парадокс Тесея', val: 1200 },
-          { q: 'Какой процент ДНК у человека совпадает с бананом?', a: 'Около 60%', val: 1500, special: 'auction' },
-        ]
-      },
-    ]
-  }
+/* ════════════════════════════════ CONSTANTS ════════════════════════════ */
+const ROUND_VALUES = [
+  [100,200,300,400,500],
+  [200,400,600,800,1000],
+  [300,600,900,1200,1500]
 ];
+const VALID_MODIFIERS = ['double','flip_sign','give_points','take_points','all_in'];
+const MOD_INFO = {
+  double:      { name:'Удвоение',     desc:'Текущий счёт игрока умножается на два. Вопрос не задаётся.' },
+  flip_sign:   { name:'Смена знака',  desc:'Знак текущего счёта игрока меняется на противоположный. Вопрос не задаётся.' },
+  give_points: { name:'Отдать очки',  desc:'Игрок передаёт стоимость вопроса другому игроку. Вопрос не задаётся.' },
+  take_points: { name:'Забрать очки', desc:'Игрок забирает стоимость вопроса у другого игрока. Вопрос не задаётся.' },
+  all_in:      { name:'Ва-банк',      desc:'Игрок ставит весь свой счёт и обязан ответить на вопрос.' }
+};
+const PALETTE = ['#4f8ef7','#f75f5f','#4fcf8a','#c97af5','#f5c842','#f59e4f','#4fd6e0','#e04f9e','#9ecf4f','#7a8ef5'];
+const MAX_PLAYERS = 10;
+const BUZZ_MS = 30000;
+const FINISHED_TTL_MS = 30 * 60 * 1000;   // удалять завершённые комнаты через 30 минут
+const STALE_TTL_MS = 6 * 60 * 60 * 1000;  // удалять зависшие незавершённые комнаты через 6 часов
+const MOD_ANIM_MS = 2600;
 
-// ── STATE ─────────────────────────────────────────────────────────────────────
+/* ════════════════════════════════ STATE ════════════════════════════════ */
 let roomId = null;
-let myPlayerId = null;
-let isHost = false;
-let gameState = null;
-let timerInterval = null;
-const CIRCUMFERENCE = 2 * Math.PI * 20;
-const PLAYER_SLOTS = ['p0','p1','p2','p3'];
-const PLAYER_COLORS = ['var(--p0)','var(--p1)','var(--p2)','var(--p3)'];
+let myId = null;
+let room = null;            // последний снимок комнаты
+let unsub = null;           // функция отписки от onValue
+let serverOffset = 0;       // коррекция часов сервера
+let prevScores = {};        // для анимации изменения счёта
+let buzzTick = null;        // интервал таймера баззера
+let modAnimTimer = null;    // таймер анимации модификатора
+let shownModForKey = null;  // ключ вопроса, для которого уже показали анимацию
+let scheduledModForKey = null; // ключ, для которого пикер запланировал переход
+let finishCelebrated = false;
+let selectedTarget = null;  // выбранная цель для give/take
 
-// ── UTILS ─────────────────────────────────────────────────────────────────────
-function genCode() {
+/* ════════════════════════════════ HELPERS ══════════════════════════════ */
+const $ = id => document.getElementById(id);
+const now = () => Date.now() + serverOffset;
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function genCode(){
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code = '';
-  for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
-  return code;
+  let c=''; for(let i=0;i<6;i++) c += chars[Math.floor(Math.random()*chars.length)];
+  return c;
 }
-function showError(msg) {
-  document.getElementById('lobbyError').textContent = msg;
-  setTimeout(() => document.getElementById('lobbyError').textContent = '', 4000);
+function newPlayerId(){ return 'p_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,7); }
+function toast(msg){
+  const t=$('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),2200);
 }
-function copyLink() {
-  const url = window.location.href.split('?')[0] + '?room=' + roomId;
-  navigator.clipboard.writeText(url).then(() => {
-    const btn = document.getElementById('btnCopy');
-    btn.textContent = 'Скопировано!';
-    setTimeout(() => btn.textContent = 'Скопировать ссылку на игру', 2000);
-  });
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el=$(id); el.classList.add('active');
+  if(id==='gameScreen'){ el.style.display='flex'; }
+}
+function colorOf(pid){
+  const p = room && room.players && room.players[pid];
+  const order = p ? (p.order||0) : 0;
+  return PALETTE[order % PALETTE.length];
+}
+function playerName(pid){
+  const p = room && room.players && room.players[pid];
+  return p ? p.name : '—';
+}
+function orderedPlayers(){
+  if(!room || !room.players) return [];
+  return Object.keys(room.players)
+    .map(id=>({ id, ...room.players[id] }))
+    .sort((a,b)=> (a.order||0)-(b.order||0));
 }
 
-// ── TURN ORDER ────────────────────────────────────────────────────────────────
-function nextTurnPlayer(gs) {
-  const players = gs.players || {};
-  const slots = PLAYER_SLOTS.filter(s => players[s]);
-  const current = gs.choosingPlayer || slots[0];
-  const idx = slots.indexOf(current);
-  return slots[(idx + 1) % slots.length];
+// onDisconnect / connected tracking
+function attachPresence(){
+  if(!roomId || !myId) return;
+  const cRef = ref(db, `rooms/${roomId}/players/${myId}/connected`);
+  set(cRef, true).catch(()=>{});
+  onDisconnect(cRef).set(false).catch(()=>{});
 }
 
-// ── LOBBY ─────────────────────────────────────────────────────────────────────
-async function createRoom() {
-  const name = document.getElementById('hostName').value.trim();
-  if (!name) { showError('Введите имя'); return; }
-  const btn = document.getElementById('btnCreate');
-  btn.textContent = 'Создаём...';
-  btn.disabled = true;
-  try {
+/* ════════════════════════════════ CLEANUP ══════════════════════════════ */
+async function cleanupStaleRooms(){
+  try{
+    const snap = await get(ref(db,'rooms'));
+    if(!snap.exists()) return;
+    const rooms = snap.val();
+    const t = Date.now();
+    const jobs=[];
+    Object.keys(rooms).forEach(id=>{
+      const r = rooms[id] || {};
+      const finishedAt = r.finishedAt || (r.gameState && r.gameState.finishedAt);
+      const createdAt = r.createdAt || 0;
+      if(finishedAt && (t - finishedAt) > FINISHED_TTL_MS){
+        jobs.push(remove(ref(db,`rooms/${id}`)));
+      } else if(!finishedAt && createdAt && (t - createdAt) > STALE_TTL_MS){
+        jobs.push(remove(ref(db,`rooms/${id}`)));
+      }
+    });
+    await Promise.allSettled(jobs);
+  }catch(e){ /* нет прав на чтение корня — пропускаем */ }
+}
+
+/* ════════════════════════════════ DEFAULT BOARD ════════════════════════ */
+function defaultBoard(){
+  const R = (name,questions)=>({name,questions});
+  const Q = (value,question,answer,modifier)=>({value,question,answer,modifier:modifier||null});
+  return {
+    title:'Своя Игра',
+    rounds:[
+      { name:'Раунд 1', categories:[
+        R('Еда и напитки',[
+          Q(100,'Из чего делают настоящую текилу?','Из голубой агавы'),
+          Q(200,'Что такое умами?','Пятый базовый вкус — насыщенный «мясной»'),
+          Q(300,'Что входит в классический «Негрони»?','Джин, Кампари, сладкий вермут'),
+          Q(400,'Бананы с точки зрения ботаники — ягоды?','Да. А клубника — нет','double'),
+          Q(500,'В каком городе придумали пиццу «Маргарита»?','Неаполь, 1889 год'),
+        ]),
+        R('Кино',[
+          Q(100,'Сколько сезонов у «Игры престолов»?','8'),
+          Q(200,'Кто озвучивал Шрека в оригинале?','Майк Майерс'),
+          Q(300,'Как зовут злодеев в «Один дома»?','Гарри и Марв'),
+          Q(400,'Кто снял «Криминальное чтиво»?','Квентин Тарантино','all_in'),
+          Q(500,'Кто сыграл Ганнибала Лектера в «Молчании ягнят»?','Энтони Хопкинс'),
+        ]),
+        R('Правда или нет',[
+          Q(100,'Страусы прячут голову в песок при опасности?','Нет — миф'),
+          Q(200,'Великую Китайскую стену видно из космоса?','Нет — слишком узкая'),
+          Q(300,'У лошадей нет рвотного рефлекса?','Правда'),
+          Q(400,'Молния не бьёт дважды в одно место?','Миф'),
+          Q(500,'У осьминога три сердца?','Правда','give_points'),
+        ]),
+        R('География',[
+          Q(100,'Столица Австралии?','Канберра'),
+          Q(200,'В какой стране Мачу-Пикчу?','Перу'),
+          Q(300,'У какой страны самая длинная береговая линия?','Канада'),
+          Q(400,'Море между Австралией и Новой Зеландией?','Тасманово море'),
+          Q(500,'Самая высокогорная столица мира?','Ла-Пас, Боливия','take_points'),
+        ]),
+        R('Музыка',[
+          Q(100,'Из какой страны группа ABBA?','Швеция'),
+          Q(200,'Кто написал «Оду к радости»?','Бетховен'),
+          Q(300,'Самый продаваемый альбом всех времён?','Thriller — Майкл Джексон'),
+          Q(400,'Кто сжёг гитару на фестивале в Монтерее 1967?','Джими Хендрикс','flip_sign'),
+          Q(500,'Как зовут барабанщика The Beatles?','Ринго Старр'),
+        ]),
+        R('Странные факты',[
+          Q(100,'Какое крупное животное не умеет прыгать?','Слон'),
+          Q(200,'Сколько часов в сутки спят кошки?','12–16 часов'),
+          Q(300,'Почему фламинго розовые?','Из-за каротиноидов в рачках'),
+          Q(400,'Сколько костей у акулы?','Ноль — хрящевой скелет'),
+          Q(500,'На сколько % ДНК человека совпадает с бананом?','Около 60%'),
+        ]),
+      ]},
+      { name:'Раунд 2', categories:[
+        R('Наука',[
+          Q(200,'Химический символ золота','Au'),
+          Q(400,'Скорость света в вакууме приблизительно','300 000 км/с'),
+          Q(600,'Кто открыл пенициллин?','Александр Флеминг'),
+          Q(800,'Из чего состоит ядро атома?','Из протонов и нейтронов','all_in'),
+          Q(1000,'Как называется наука о грибах?','Микология'),
+        ]),
+        R('Спорт',[
+          Q(200,'Сколько игроков в баскетболе на площадке?','5'),
+          Q(400,'Где придумали волейбол?','США'),
+          Q(600,'Главный клубный турнир Европы по футболу?','Лига Чемпионов'),
+          Q(800,'Сколько колец на флаге Олимпиады?','5','flip_sign'),
+          Q(1000,'Сколько очков даёт тачдаун?','6'),
+        ]),
+        R('История',[
+          Q(200,'Год Октябрьской революции','1917'),
+          Q(400,'Первый президент США','Джордж Вашингтон'),
+          Q(600,'В каком году пал Константинополь?','1453'),
+          Q(800,'Флагман Колумба','Санта-Мария','give_points'),
+          Q(1000,'Сколько лет длилась Столетняя война?','116 лет'),
+        ]),
+        R('Поп-культура',[
+          Q(200,'Главный волшебник в «Гарри Поттере»?','Альбус Дамблдор'),
+          Q(400,'Кто написал «Властелин колец»?','Дж. Р. Р. Толкин'),
+          Q(600,'Как называется планета в «Аватаре»?','Пандора'),
+          Q(800,'Сколько фильмов в основной саге «Звёздных войн»?','9','take_points'),
+          Q(1000,'В каком году вышел «Аватар» Кэмерона?','2009'),
+        ]),
+        R('Природа',[
+          Q(200,'Самое высокое животное?','Жираф'),
+          Q(400,'Сколько сердец у осьминога?','3'),
+          Q(600,'Самый большой океан?','Тихий'),
+          Q(800,'Какое растение растёт быстрее всех?','Бамбук','double'),
+          Q(1000,'Сколько костей у акулы?','Ноль'),
+        ]),
+        R('Напитки',[
+          Q(200,'Из чего делают саке?','Из риса'),
+          Q(400,'Что значит IPA в названии пива?','India Pale Ale'),
+          Q(600,'Где изобрели шампанское?','Франция, Шампань'),
+          Q(800,'Из чего делают бурбон?','Из кукурузы'),
+          Q(1000,'Какой напиток делают из можжевельника?','Джин'),
+        ]),
+      ]},
+      { name:'Раунд 3', categories:[
+        R('Психология',[
+          Q(300,'Страх открытых пространств?','Агорафобия'),
+          Q(600,'Что такое эффект Даннинга-Крюгера?','Некомпетентные переоценивают себя'),
+          Q(900,'Приписывать другим свои чувства — это?','Проекция'),
+          Q(1200,'Когда толпа принимает худшие решения?','Групповое мышление','flip_sign'),
+          Q(1500,'Что такое когнитивный диссонанс?','Дискомфорт от противоречия убеждений и действий'),
+        ]),
+        R('Путешествия',[
+          Q(300,'Самый посещаемый музей в мире?','Лувр'),
+          Q(600,'В какой стране город Баку?','Азербайджан'),
+          Q(900,'В какой стране больше всего островов?','Швеция'),
+          Q(1200,'Как называется аэропорт в Дубае?','DXB'),
+          Q(1500,'Самая высокогорная столица мира?','Ла-Пас','double'),
+        ]),
+        R('Игры',[
+          Q(300,'В каком году вышел первый Minecraft?','2009'),
+          Q(600,'Имя героя The Legend of Zelda?','Линк'),
+          Q(900,'Кто сделал Dark Souls?','FromSoftware'),
+          Q(1200,'В каком году вышла первая GTA?','1997'),
+          Q(1500,'Что такое «рогалик»?','Roguelike — процедурные уровни','all_in'),
+        ]),
+        R('Космос',[
+          Q(300,'Сколько планет в Солнечной системе?','8'),
+          Q(600,'Как называется наша галактика?','Млечный путь'),
+          Q(900,'Самая большая планета системы?','Юпитер'),
+          Q(1200,'До ближайшей звезды (кроме Солнца)?','4.2 св. года','take_points'),
+          Q(1500,'Что такое чёрная дыра?','Область с гравитацией, из которой не вырывается свет'),
+        ]),
+        R('Кино 2',[
+          Q(300,'В каком году вышел «Крёстный отец»?','1972'),
+          Q(600,'Как звали механическую акулу «Челюстей»?','Брюс'),
+          Q(900,'Кто сыграл Джокера в «Тёмном рыцаре»?','Хит Леджер'),
+          Q(1200,'Сколько Оскаров у «Титаника» 1997?','11'),
+          Q(1500,'Какая студия сняла «Унесённых призраками»?','Studio Ghibli','give_points'),
+        ]),
+        R('На грани',[
+          Q(300,'Боязнь длинных слов называется?','Гиппопотомомонстросесквиппедалиофобия'),
+          Q(600,'Что будет с человеком в космосе без скафандра?','Потеряет сознание за ~15 секунд'),
+          Q(900,'Сколько свет идёт от Солнца до Земли?','Около 8 минут'),
+          Q(1200,'Парадокс о корабле с заменёнными деталями?','Парадокс Тесея'),
+          Q(1500,'На сколько % ДНК человека совпадает с бананом?','Около 60%'),
+        ]),
+      ]},
+    ]
+  };
+}
+
+/* ════════════════════════════════ VALIDATION ═══════════════════════════ */
+function validateBoard(data){
+  const errors=[];
+  if(!data || typeof data!=='object' || Array.isArray(data)){ return ['Файл не является корректным JSON-объектом.']; }
+  if(!Array.isArray(data.rounds)){ return ['Отсутствует массив "rounds".']; }
+  if(data.rounds.length!==3){ errors.push(`Должно быть ровно 3 раунда, найдено: ${data.rounds.length}.`); }
+
+  for(let ri=0; ri<data.rounds.length; ri++){
+    const r = data.rounds[ri];
+    const RN = ri+1;
+    if(!r || typeof r!=='object'){ errors.push(`Раунд ${RN}: некорректный формат.`); continue; }
+    if(!Array.isArray(r.categories)){ errors.push(`Раунд ${RN}: отсутствует массив "categories".`); continue; }
+    if(r.categories.length!==6){ errors.push(`Раунд ${RN}: должно быть 6 категорий, найдено: ${r.categories.length}.`); }
+    const expectVals = ROUND_VALUES[ri] || null;   // проверка стоимости только для раундов 1–3
+    let modCount=0;
+    r.categories.forEach((c,ci)=>{
+      const cname = (c && c.name) ? `"${c.name}"` : `№${ci+1}`;
+      if(!c || typeof c!=='object'){ errors.push(`Раунд ${RN}, категория ${cname}: некорректный формат.`); return; }
+      if(!Array.isArray(c.questions)){ errors.push(`Раунд ${RN}, категория ${cname}: отсутствует массив "questions".`); return; }
+      if(c.questions.length!==5){ errors.push(`Раунд ${RN}, категория ${cname}: должно быть 5 вопросов, найдено: ${c.questions.length}.`); }
+      c.questions.forEach((q,qi)=>{
+        const where = `Раунд ${RN}, ${cname}, вопрос ${qi+1}`;
+        if(!q || typeof q!=='object'){ errors.push(`${where}: некорректный формат.`); return; }
+        if(typeof q.question!=='string' || !q.question.trim()){ errors.push(`${where}: отсутствует текст вопроса.`); }
+        if(typeof q.answer!=='string' || !q.answer.trim()){ errors.push(`${where}: отсутствует ответ.`); }
+        if(typeof q.value!=='number' || !Number.isFinite(q.value)){
+          errors.push(`${where}: стоимость должна быть числом.`);
+        } else if(expectVals && q.value!==expectVals[qi]){
+          errors.push(`${where}: стоимость должна быть ${expectVals[qi]}, найдено: ${q.value}.`);
+        }
+        if(q.modifier!==undefined && q.modifier!==null && q.modifier!==''){
+          if(typeof q.modifier!=='string' || !VALID_MODIFIERS.includes(q.modifier)){
+            errors.push(`${where}: неизвестный модификатор "${q.modifier}". Допустимы: ${VALID_MODIFIERS.join(', ')}.`);
+          } else { modCount++; }
+        }
+      });
+    });
+    if(modCount>5){ errors.push(`Раунд ${RN}: модификаторов не более 5, найдено: ${modCount}.`); }
+  }
+  return errors;
+}
+// нормализуем в чистую структуру для хранения
+function normalizeBoard(data){
+  return {
+    title: typeof data.title==='string' ? data.title : 'Своя Игра',
+    rounds: data.rounds.map((r,ri)=>({
+      name: (r.name && String(r.name)) || `Раунд ${ri+1}`,
+      categories: r.categories.map((c,ci)=>({
+        name: (c.name && String(c.name)) || `Категория ${ci+1}`,
+        questions: c.questions.map(q=>({
+          value: q.value,
+          question: String(q.question),
+          answer: String(q.answer),
+          modifier: (q.modifier && VALID_MODIFIERS.includes(q.modifier)) ? q.modifier : null
+        }))
+      }))
+    }))
+  };
+}
+
+/* ════════════════════════════════ LOBBY: BOARD UPLOAD ══════════════════ */
+let pendingBoard = null;      // нормализованный валидный набор, ожидающий старта
+function setBoardStatus(board, errors, sourceLabel){
+  const list = $('validList');
+  if(errors && errors.length){
+    pendingBoard = null;
+    let html = `<div class="valid-title">Ошибки валидации (${errors.length}):</div>`;
+    errors.slice(0,40).forEach(e=>{ html += `<div class="valid-err-item">${esc(e)}</div>`; });
+    if(errors.length>40) html += `<div class="valid-err-item">…и ещё ${errors.length-40}</div>`;
+    list.innerHTML = html;
+    updateStartButton();
+    return false;
+  }
+  pendingBoard = normalizeBoard(board);
+  list.innerHTML = `<div class="valid-ok">Набор валиден${sourceLabel?` (${esc(sourceLabel)})`:''}. Готово к запуску.</div>`;
+  updateStartButton();
+  return true;
+}
+function handleFile(file){
+  const reader = new FileReader();
+  reader.onload = e=>{
+    let data;
+    try{ data = JSON.parse(e.target.result); }
+    catch(err){ setBoardStatus(null,['Не удалось разобрать JSON: '+err.message]); return; }
+    const errors = validateBoard(data);
+    setBoardStatus(data, errors, file.name);
+  };
+  reader.onerror = ()=> setBoardStatus(null,['Ошибка чтения файла.']);
+  reader.readAsText(file);
+}
+function loadDefault(){
+  const b = defaultBoard();
+  const errors = validateBoard(b);
+  setBoardStatus(b, errors, 'по умолчанию');
+}
+
+/* ════════════════════════════════ CREATE / JOIN ════════════════════════ */
+async function createRoom(){
+  const name = $('createName').value.trim();
+  if(!name){ startError('Введите имя'); return; }
+  const btn=$('btnCreate'); btn.disabled=true; btn.textContent='Создаём...';
+  try{
     const code = genCode();
-    roomId = code;
-    isHost = true;
-    myPlayerId = 'p0';
-    const roomData = {
-      status: 'waiting',
-      host: 'p0',
+    const pid = newPlayerId();
+    const t = Date.now();
+    const data = {
+      createdAt: t,
+      finishedAt: null,
+      settings: { title:'Своя Игра', maxPlayers:MAX_PLAYERS },
       currentRound: 0,
-      currentQuestion: null,
-      buzzed: null,
-      choosingPlayer: 'p0',
-      usedCells: {},
-      scores: { p0: 0, p1: 0, p2: 0, p3: 0 },
-      players: { p0: { name, score: 0 } },
+      currentTurn: pid,
+      board: null,
+      activeQuestion: null,
+      players: { [pid]: { name, order:0, joinedAt:t, connected:true } },
+      scores: { [pid]: 0 },
+      gameState: { status:'lobby', hostId:pid, turnOrder:null, turnIndex:0, finishedAt:null }
     };
-    await set(ref(db, 'rooms/' + code), roomData);
-    showWaitScreen(code);
-  } catch(e) {
-    showError('Ошибка: ' + e.message);
-    btn.textContent = 'Создать и стать ведущим';
-    btn.disabled = false;
+    await set(ref(db,`rooms/${code}`), data);
+    roomId = code; myId = pid;
+    saveSession();
+    attachPresence();
+    subscribeRoom();
+  }catch(e){
+    startError('Ошибка: '+e.message);
+    btn.disabled=false; btn.textContent='Создать комнату';
   }
 }
 
-async function joinRoom() {
-  const name = document.getElementById('joinName').value.trim();
-  const code = document.getElementById('joinCode').value.trim().toUpperCase();
-  if (!name) { showError('Введите имя'); return; }
-  if (code.length !== 4) { showError('Введите 4-значный код'); return; }
-  const btn = document.getElementById('btnJoin');
-  btn.textContent = 'Входим...';
-  btn.disabled = true;
-  try {
-    const snap = await get(ref(db, 'rooms/' + code));
-    if (!snap.exists()) { showError('Комната не найдена'); btn.textContent = 'Войти'; btn.disabled = false; return; }
-    const room = snap.val();
-    if (room.status === 'playing') { showError('Игра уже началась'); btn.textContent = 'Войти'; btn.disabled = false; return; }
-    const players = room.players || {};
-    const taken = Object.keys(players);
-    const free = PLAYER_SLOTS.find(s => !taken.includes(s));
-    if (!free) { showError('Комната заполнена'); btn.textContent = 'Войти'; btn.disabled = false; return; }
-    roomId = code;
-    myPlayerId = free;
-    isHost = false;
-    await update(ref(db, 'rooms/' + code + '/players'), { [free]: { name, score: 0 } });
-    showWaitScreen(code);
-  } catch(e) {
-    showError('Ошибка: ' + e.message);
-    btn.textContent = 'Войти';
-    btn.disabled = false;
-  }
-}
+async function joinRoom(autoName, autoCode){
+  const name = (autoName!==undefined?autoName:$('joinName').value).trim();
+  const code = (autoCode!==undefined?autoCode:$('joinCode').value).trim().toUpperCase();
+  if(!name){ startError('Введите имя'); return; }
+  if(code.length<4){ startError('Введите код комнаты'); return; }
+  const btn=$('btnJoin'); btn.disabled=true; btn.textContent='Входим...';
+  const restore=()=>{ btn.disabled=false; btn.textContent='Войти'; };
+  try{
+    const snap = await get(ref(db,`rooms/${code}`));
+    if(!snap.exists()){ startError('Комната не найдена'); restore(); return; }
+    const r = snap.val();
+    const players = r.players || {};
+    const status = r.gameState ? r.gameState.status : 'lobby';
 
-function showWaitScreen(code) {
-  document.getElementById('lobbyScreen').style.display = 'none';
-  document.getElementById('waitScreen').style.display = 'flex';
-  document.getElementById('waitCode').textContent = code;
-  if (isHost) {
-    document.getElementById('startBtn').style.display = 'block';
-    document.getElementById('waitHint').style.display = 'none';
-  }
-  onValue(ref(db, 'rooms/' + code), snap => {
-    if (!snap.exists()) return;
-    const room = snap.val();
-    renderWaitPlayers(room.players || {});
-    if (room.status === 'playing') {
-      document.getElementById('waitScreen').style.display = 'none';
-      document.getElementById('gameScreen').style.display = 'block';
-      listenGame();
-    }
-  });
-}
-
-function renderWaitPlayers(players) {
-  const el = document.getElementById('waitPlayers');
-  el.innerHTML = '';
-  PLAYER_SLOTS.forEach((s, i) => {
-    const p = players[s];
-    const div = document.createElement('div');
-    div.className = 'player-slot';
-    div.innerHTML = '<div class="slot-dot" style="background:' + PLAYER_COLORS[i] + '"></div>' +
-      (p
-        ? '<div class="slot-name">' + p.name + '</div>' +
-          (s === 'p0' ? '<div class="slot-host-badge">Ведущий</div>' : '') +
-          (s === myPlayerId ? '<div class="slot-you-badge">Вы</div>' : '')
-        : '<div class="slot-empty">Ожидание...</div>');
-    el.appendChild(div);
-  });
-}
-
-async function startGame() {
-  await update(ref(db, 'rooms/' + roomId), { status: 'playing' });
-}
-
-// ── GAME LISTENER ─────────────────────────────────────────────────────────────
-function listenGame() {
-  onValue(ref(db, 'rooms/' + roomId), snap => {
-    if (!snap.exists()) return;
-    gameState = snap.val();
-    renderGame();
-  });
-}
-
-function renderGame() {
-  const gs = gameState;
-  const players = gs.players || {};
-
-  document.getElementById('myRoleBar').innerHTML = isHost
-    ? '<span class="role-host">Вы — ведущий</span>'
-    : '<span class="role-player">Вы играете как ' + (players[myPlayerId]?.name || '') + '</span>';
-
-  // Round tabs
-  const tabsEl = document.getElementById('roundTabs');
-  tabsEl.innerHTML = '';
-  ROUNDS_DATA.forEach((r, i) => {
-    const b = document.createElement('button');
-    b.className = 'round-tab' + (i === gs.currentRound ? ' active' : '');
-    b.textContent = r.label;
-    if (isHost) b.addEventListener('click', () => hostSwitchRound(i));
-    else b.style.cursor = 'default';
-    tabsEl.appendChild(b);
-  });
-
-  // Scoreboard
-  const sbEl = document.getElementById('scoreboard');
-  sbEl.innerHTML = '';
-  PLAYER_SLOTS.forEach((s, i) => {
-    const p = players[s];
-    if (!p) return;
-    const isChoosing = gs.choosingPlayer === s && !gs.currentQuestion;
-    const isBuzzed = gs.currentQuestion && gs.buzzed === s;
-    const div = document.createElement('div');
-    div.className = 'player-card p' + i +
-      (isChoosing ? ' choosing' : '') +
-      (isBuzzed ? ' buzzing' : '') +
-      (s === myPlayerId ? ' me' : '');
-    div.innerHTML = '<div class="turn-dot"></div>' +
-      '<div class="p-name">' + p.name + '</div>' +
-      '<div class="p-score" id="sc-' + s + '">' + (gs.scores?.[s] ?? 0) + '</div>';
-    sbEl.appendChild(div);
-  });
-
-  buildGrid(gs);
-
-  if (gs.currentQuestion) {
-    renderModal(gs);
-  } else {
-    document.getElementById('overlay').classList.remove('open');
-    stopTimer();
-  }
-}
-
-function buildGrid(gs) {
-  const grid = document.getElementById('grid');
-  grid.innerHTML = '';
-  const round = ROUNDS_DATA[gs.currentRound];
-  const used = gs.usedCells || {};
-  const locked = !!gs.currentQuestion;
-
-  round.categories.forEach(cat => {
-    const h = document.createElement('div');
-    h.className = 'cat-header';
-    h.textContent = cat.name;
-    grid.appendChild(h);
-  });
-
-  for (let row = 0; row < 5; row++) {
-    round.categories.forEach((cat, col) => {
-      const q = cat.questions[row];
-      const key = 'r' + gs.currentRound + '_c' + col + '_r' + row;
-      const isUsed = !!used[key];
-      const isMyTurn = gs.choosingPlayer === myPlayerId;
-      const cell = document.createElement('div');
-      cell.className = 'cell' + (isUsed ? ' used' : locked ? ' locked' : (!isHost && !isMyTurn ? ' locked' : ''));
-      cell.textContent = isUsed ? '' : q.val;
-      if (!isUsed && !locked && (isHost || isMyTurn)) {
-        cell.addEventListener('click', () => hostOpenQuestion(col, row, key));
+    // повторный вход по совпадению имени — занять прежнее место
+    const existing = Object.keys(players).find(id => (players[id].name||'').toLowerCase() === name.toLowerCase());
+    if(existing){
+      const ok = confirm(`Игрок с именем «${name}» уже есть в комнате. Занять его место?`);
+      if(ok){
+        roomId=code; myId=existing;
+        saveSession(); attachPresence(); subscribeRoom();
+        return;
       }
-      grid.appendChild(cell);
+      // иначе пытаемся войти как новый игрок (если лобби и есть место)
+    }
+    if(status!=='lobby'){ startError('Игра уже идёт — вход только под существующим именем'); restore(); return; }
+    if(Object.keys(players).length >= MAX_PLAYERS){ startError('Комната заполнена (макс. 10)'); restore(); return; }
+
+    const pid = newPlayerId();
+    const order = Object.keys(players).length;
+    const t = Date.now();
+    await update(ref(db,`rooms/${code}`), {
+      [`players/${pid}`]: { name, order, joinedAt:t, connected:true },
+      [`scores/${pid}`]: 0
     });
+    roomId=code; myId=pid;
+    saveSession(); attachPresence(); subscribeRoom();
+  }catch(e){
+    startError('Ошибка: '+e.message); restore();
   }
 }
+function startError(m){ const e=$('startErr'); e.textContent=m; clearTimeout(startError._t); startError._t=setTimeout(()=>e.textContent='',4000); }
+function saveSession(){ try{ localStorage.setItem('svoigra_session', JSON.stringify({roomId,myId})); }catch(e){} }
+function clearSession(){ try{ localStorage.removeItem('svoigra_session'); }catch(e){} }
 
-// ── HOST ACTIONS ──────────────────────────────────────────────────────────────
-async function hostSwitchRound(i) {
-  if (!isHost) return;
-  await update(ref(db, 'rooms/' + roomId), { currentRound: i, currentQuestion: null, buzzed: null });
-}
-
-async function hostOpenQuestion(col, row, key) {
-  const gs = gameState;
-  const q = ROUNDS_DATA[gs.currentRound].categories[col].questions[row];
-  const chooser = gs.choosingPlayer || 'p0';
-  const nextPlayer = nextTurnPlayer(gs);
-
-  // Determine modifier type
-  const special = q.special || null;
-  let phase = 'buzz';
-  if (special === 'give' || special === 'take') phase = special; // no-question modifiers
-  else if (special === 'auction') phase = 'auction';
-  else phase = 'buzz';
-
-  const qData = {
-    col, row, key,
-    q: (special === 'give' || special === 'take') ? null : q.q,
-    a: (special === 'give' || special === 'take') ? null : q.a,
-    val: q.val,
-    special: special,
-    phase: phase,
-    chooser: chooser,
-    ansPlayer: chooser,
-    auctionBet: null,
-    answerRevealed: false,
-    timerStart: null,
-    timedOut: false,
-    nextPlayer: nextPlayer,
-  };
-  await update(ref(db, 'rooms/' + roomId), {
-    currentQuestion: qData,
-    buzzed: null,
-    choosingPlayer: nextPlayer,
+/* ════════════════════════════════ SUBSCRIBE ════════════════════════════ */
+function subscribeRoom(){
+  if(unsub) unsub();
+  unsub = onValue(ref(db,`rooms/${roomId}`), snap=>{
+    if(!snap.exists()){
+      if(room){ toast('Комната была закрыта'); }
+      clearSession();
+      resetToStart();
+      return;
+    }
+    room = snap.val();
+    render();
   });
 }
-
-// ── MODAL ─────────────────────────────────────────────────────────────────────
-function renderModal(gs) {
-  const q = gs.currentQuestion;
-  const players = gs.players || {};
-  document.getElementById('overlay').classList.add('open');
-
-  document.getElementById('mCat').textContent = ROUNDS_DATA[gs.currentRound].categories[q.col].name;
-
-  const displayVal = q.auctionBet !== null ? q.auctionBet : q.val;
-  document.getElementById('mVal').textContent = displayVal;
-
-  // Reset all sections
-  document.getElementById('mPill').innerHTML = '';
-  document.getElementById('ansBox').classList.remove('visible');
-  document.getElementById('whoRow').innerHTML = '';
-  document.getElementById('mQ').textContent = '';
-  document.getElementById('auctionWrap').style.display = 'none';
-  document.getElementById('noQuestWrap').style.display = 'none';
-  document.getElementById('buzzSection').style.display = 'none';
-  document.getElementById('timerWrap').style.display = 'none';
-  document.getElementById('timeoutLabel').classList.remove('visible');
-  document.getElementById('buzzerWinner').classList.remove('visible');
-  document.getElementById('btnRow').innerHTML = '';
-  document.getElementById('modalWaiting').style.display = 'none';
-
-  // MODIFIER: give
-  if (q.phase === 'give') {
-    document.getElementById('mPill').innerHTML = '<div class="special-pill pill-give">Отдай очки</div>';
-    renderNoQuestionModifier(gs, 'give');
-    return;
-  }
-
-  // MODIFIER: take
-  if (q.phase === 'take') {
-    document.getElementById('mPill').innerHTML = '<div class="special-pill pill-take">Забери очки</div>';
-    renderNoQuestionModifier(gs, 'take');
-    return;
-  }
-
-  // AUCTION
-  if (q.phase === 'auction' && !q.auctionBet) {
-    document.getElementById('mPill').innerHTML = '<div class="special-pill pill-auction">Аукцион</div>';
-    if (isHost) {
-      document.getElementById('auctionWrap').style.display = 'block';
-      document.getElementById('auctionBal').textContent = gs.scores?.[q.chooser] ?? 0;
-      // preset buttons
-      renderAuctionPresets(q.val);
-    } else {
-      document.getElementById('modalWaiting').style.display = 'block';
-      document.getElementById('modalWaiting').textContent = 'Ведущий устанавливает ставку...';
-    }
-    return;
-  }
-
-  // DOUBLE
-  if (q.special === 'double' && q.phase === 'buzz' && q.auctionBet === null) {
-    // auto-set bet to double
-    document.getElementById('mPill').innerHTML = '<div class="special-pill pill-double">Двойная ставка — ' + (q.val * 2) + '</div>';
-    document.getElementById('mVal').textContent = q.val * 2;
-  }
-
-  // ALLIN
-  if (q.special === 'allin' && q.phase === 'buzz' && q.auctionBet === null) {
-    const bal = gs.scores?.[q.chooser] ?? 0;
-    document.getElementById('mPill').innerHTML = '<div class="special-pill pill-allin">Ва-банк — ' + bal + '</div>';
-    document.getElementById('mVal').textContent = bal;
-  }
-
-  // MINUSALL
-  if (q.special === 'minusall') {
-    document.getElementById('mPill').innerHTML = '<div class="special-pill pill-minusall">Минус всем за неверный</div>';
-  }
-
-  // Regular buzz phase
-  document.getElementById('mQ').textContent = q.q;
-  setWhoEl(q.ansPlayer, players);
-
-  if (q.answerRevealed) {
-    document.getElementById('ansText').textContent = q.a;
-    document.getElementById('ansBox').classList.add('visible');
-    stopTimer();
-  }
-
-  // Timer
-  if (!q.answerRevealed) {
-    document.getElementById('timerWrap').style.display = 'flex';
-    if (q.timerStart) {
-      startLocalTimer(q.timerStart);
-      if (q.timedOut) {
-        stopTimer();
-        document.getElementById('timeoutLabel').classList.add('visible');
-        document.getElementById('timerNum').textContent = '0';
-        updateRing(0);
-      }
-    } else {
-      updateRing(15);
-      document.getElementById('timerNum').textContent = '15';
-      document.getElementById('timerNum').classList.remove('danger');
-      document.getElementById('ringFill').classList.remove('danger');
-    }
-  }
-
-  // Buzzer winner
-  if (gs.buzzed) {
-    const bi = PLAYER_SLOTS.indexOf(gs.buzzed);
-    document.getElementById('buzzerWinner').classList.add('visible');
-    document.getElementById('bwDot').style.background = PLAYER_COLORS[bi];
-    document.getElementById('bwName').textContent = players[gs.buzzed]?.name || gs.buzzed;
-    document.getElementById('bwName').style.color = PLAYER_COLORS[bi];
-    setWhoEl(gs.buzzed, players);
-  }
-
-  // Buzz button for players
-  if (!isHost && !q.answerRevealed) {
-    const timerStarted = !!q.timerStart;
-    const alreadyBuzzed = gs.buzzed === myPlayerId;
-    const someoneBuzzed = !!gs.buzzed;
-
-    if (timerStarted && !someoneBuzzed && !q.timedOut) {
-      document.getElementById('buzzSection').style.display = 'block';
-      const btn = document.getElementById('buzzBtn');
-      const pi = PLAYER_SLOTS.indexOf(myPlayerId);
-      btn.className = 'buzz-big-btn p' + pi;
-      btn.disabled = false;
-      document.getElementById('buzzAlready').textContent = '';
-    } else if (alreadyBuzzed) {
-      document.getElementById('buzzSection').style.display = 'block';
-      const btn = document.getElementById('buzzBtn');
-      btn.disabled = true;
-      document.getElementById('buzzAlready').textContent = 'Вы нажали первым!';
-    } else if (someoneBuzzed) {
-      document.getElementById('buzzSection').style.display = 'block';
-      document.getElementById('buzzBtn').disabled = true;
-      document.getElementById('buzzAlready').textContent = 'Другой игрок нажал первым';
-    } else if (!timerStarted) {
-      document.getElementById('modalWaiting').style.display = 'block';
-      document.getElementById('modalWaiting').textContent = 'Ведущий запустит таймер...';
-    }
-  }
-
-  // Host controls
-  if (isHost) {
-    if (q.answerRevealed) {
-      const val = getEffectiveVal(q, gs);
-      setBtns([
-        { label: 'Верно +' + val, cls: 'btn-correct', fn: 'hostMarkRight' },
-        { label: 'Неверно -' + val, cls: 'btn-wrong', fn: 'hostMarkWrong' },
-        { label: 'Пропустить', cls: 'btn-skip', fn: 'hostSkip' },
-      ]);
-    } else {
-      const timerStarted = !!q.timerStart;
-      if (!timerStarted) {
-        setBtns([{ label: 'Запустить таймер', cls: 'btn-reveal', fn: 'hostStartTimer' }]);
-      } else {
-        setBtns([{ label: 'Показать ответ', cls: 'btn-reveal', fn: 'hostRevealAns' }]);
-      }
-    }
-  } else if (q.answerRevealed) {
-    document.getElementById('modalWaiting').style.display = 'block';
-    document.getElementById('modalWaiting').textContent = 'Ведущий оценивает ответ...';
-  }
+function resetToStart(){
+  if(unsub){ unsub(); unsub=null; }
+  room=null; roomId=null; myId=null; prevScores={}; shownModForKey=null; scheduledModForKey=null; finishCelebrated=false;
+  stopBuzzTick(); hideModOverlay();
+  showScreen('startScreen');
 }
 
-function renderNoQuestionModifier(gs, type) {
-  const q = gs.currentQuestion;
-  const players = gs.players || {};
-  const wrap = document.getElementById('noQuestWrap');
-  wrap.style.display = 'block';
-  wrap.innerHTML = '';
+/* ════════════════════════════════ RENDER ROUTER ════════════════════════ */
+function render(){
+  const status = room.gameState ? room.gameState.status : 'lobby';
+  if(status==='lobby'){ renderLobby(); }
+  else if(status==='finished'){ renderGame(); renderFinish(); }
+  else { renderGame(); }
+}
 
-  if (!isHost) {
-    wrap.innerHTML = '<div class="player-waiting">Ведущий управляет...</div>';
-    return;
+/* ════════════════════════════════ LOBBY RENDER ═════════════════════════ */
+function renderLobby(){
+  showScreen('lobbyScreen');
+  $('lobbyCode').textContent = roomId;
+  const link = location.origin + location.pathname + '?room=' + roomId;
+  $('inviteLink').value = link;
+
+  const players = orderedPlayers();
+  $('playerCount').textContent = `(${players.length}/${MAX_PLAYERS})`;
+  const hostId = room.gameState.hostId;
+  const grid = $('playersGrid');
+  grid.innerHTML = players.map(p=>{
+    const badges = [];
+    if(p.id===hostId) badges.push('<span class="badge badge-host">Создатель</span>');
+    if(p.id===myId) badges.push('<span class="badge badge-you">Вы</span>');
+    if(p.connected===false) badges.push('<span class="badge badge-off">Не в сети</span>');
+    return `<div class="pslot${p.connected===false?' off':''}">
+      <span class="pdot" style="background:${colorOf(p.id)}"></span>
+      <span class="pname">${esc(p.name)}</span>${badges.join('')}
+    </div>`;
+  }).join('');
+
+  const isHost = myId===hostId;
+  $('uploadCard').style.display = isHost ? 'block' : 'none';
+  $('hostControls').style.display = isHost ? 'block' : 'none';
+  $('lobbyWait').style.display = isHost ? 'none' : 'block';
+  if(isHost){
+    // один раз при первом входе в лобби подгружаем набор по умолчанию — игра готова к запуску сразу
+    if(!lobbyDefaultLoaded){ lobbyDefaultLoaded=true; if(!pendingBoard) loadDefault(); }
+    updateStartButton();
   }
+}
+let lobbyDefaultLoaded=false;
+function updateStartButton(){
+  const btn=$('btnStart');
+  if(!btn) return;
+  const players = orderedPlayers();
+  const enough = players.length>=2;
+  const hasBoard = !!pendingBoard;
+  btn.disabled = !(enough && hasBoard);
+  btn.textContent = !enough ? 'Нужно минимум 2 игрока'
+                  : !hasBoard ? 'Загрузите вопросы (или набор по умолчанию)'
+                  : 'Начать игру';
+}
 
-  // Amount picker
-  const label = document.createElement('div');
-  label.className = 'clabel';
-  label.textContent = type === 'give' ? 'Сколько очков отдать?' : 'Сколько очков забрать?';
-  wrap.appendChild(label);
-
-  const presets = [q.val, q.val * 2, q.val * 3];
-  const prow = document.createElement('div');
-  prow.className = 'auction-presets';
-  presets.forEach(v => {
-    const b = document.createElement('button');
-    b.className = 'preset-btn';
-    b.textContent = v;
-    b.addEventListener('click', () => {
-      wrap.querySelectorAll('.preset-btn').forEach(x => x.classList.remove('sel'));
-      b.classList.add('sel');
-      document.getElementById('noqAmtInput').value = v;
+async function startGame(){
+  if(myId!==room.gameState.hostId) return;
+  if(!pendingBoard){ toast('Сначала загрузите валидный набор вопросов'); return; }
+  const players = orderedPlayers();
+  if(players.length<2){ toast('Нужно минимум 2 игрока'); return; }
+  const turnOrder = players.map(p=>p.id);
+  $('btnStart').disabled=true;
+  try{
+    await update(ref(db,`rooms/${roomId}`), {
+      board: pendingBoard,
+      currentRound: 0,
+      currentTurn: turnOrder[0],
+      activeQuestion: null,
+      'gameState/status':'playing',
+      'gameState/turnOrder':turnOrder,
+      'gameState/turnIndex':0
     });
-    prow.appendChild(b);
-  });
-  wrap.appendChild(prow);
-
-  const inp = document.createElement('input');
-  inp.type = 'number';
-  inp.className = 'auction-input';
-  inp.id = 'noqAmtInput';
-  inp.placeholder = 'Своя сумма';
-  inp.min = 0;
-  wrap.appendChild(inp);
-
-  const label2 = document.createElement('div');
-  label2.className = 'clabel';
-  label2.style.marginTop = '14px';
-  label2.textContent = type === 'give' ? 'Кому отдать?' : 'У кого забрать?';
-  wrap.appendChild(label2);
-
-  const psel = document.createElement('div');
-  psel.className = 'p-select';
-  psel.id = 'noqPlayerSel';
-  PLAYER_SLOTS.forEach((s, i) => {
-    const p = players[s];
-    if (!p) return;
-    if (type === 'give' && s === q.chooser) return; // cant give to yourself
-    const b = document.createElement('button');
-    b.className = 'psel-btn';
-    b.textContent = p.name;
-    b.dataset.slot = s;
-    b.addEventListener('click', () => {
-      psel.querySelectorAll('.psel-btn').forEach(x => x.classList.remove('sel'));
-      b.classList.add('sel');
-    });
-    psel.appendChild(b);
-  });
-  wrap.appendChild(psel);
-
-  const confirmBtn = document.createElement('button');
-  confirmBtn.className = 'btn btn-gold btn-full';
-  confirmBtn.style.marginTop = '12px';
-  confirmBtn.textContent = 'Применить';
-  confirmBtn.addEventListener('click', () => applyNoQuestModifier(type));
-  wrap.appendChild(confirmBtn);
-
-  const skipBtn = document.createElement('button');
-  skipBtn.className = 'btn btn-skip btn-full';
-  skipBtn.style.marginTop = '6px';
-  skipBtn.textContent = 'Пропустить';
-  skipBtn.addEventListener('click', () => hostSkip());
-  wrap.appendChild(skipBtn);
+  }catch(e){ toast('Ошибка запуска: '+e.message); $('btnStart').disabled=false; }
 }
 
-async function applyNoQuestModifier(type) {
-  const gs = gameState;
-  const q = gs.currentQuestion;
-  const amt = parseInt(document.getElementById('noqAmtInput')?.value) || 0;
-  if (amt <= 0) return;
-  const selBtn = document.querySelector('#noqPlayerSel .psel-btn.sel');
-  if (!selBtn) return;
-  const targetSlot = selBtn.dataset.slot;
-  const chooserSlot = q.chooser;
+/* ════════════════════════════════ GAME RENDER ══════════════════════════ */
+function renderGame(){
+  showScreen('gameScreen');
+  const gs = room.gameState;
+  const board = room.board;
+  if(!board){ return; }
 
-  const updates = {};
-  if (type === 'give') {
-    // chooser gives amt to target
-    updates['scores/' + chooserSlot] = (gs.scores?.[chooserSlot] ?? 0) - amt;
-    updates['scores/' + targetSlot] = (gs.scores?.[targetSlot] ?? 0) + amt;
-    updates['players/' + chooserSlot + '/score'] = updates['scores/' + chooserSlot];
-    updates['players/' + targetSlot + '/score'] = updates['scores/' + targetSlot];
-  } else {
-    // chooser takes amt from target
-    updates['scores/' + targetSlot] = (gs.scores?.[targetSlot] ?? 0) - amt;
-    updates['scores/' + chooserSlot] = (gs.scores?.[chooserSlot] ?? 0) + amt;
-    updates['players/' + targetSlot + '/score'] = updates['scores/' + targetSlot];
-    updates['players/' + chooserSlot + '/score'] = updates['scores/' + chooserSlot];
-  }
-  updates['currentQuestion'] = null;
-  updates['buzzed'] = null;
-  updates['usedCells/' + q.key] = true;
-
-  await update(ref(db, 'rooms/' + roomId), updates);
-}
-
-function renderAuctionPresets(nominalVal) {
-  const wrap = document.getElementById('auctionWrap');
-  // Remove old presets if any
-  wrap.querySelectorAll('.auction-presets').forEach(e => e.remove());
-
-  const presets = [nominalVal, nominalVal * 2, nominalVal * 5];
-  const prow = document.createElement('div');
-  prow.className = 'auction-presets';
-  presets.forEach(v => {
-    const b = document.createElement('button');
-    b.className = 'preset-btn';
-    b.textContent = v;
-    b.addEventListener('click', () => {
-      prow.querySelectorAll('.preset-btn').forEach(x => x.classList.remove('sel'));
-      b.classList.add('sel');
-      document.getElementById('auctionInput').value = v;
-    });
-    prow.appendChild(b);
-  });
-  // Insert before input
-  const inp = document.getElementById('auctionInput');
-  wrap.insertBefore(prow, inp);
-}
-
-function getEffectiveVal(q, gs) {
-  if (q.auctionBet !== null) return q.auctionBet;
-  if (q.special === 'double') return q.val * 2;
-  if (q.special === 'allin') return gs.scores?.[q.chooser] ?? 0;
-  return q.val;
-}
-
-function setWhoEl(pid, players) {
-  const i = PLAYER_SLOTS.indexOf(pid);
-  document.getElementById('whoRow').innerHTML =
-    'Отвечает: <span class="who-name wc' + i + '">' + (players?.[pid]?.name || pid) + '</span>';
-}
-
-function setBtns(list) {
-  document.getElementById('btnRow').innerHTML = list.map(b =>
-    '<button class="btn ' + b.cls + '" data-fn="' + b.fn + '">' + b.label + '</button>'
+  $('roundPills').innerHTML = board.rounds.map((r,i)=>
+    `<div class="round-pill${i===room.currentRound?' active':''}">${esc(r.name)}</div>`
   ).join('');
-  document.querySelectorAll('#btnRow button[data-fn]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const fnMap = { hostRevealAns, hostMarkRight, hostMarkWrong, hostSkip, hostStartTimer };
-      const fn = btn.getAttribute('data-fn');
-      if (fnMap[fn]) fnMap[fn]();
-    });
+
+  const turnPid = room.currentTurn;
+  const turnPlayer = room.players && room.players[turnPid];
+  const banner = $('turnBanner');
+  if(gs.status==='finished'){
+    banner.innerHTML = 'Игра завершена';
+  } else {
+    const isMine = turnPid===myId;
+    let html = isMine
+      ? '<b style="color:var(--gold)">Ваш ход — выберите вопрос</b>'
+      : `Ходит: <b style="color:${colorOf(turnPid)}">${esc(playerName(turnPid))}</b>`;
+    // защита от зависания: если текущий игрок не в сети и вопрос не открыт — любой может пропустить ход
+    if(!room.activeQuestion && turnPlayer && turnPlayer.connected===false && !isMine){
+      html += ` · <span id="skipTurnBtn" style="color:var(--red);cursor:pointer;text-decoration:underline;font-weight:700">Пропустить ход</span>`;
+    }
+    banner.innerHTML = html;
+    const sb = $('skipTurnBtn');
+    if(sb) sb.addEventListener('click', skipTurn);
+  }
+
+  renderScoreboard();
+  renderBoard();
+  renderModal();
+}
+
+function renderScoreboard(){
+  const sb = $('scoreboard');
+  const players = orderedPlayers();
+  const aq = room.activeQuestion;
+  sb.classList.toggle('center', players.length<=4);
+  sb.innerHTML = players.map(p=>{
+    const isTurn = room.currentTurn===p.id && !aq && room.gameState.status==='playing';
+    const isAns = aq && aq.answerer===p.id;
+    const score = (room.scores && room.scores[p.id]) || 0;
+    const col = colorOf(p.id);
+    return `<div class="pcard${isTurn?' turn':''}${isAns?' answerer':''}${p.id===myId?' me':''}${p.connected===false?' off':''}" style="${isTurn||isAns?`border-color:${col};color:${col}`:''}">
+      <div class="turndot" style="${isTurn?`background:${col}`:''}"></div>
+      <div class="pn">${esc(p.name)}</div>
+      <div class="ps" id="ps-${p.id}" style="color:${col}">${score}</div>
+    </div>`;
+  }).join('');
+  players.forEach(p=>{
+    const prev = prevScores[p.id];
+    const cur = (room.scores && room.scores[p.id]) || 0;
+    if(prev!==undefined && prev!==cur){
+      const el=$('ps-'+p.id);
+      if(el){ el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
+    }
+    prevScores[p.id]=cur;
   });
 }
 
-// ── TIMER ─────────────────────────────────────────────────────────────────────
-function startLocalTimer(startTs) {
-  stopTimer();
-  function tick() {
-    const elapsed = (Date.now() - startTs) / 1000;
-    const remaining = Math.max(0, 15 - elapsed);
-    document.getElementById('timerNum').textContent = Math.ceil(remaining);
-    updateRing(remaining);
-    const danger = remaining <= 5;
-    document.getElementById('timerNum').classList.toggle('danger', danger);
-    document.getElementById('ringFill').classList.toggle('danger', danger);
-    if (remaining <= 0) {
-      stopTimer();
-      if (isHost) hostOnTimeout();
+function renderBoard(){
+  const board = room.board;
+  const ri = room.currentRound;
+  const r = board.rounds[ri];
+  const used = (room.usedCells) || {};
+  const aq = room.activeQuestion;
+  const myTurn = room.currentTurn===myId && !aq && room.gameState.status==='playing';
+  const el = $('board');
+  let html = r.categories.map(c=>`<div class="cat-h">${esc(c.name)}</div>`).join('');
+  for(let row=0; row<5; row++){
+    r.categories.forEach((c,col)=>{
+      const q = c.questions[row];
+      const key = `r${ri}c${col}q${row}`;
+      const isUsed = !!used[key];
+      const pickable = myTurn && !isUsed;
+      html += `<div class="cell ${isUsed?'used':pickable?'pickable':'locked'}" data-col="${col}" data-row="${row}">${isUsed?'':q.value}</div>`;
+    });
+  }
+  el.innerHTML = html;
+  if(myTurn){
+    el.querySelectorAll('.cell.pickable').forEach(cell=>{
+      cell.addEventListener('click', ()=> openQuestion(+cell.dataset.col, +cell.dataset.row));
+    });
+  }
+}
+
+/* ════════════════════════════════ OPEN QUESTION ════════════════════════ */
+async function openQuestion(col,row){
+  const gs = room.gameState;
+  if(gs.status!=='playing') return;
+  if(room.currentTurn!==myId) return;
+  if(room.activeQuestion) return;
+  const ri = room.currentRound;
+  const key = `r${ri}c${col}q${row}`;
+  if(room.usedCells && room.usedCells[key]) return;
+  const q = room.board.rounds[ri].categories[col].questions[row];
+
+  const picker = myId;
+  const mod = q.modifier || null;
+  const pickerScore = (room.scores && room.scores[picker]) || 0;
+
+  const aq = {
+    round: ri, col, row, key,
+    value: q.value,
+    modifier: mod,
+    question: q.question,
+    answer: q.answer,
+    picker,
+    answerer: (mod && mod!=='all_in') ? null : picker,
+    phase: mod ? 'modifier' : 'answering',
+    allowNoKnow: !mod,            // «Не знаю» только в обычном вопросе на первом шаге
+    revealed: false,
+    buzzWinner: null,
+    buzzDeadline: null,
+    returned: false,
+    allInStake: mod==='all_in' ? Math.abs(pickerScore) : null,
+    resolved: false,
+    createdAt: now()
+  };
+
+  // транзакция: открыть только если сейчас никто не открыт + ход всё ещё мой (защита от гонок и двойных кликов)
+  const res = await runTransaction(ref(db,`rooms/${roomId}/activeQuestion`), cur=>{
+    if(cur) return;
+    return aq;
+  });
+  if(res.committed){
+    await update(ref(db,`rooms/${roomId}`), { [`usedCells/${key}`]: true });
+  }
+}
+
+/* ════════════════════════════════ MODIFIER FLOW ════════════════════════ */
+function maybeRunModifierAnim(){
+  const aq = room.activeQuestion;
+  if(!aq || aq.phase!=='modifier'){ hideModOverlay(); return; }
+  if(shownModForKey!==aq.key){
+    shownModForKey = aq.key;
+    showModOverlay(aq.modifier);
+  }
+  if(aq.picker===myId && scheduledModForKey!==aq.key){
+    scheduledModForKey = aq.key;
+    clearTimeout(modAnimTimer);
+    modAnimTimer = setTimeout(()=> advanceAfterModifier(aq.key), MOD_ANIM_MS);
+  }
+}
+function showModOverlay(mod){
+  const info = MOD_INFO[mod] || {name:mod,desc:''};
+  const card = $('modCard');
+  const isAllIn = mod==='all_in';
+  card.parentElement.className = 'mod-overlay open' + (isAllIn?' mod-allin':'');
+  card.innerHTML =
+    (isAllIn ? '<div class="mod-allin-bg"></div>' : '') +
+    `<div class="mod-kicker">Модификатор</div>
+     <div class="mod-name">${esc(info.name)}</div>
+     <div class="mod-desc">${esc(info.desc)}</div>`;
+  if(isAllIn) spawnSparks();
+}
+function hideModOverlay(){ const o=$('modOverlay'); o.className='mod-overlay'; }
+function spawnSparks(){
+  const ov=$('modOverlay');
+  for(let i=0;i<24;i++){
+    const s=document.createElement('div'); s.className='spark';
+    const ang=Math.random()*Math.PI*2, dist=120+Math.random()*180;
+    s.style.left='50%'; s.style.top='50%';
+    s.style.setProperty('--dx',Math.cos(ang)*dist+'px');
+    s.style.setProperty('--dy',Math.sin(ang)*dist+'px');
+    s.style.background = Math.random()>0.5 ? '#f5c842' : '#ff5e5e';
+    s.style.animationDelay=(Math.random()*0.3)+'s';
+    ov.appendChild(s);
+    setTimeout(()=>s.remove(),1500);
+  }
+}
+async function advanceAfterModifier(key){
+  const aq = room.activeQuestion;
+  if(!aq || aq.key!==key || aq.phase!=='modifier') return;
+  const mod = aq.modifier;
+  if(mod==='double'){
+    await applyAndFinish([{ pid:aq.picker, fn:v=> (v||0)*2 }], aq);
+  } else if(mod==='flip_sign'){
+    await applyAndFinish([{ pid:aq.picker, fn:v=> -(v||0) }], aq);
+  } else if(mod==='all_in'){
+    await update(ref(db,`rooms/${roomId}/activeQuestion`), { phase:'answering', answerer:aq.picker, allowNoKnow:false });
+  } else if(mod==='give_points' || mod==='take_points'){
+    const others = orderedPlayers().filter(p=>p.id!==aq.picker);
+    if(others.length===0){ await applyAndFinish([], aq); }
+    else { await update(ref(db,`rooms/${roomId}/activeQuestion`), { phase:'select' }); }
+  }
+}
+
+/* ════════════════════════════════ RESOLUTION CORE ══════════════════════ */
+// claim — гарантирует ровно одно применение результата (защита от гонок/двойных нажатий)
+async function claimResolution(){
+  const res = await runTransaction(ref(db,`rooms/${roomId}/activeQuestion`), cur=>{
+    if(!cur || cur.resolved) return;
+    cur.resolved = true;
+    return cur;
+  });
+  return res.committed && res.snapshot.exists() && res.snapshot.val().resolved===true;
+}
+// применить изменения счёта (через транзакции) и завершить ход
+async function applyAndFinish(scoreOps, aq){
+  const claimed = await claimResolution();
+  if(!claimed) return;
+  for(const op of (scoreOps||[])){
+    const fn = op.fn ? op.fn : (v=> (v||0) + (op.delta||0));
+    await runTransaction(ref(db,`rooms/${roomId}/scores/${op.pid}`), fn);
+  }
+  await finalizeTurn(aq);
+}
+// закрыть вопрос, продвинуть ход по кругу, проверить смену раунда и конец игры
+async function finalizeTurn(aq){
+  const gs = room.gameState;
+  const order = (gs.turnOrder && gs.turnOrder.length) ? gs.turnOrder : orderedPlayers().map(p=>p.id);
+  const n = order.length;
+  // currentTurn (= открывший вопрос) — источник истины для порядка хода.
+  // Ход всегда идёт строго по кругу от того, кто открыл вопрос, независимо от того, кто отвечал.
+  let curIdx = order.indexOf(aq.picker);
+  if(curIdx<0) curIdx = order.indexOf(room.currentTurn);
+  if(curIdx<0) curIdx = (typeof gs.turnIndex==='number') ? gs.turnIndex : 0;
+  const nextIdx = n>0 ? (curIdx+1)%n : 0;
+  const nextTurn = order[nextIdx];
+
+  const updates = {
+    activeQuestion: null,
+    'gameState/turnIndex': nextIdx,
+    currentTurn: nextTurn,
+    [`usedCells/${aq.key}`]: true
+  };
+
+  const used = Object.assign({}, room.usedCells || {});
+  used[aq.key] = true;
+  const ri = room.currentRound;
+  let countThisRound = 0;
+  for(const k in used){ if(k.startsWith(`r${ri}c`)) countThisRound++; }
+
+  if(countThisRound>=30){
+    if(ri<2){
+      updates.currentRound = ri+1;
+    } else {
+      const t = Date.now();
+      updates['gameState/status']='finished';
+      updates['gameState/finishedAt']=t;
+      updates.finishedAt=t;
     }
   }
-  tick();
-  timerInterval = setInterval(tick, 200);
-}
-function stopTimer() {
-  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
-}
-function updateRing(remaining) {
-  const pct = Math.max(0, remaining / 15);
-  document.getElementById('ringFill').style.strokeDashoffset = CIRCUMFERENCE * (1 - pct);
-}
-async function hostOnTimeout() {
-  if (!gameState?.currentQuestion || gameState.currentQuestion.timedOut) return;
-  await update(ref(db, 'rooms/' + roomId + '/currentQuestion'), { timedOut: true });
+  await update(ref(db,`rooms/${roomId}`), updates);
 }
 
-// ── HOST QUESTION CONTROLS ────────────────────────────────────────────────────
-async function hostStartTimer() {
-  if (!isHost || !gameState?.currentQuestion) return;
-  // Auto-apply double/allin before starting
-  const q = gameState.currentQuestion;
-  const gs = gameState;
-  const updates = {};
-  if (q.special === 'double' && q.auctionBet === null) {
-    updates['currentQuestion/auctionBet'] = q.val * 2;
+// безопасный пропуск хода, если текущий игрок не в сети (защита от зависания)
+async function skipTurn(){
+  const gs = room.gameState;
+  if(gs.status!=='playing' || room.activeQuestion) return;
+  const order = (gs.turnOrder && gs.turnOrder.length) ? gs.turnOrder : orderedPlayers().map(p=>p.id);
+  const cur = room.currentTurn;
+  const p = room.players && room.players[cur];
+  if(!p || p.connected!==false) return;            // пропускаем только отключённого
+  const idx = order.indexOf(cur);
+  if(idx<0) return;
+  const next = order[(idx+1)%order.length];
+  // транзакция: продвигаем только если ход всё ещё у того же отключённого игрока (без двойного пропуска)
+  const res = await runTransaction(ref(db,`rooms/${roomId}/currentTurn`), c=>{
+    if(c!==cur) return;
+    return next;
+  });
+  if(res.committed){
+    await update(ref(db,`rooms/${roomId}/gameState`), { turnIndex:(idx+1)%order.length });
   }
-  if (q.special === 'allin' && q.auctionBet === null) {
-    updates['currentQuestion/auctionBet'] = gs.scores?.[q.chooser] ?? 0;
-  }
-  updates['currentQuestion/timerStart'] = Date.now();
-  updates['currentQuestion/timedOut'] = false;
-  updates['buzzed'] = null;
-  await update(ref(db, 'rooms/' + roomId), updates);
 }
 
-async function confirmAuction() {
-  if (!isHost || !gameState?.currentQuestion) return;
-  const raw = parseInt(document.getElementById('auctionInput').value) || 0;
-  if (raw <= 0) return;
-  const updates = {
-    'currentQuestion/auctionBet': raw,
-    'currentQuestion/phase': 'buzz',
-    'currentQuestion/timerStart': null,
-    'currentQuestion/timedOut': false,
-    'buzzed': null,
-  };
-  await update(ref(db, 'rooms/' + roomId), updates);
+/* ════════════════════════════════ ANSWER ACTIONS ═══════════════════════ */
+async function revealAnswer(){
+  const aq = room.activeQuestion;
+  if(!aq || aq.answerer!==myId || aq.revealed) return;
+  await update(ref(db,`rooms/${roomId}/activeQuestion`), { revealed:true });
 }
-
-async function hostRevealAns() {
-  if (!isHost || !gameState?.currentQuestion) return;
-  stopTimer();
-  await update(ref(db, 'rooms/' + roomId + '/currentQuestion'), { answerRevealed: true, timedOut: true });
-}
-
-async function hostMarkRight() {
-  if (!isHost || !gameState?.currentQuestion) return;
-  const q = gameState.currentQuestion;
-  const gs = gameState;
-  const val = getEffectiveVal(q, gs);
-  const ap = gs.buzzed || q.ansPlayer || q.chooser;
-  const newScore = (gs.scores?.[ap] ?? 0) + val;
-
-  // minusall: correct = normal for answerer, no penalty for others
-  const updates = {
-    ['scores/' + ap]: newScore,
-    ['players/' + ap + '/score']: newScore,
-    currentQuestion: null,
-    buzzed: null,
-    ['usedCells/' + q.key]: true,
-  };
-  await update(ref(db, 'rooms/' + roomId), updates);
-}
-
-async function hostMarkWrong() {
-  if (!isHost || !gameState?.currentQuestion) return;
-  const q = gameState.currentQuestion;
-  const gs = gameState;
-  const val = getEffectiveVal(q, gs);
-  const ap = gs.buzzed || q.ansPlayer || q.chooser;
-
-  const updates = {};
-
-  if (q.special === 'minusall') {
-    // deduct from ALL other players
-    PLAYER_SLOTS.forEach(s => {
-      if (!gs.players?.[s]) return;
-      if (s !== ap) {
-        const newScore = (gs.scores?.[s] ?? 0) - val;
-        updates['scores/' + s] = newScore;
-        updates['players/' + s + '/score'] = newScore;
-      }
-    });
-    // answerer gets nothing
+async function markCorrect(){
+  const aq = room.activeQuestion;
+  if(!aq || aq.answerer!==myId || !aq.revealed) return;
+  const pid = aq.answerer;
+  if(aq.modifier==='all_in'){
+    const stake = aq.allInStake||0;
+    await applyAndFinish([{ pid, fn:v=> (v||0) + stake }], aq);
   } else {
-    const newScore = (gs.scores?.[ap] ?? 0) - val;
-    updates['scores/' + ap] = newScore;
-    updates['players/' + ap + '/score'] = newScore;
+    await applyAndFinish([{ pid, delta: aq.value }], aq);
+  }
+}
+async function markWrong(){
+  const aq = room.activeQuestion;
+  if(!aq || aq.answerer!==myId || !aq.revealed) return;
+  const pid = aq.answerer;
+  if(aq.modifier==='all_in'){
+    const stake = aq.allInStake||0;
+    await applyAndFinish([{ pid, fn:v=> (v||0) - stake }], aq);
+  } else {
+    await applyAndFinish([{ pid, delta: -aq.value }], aq);
+  }
+}
+async function sayDontKnow(){
+  const aq = room.activeQuestion;
+  if(!aq || aq.answerer!==myId || !aq.allowNoKnow || aq.revealed) return;
+  const others = orderedPlayers().filter(p=>p.id!==aq.picker);
+  if(others.length===0){
+    await update(ref(db,`rooms/${roomId}/activeQuestion`), { answerer:aq.picker, allowNoKnow:false, returned:true });
+    return;
+  }
+  await update(ref(db,`rooms/${roomId}/activeQuestion`), {
+    phase:'buzzing', answerer:null, buzzWinner:null, allowNoKnow:false,
+    buzzDeadline: now()+BUZZ_MS
+  });
+}
+
+/* ════════════════════════════════ BUZZ ═════════════════════════════════ */
+async function pressBuzz(){
+  const aq = room.activeQuestion;
+  if(!aq || aq.phase!=='buzzing') return;
+  if(aq.picker===myId) return;
+  if(now() >= (aq.buzzDeadline||0)) return;
+  await runTransaction(ref(db,`rooms/${roomId}/activeQuestion`), cur=>{
+    if(!cur || cur.phase!=='buzzing' || cur.buzzWinner) return;
+    cur.buzzWinner = myId;
+    cur.answerer = myId;
+    cur.phase = 'answering';
+    cur.allowNoKnow = false;
+    return cur;
+  });
+}
+async function resolveBuzzTimeout(){
+  await runTransaction(ref(db,`rooms/${roomId}/activeQuestion`), cur=>{
+    if(!cur || cur.phase!=='buzzing' || cur.buzzWinner) return;
+    if(now() < (cur.buzzDeadline||0)) return;
+    cur.phase = 'answering';
+    cur.answerer = cur.picker;     // возвращается первоначальному игроку
+    cur.allowNoKnow = false;
+    cur.returned = true;
+    return cur;
+  });
+}
+
+/* ════════════════════════════════ GIVE / TAKE ══════════════════════════ */
+async function confirmTransfer(){
+  const aq = room.activeQuestion;
+  if(!aq || aq.picker!==myId || aq.phase!=='select') return;
+  if(!selectedTarget){ toast('Выберите игрока'); return; }
+  if(!room.players[selectedTarget]){ toast('Игрок недоступен'); selectedTarget=null; return; }
+  const tgt = selectedTarget;
+  const val = aq.value;
+  let ops;
+  if(aq.modifier==='give_points'){
+    ops = [ { pid:aq.picker, delta:-val }, { pid:tgt, delta:val } ];
+  } else {
+    ops = [ { pid:tgt, delta:-val }, { pid:aq.picker, delta:val } ];
+  }
+  selectedTarget = null;
+  await applyAndFinish(ops, aq);
+}
+
+/* ════════════════════════════════ MODAL RENDER ═════════════════════════ */
+function renderModal(){
+  const aq = room.activeQuestion;
+  const overlay = $('overlay');
+
+  maybeRunModifierAnim();
+
+  if(!aq || aq.phase==='modifier'){
+    overlay.classList.remove('open');
+    stopBuzzTick();
+    return;
+  }
+  hideModOverlay();
+  overlay.classList.add('open');
+
+  const board = room.board;
+  const cat = board.rounds[aq.round].categories[aq.col];
+  const inner = $('modalInner');
+
+  // SELECT (give/take target)
+  if(aq.phase==='select'){
+    stopBuzzTick();
+    const others = orderedPlayers().filter(p=>p.id!==aq.picker);
+    const isPicker = aq.picker===myId;
+    const modName = MOD_INFO[aq.modifier].name;
+    let html = `<div class="m-top"><div><div class="m-cat">${esc(cat.name)} · ${esc(modName)}</div><div class="m-val">${aq.value}</div></div></div>`;
+    if(isPicker){
+      html += `<div class="target-sel"><div class="tl">${aq.modifier==='give_points'?'Кому отдать очки?':'У кого забрать очки?'}</div><div class="target-btns" id="targetBtns">`;
+      html += others.map(p=>`<button class="tbtn" data-pid="${p.id}">${esc(p.name)}</button>`).join('');
+      html += `</div></div>`;
+      html += `<div class="btn-row"><button class="btn btn-gold full" id="btnTransfer">Подтвердить</button></div>`;
+    } else {
+      html += `<div class="who">Выбирает: <b style="color:${colorOf(aq.picker)}">${esc(playerName(aq.picker))}</b></div><div class="wait-note">Ожидание выбора игрока</div>`;
+    }
+    inner.innerHTML = html;
+    if(isPicker){
+      const btns = inner.querySelectorAll('#targetBtns .tbtn');
+      btns.forEach(b=> b.addEventListener('click', ()=>{
+        btns.forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); selectedTarget=b.dataset.pid;
+      }));
+      if(selectedTarget){ const cur=inner.querySelector(`.tbtn[data-pid="${selectedTarget}"]`); if(cur) cur.classList.add('sel'); }
+      $('btnTransfer').addEventListener('click', confirmTransfer);
+    }
+    return;
   }
 
-  updates['currentQuestion'] = null;
-  updates['buzzed'] = null;
-  updates['usedCells/' + q.key] = true;
-  await update(ref(db, 'rooms/' + roomId), updates);
+  // ANSWERING / BUZZING
+  const isAllIn = aq.modifier==='all_in';
+  const dispVal = isAllIn ? (aq.allInStake||0) : aq.value;
+  let html = `<div class="m-top"><div>
+      <div class="m-cat">${esc(cat.name)}${isAllIn?' · Ва-банк':''}</div>
+      <div class="m-val">${dispVal}</div></div></div>`;
+
+  // BUZZING
+  if(aq.phase==='buzzing'){
+    html += `<div class="who">Никто не ответил. Кто первым нажмёт — отвечает.</div>`;
+    html += `<div class="timer">
+        <div><div class="tlabel">Осталось</div><div class="tnum" id="tnum">30</div></div>
+        <div class="tbar"><div class="tfill" id="tfill" style="width:100%"></div></div>
+      </div>`;
+    html += `<div class="m-q">${esc(aq.question)}</div>`;
+    const canBuzz = aq.picker!==myId;
+    if(canBuzz){
+      html += `<button class="buzz-big" id="buzzBtn">ОТВЕТИТЬ</button>`;
+    } else {
+      html += `<div class="wait-note">Вы передали вопрос. Ждём, кто перехватит.</div>`;
+    }
+    inner.innerHTML = html;
+    if(canBuzz){ $('buzzBtn').addEventListener('click', pressBuzz); }
+    startBuzzTick(aq);
+    return;
+  }
+
+  stopBuzzTick();
+
+  // ANSWERING
+  const answerer = aq.answerer;
+  const iAnswer = answerer===myId;
+  html += `<div class="who">Отвечает: <b style="color:${colorOf(answerer)}">${esc(playerName(answerer))}</b>${aq.buzzWinner?' (перехват)':(aq.returned?' (вопрос вернулся)':'')}</div>`;
+  html += `<div class="m-q">${esc(aq.question)}</div>`;
+  if(aq.revealed){
+    html += `<div class="ansbox"><div class="al">Ответ</div><div class="at">${esc(aq.answer)}</div></div>`;
+  }
+
+  if(iAnswer){
+    if(!aq.revealed){
+      html += `<div class="btn-row"><button class="btn btn-green ${aq.allowNoKnow?'':'full'}" id="btnReveal">Показать ответ</button>`;
+      if(aq.allowNoKnow){ html += `<button class="btn btn-red" id="btnDont">Не знаю</button>`; }
+      html += `</div>`;
+    } else {
+      const v = isAllIn ? (aq.allInStake||0) : aq.value;
+      html += `<div class="btn-row">
+        <button class="btn btn-green" id="btnCorrect">Правильно +${v}</button>
+        <button class="btn btn-red" id="btnWrong">Неправильно -${v}</button></div>`;
+    }
+  } else {
+    html += `<div class="wait-note">Отвечает ${esc(playerName(answerer))}. Ожидание...</div>`;
+  }
+  inner.innerHTML = html;
+  if(iAnswer){
+    if(!aq.revealed){
+      $('btnReveal').addEventListener('click', revealAnswer);
+      if(aq.allowNoKnow) $('btnDont').addEventListener('click', sayDontKnow);
+    } else {
+      $('btnCorrect').addEventListener('click', markCorrect);
+      $('btnWrong').addEventListener('click', markWrong);
+    }
+  }
 }
 
-async function hostSkip() {
-  if (!isHost || !gameState?.currentQuestion) return;
-  const q = gameState.currentQuestion;
-  stopTimer();
-  await update(ref(db, 'rooms/' + roomId), {
-    currentQuestion: null,
-    buzzed: null,
-    ['usedCells/' + q.key]: true,
-  });
+/* ════════════════════════════════ BUZZ TIMER UI ════════════════════════ */
+function startBuzzTick(aq){
+  stopBuzzTick();
+  const deadline = aq.buzzDeadline||0;
+  const tick=()=>{
+    const cur = room.activeQuestion;
+    if(!cur || cur.phase!=='buzzing'){ stopBuzzTick(); return; }
+    const remaining = Math.max(0, deadline - now());
+    const sec = Math.ceil(remaining/1000);
+    const numEl=$('tnum'), fillEl=$('tfill');
+    if(numEl){ numEl.textContent=sec; numEl.classList.toggle('danger', sec<=10); }
+    if(fillEl){ fillEl.style.width=(remaining/BUZZ_MS*100)+'%'; fillEl.classList.toggle('danger', sec<=10); }
+    if(remaining<=0){ stopBuzzTick(); resolveBuzzTimeout(); }
+  };
+  tick();
+  buzzTick=setInterval(tick,200);
+}
+function stopBuzzTick(){ if(buzzTick){ clearInterval(buzzTick); buzzTick=null; } }
+
+/* ════════════════════════════════ FINISH ═══════════════════════════════ */
+function renderFinish(){
+  showScreen('finishScreen');
+  $('overlay').classList.remove('open');
+  hideModOverlay(); stopBuzzTick();
+  const players = orderedPlayers().map(p=>({ id:p.id, name:p.name, score:(room.scores&&room.scores[p.id])||0 }));
+  players.sort((a,b)=> b.score-a.score);
+  const winner = players[0];
+  $('winStage').innerHTML = winner ? `
+    <div class="win-kicker">Победитель</div>
+    <div class="win-name" style="color:${colorOf(winner.id)}">${esc(winner.name)}</div>
+    <div class="win-score">${winner.score} очков</div>` : '';
+  $('standings').innerHTML = players.map((p,i)=>`
+    <div class="stand-row${i===0?' first':''}" style="animation-delay:${i*0.08}s">
+      <div class="stand-rank">${i+1}</div>
+      <div class="stand-name">${esc(p.name)}</div>
+      <div class="stand-score" style="color:${colorOf(p.id)}">${p.score}</div>
+    </div>`).join('');
+
+  if(!finishCelebrated){
+    finishCelebrated=true;
+    confettiBurst();
+    // создатель планирует удаление комнаты через 30 минут (best-effort, пока вкладка открыта)
+    if(myId===room.gameState.hostId){
+      setTimeout(()=>{ remove(ref(db,`rooms/${roomId}`)).catch(()=>{}); }, FINISHED_TTL_MS);
+    }
+  }
+}
+function confettiBurst(){
+  for(let i=0;i<90;i++){
+    const c=document.createElement('div'); c.className='confetti';
+    c.style.left=Math.random()*100+'vw';
+    c.style.background=PALETTE[i%PALETTE.length];
+    c.style.animationDuration=(2.5+Math.random()*2.5)+'s';
+    c.style.animationDelay=(Math.random()*1.5)+'s';
+    c.style.transform=`rotate(${Math.random()*360}deg)`;
+    if(Math.random()>0.5) c.style.borderRadius='50%';
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),6000);
+  }
 }
 
-// ── PLAYER BUZZ ───────────────────────────────────────────────────────────────
-async function pressBuzz() {
-  if (!gameState?.currentQuestion) return;
-  if (gameState.buzzed) return;
-  if (!gameState.currentQuestion.timerStart) return;
-  const snap = await get(ref(db, 'rooms/' + roomId + '/buzzed'));
-  if (snap.val()) return;
-  await update(ref(db, 'rooms/' + roomId), {
-    buzzed: myPlayerId,
-    'currentQuestion/ansPlayer': myPlayerId,
-  });
-}
+/* ════════════════════════════════ WIRE-UP ══════════════════════════════ */
+$('btnCreate').addEventListener('click', createRoom);
+$('btnJoin').addEventListener('click', ()=>joinRoom());
+$('joinCode').addEventListener('input', e=>{ e.target.value=e.target.value.toUpperCase(); });
+$('createName').addEventListener('keydown', e=>{ if(e.key==='Enter') createRoom(); });
+$('joinName').addEventListener('keydown', e=>{ if(e.key==='Enter') joinRoom(); });
+$('joinCode').addEventListener('keydown', e=>{ if(e.key==='Enter') joinRoom(); });
 
-// ── WIRE UP BUTTONS ───────────────────────────────────────────────────────────
-document.getElementById('btnCreate').addEventListener('click', createRoom);
-document.getElementById('btnJoin').addEventListener('click', joinRoom);
-document.getElementById('btnCopy').addEventListener('click', copyLink);
-document.getElementById('startBtn').addEventListener('click', startGame);
-document.getElementById('buzzBtn').addEventListener('click', pressBuzz);
-document.getElementById('btnConfirmAuction').addEventListener('click', confirmAuction);
+$('btnCopy').addEventListener('click', ()=>{
+  const link=$('inviteLink').value;
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(link).then(()=>toast('Ссылка скопирована'))
+      .catch(()=>{ $('inviteLink').select(); document.execCommand('copy'); toast('Ссылка скопирована'); });
+  } else { $('inviteLink').select(); document.execCommand('copy'); toast('Ссылка скопирована'); }
+});
+$('btnPickFile').addEventListener('click', ()=> $('fileInput').click());
+$('fileInput').addEventListener('change', e=>{ if(e.target.files[0]) handleFile(e.target.files[0]); e.target.value=''; });
+$('btnDefault').addEventListener('click', loadDefault);
+$('btnStart').addEventListener('click', startGame);
+$('btnNewGame').addEventListener('click', ()=>{ clearSession(); location.href = location.origin+location.pathname; });
 
-// ── URL ROOM CODE ─────────────────────────────────────────────────────────────
-const urlParams = new URLSearchParams(window.location.search);
-const urlRoom = urlParams.get('room');
-if (urlRoom) {
-  document.getElementById('joinCode').value = urlRoom.toUpperCase();
-}
+/* ════════════════════════════════ INIT ═════════════════════════════════ */
+onValue(ref(db,'.info/serverTimeOffset'), s=>{ const v=s.val(); if(typeof v==='number') serverOffset=v; });
+
+(async function init(){
+  await cleanupStaleRooms();
+
+  const params = new URLSearchParams(location.search);
+  const urlRoom = params.get('room');
+  if(urlRoom){ $('joinCode').value = urlRoom.toUpperCase(); }
+
+  // авто-восстановление сессии после обновления страницы
+  let session=null;
+  try{ session = JSON.parse(localStorage.getItem('svoigra_session')||'null'); }catch(e){}
+  if(session && session.roomId && session.myId){
+    if(!urlRoom || urlRoom.toUpperCase()===session.roomId){
+      try{
+        const snap = await get(ref(db,`rooms/${session.roomId}/players/${session.myId}`));
+        if(snap.exists()){
+          roomId=session.roomId; myId=session.myId;
+          attachPresence(); subscribeRoom();
+          return;
+        } else { clearSession(); }
+      }catch(e){ clearSession(); }
+    }
+  }
+  showScreen('startScreen');
+})();
 </script>
 </body>
 </html>
