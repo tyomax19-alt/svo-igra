@@ -100,9 +100,10 @@ body{
 #gameScreen{ display:none; }
 #gameScreen.active{ display:flex; }
 .topbar{ position:relative; text-align:center; padding:16px 16px 8px; }
-.restart-btn{ position:absolute; top:14px; right:14px; background:transparent; border:1.5px solid var(--border); color:var(--dim2); font-family:'Inter',sans-serif; font-size:0.6rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; padding:7px 12px; border-radius:8px; cursor:pointer; transition:all .15s; }
+.topbar-actions{ position:absolute; top:14px; right:14px; display:flex; gap:8px; }
+.restart-btn{ background:transparent; border:1.5px solid var(--border); color:var(--dim2); font-family:'Inter',sans-serif; font-size:0.6rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; padding:7px 12px; border-radius:8px; cursor:pointer; transition:all .15s; }
 .restart-btn:hover{ color:var(--red); border-color:var(--red); }
-@media (max-width:520px){ .restart-btn{ position:static; display:inline-block; margin-top:10px; } }
+@media (max-width:520px){ .topbar-actions{ position:static; justify-content:center; margin-top:10px; } }
 .topbar .title{ font-size:clamp(1.3rem,4vw,2rem); }
 .round-pills{ display:flex; justify-content:center; gap:7px; padding:10px 16px; flex-wrap:wrap; }
 .round-pill{
@@ -292,6 +293,7 @@ footer{ text-align:center; padding:10px 16px 24px; font-size:0.56rem; color:#222
       <button class="btn btn-gold" id="btnStart" style="margin-bottom:10px;">Начать игру</button>
     </div>
     <div class="wait-note" id="lobbyWait">Ожидание, пока создатель начнёт игру...</div>
+    <button class="btn btn-ghost" id="btnLeaveLobby" style="margin-top:10px;">Покинуть комнату</button>
     <div class="err" id="lobbyErr"></div>
   </div>
 </div>
@@ -300,7 +302,10 @@ footer{ text-align:center; padding:10px 16px 24px; font-size:0.56rem; color:#222
 <div id="gameScreen" class="screen">
   <div class="topbar">
     <div class="title gold-text">Своя Игра</div>
-    <button class="restart-btn" id="btnHostRestart" style="display:none">Перезапустить</button>
+    <div class="topbar-actions">
+      <button class="restart-btn" id="btnLeaveGame" style="display:none">Покинуть</button>
+      <button class="restart-btn" id="btnHostRestart" style="display:none">Перезапустить</button>
+    </div>
   </div>
   <div class="round-pills" id="roundPills"></div>
   <div class="turn-banner" id="turnBanner"></div>
@@ -919,7 +924,9 @@ function renderGame(){
   showScreen('gameScreen');
   const gs = room.gameState;
   const board = room.board;
-  $('btnHostRestart').style.display = (myId===gs.hostId) ? 'inline-block' : 'none';
+  const amHost = (myId===gs.hostId);
+  $('btnHostRestart').style.display = amHost ? 'inline-block' : 'none';
+  $('btnLeaveGame').style.display = amHost ? 'none' : 'inline-block';
   if(!board){ return; }
 
   $('roundPills').innerHTML = board.rounds.map((r,i)=>
@@ -1175,6 +1182,28 @@ async function closeRoomToMenu(){
     await remove(ref(db,`rooms/${roomId}`));
     // onValue заметит удаление и вызовет resetToStart у всех (включая создателя)
   }catch(e){ toast('Ошибка: '+e.message); }
+}
+
+// игрок покидает комнату и возвращается в главное меню
+async function leaveRoom(){
+  if(!room || !roomId || !myId) return;
+  const isHost = myId===room.gameState.hostId;
+  const status = room.gameState.status;
+  if(!confirm(isHost ? 'Вы создатель. Покинуть = закрыть комнату для всех. Продолжить?'
+                     : 'Покинуть комнату и вернуться в меню?')) return;
+  const rid=roomId, mid=myId;
+  try{
+    if(isHost){
+      await remove(ref(db,`rooms/${rid}`));            // создатель уходит — комната закрывается
+    } else if(status==='lobby'){
+      await remove(ref(db,`rooms/${rid}/players/${mid}`)); // в лобби освобождаем слот
+      await remove(ref(db,`rooms/${rid}/scores/${mid}`));
+    } else {
+      await set(ref(db,`rooms/${rid}/players/${mid}/connected`), false); // в игре — место/очки сохраняются
+    }
+  }catch(e){ /* ignore */ }
+  clearSession();
+  resetToStart();
 }
 
 async function skipTurn(){
@@ -1506,6 +1535,8 @@ $('btnStart').addEventListener('click', startGame);
 $('btnNewGame').addEventListener('click', ()=>{ clearSession(); location.href = location.origin+location.pathname; });
 $('btnHostRestart').addEventListener('click', closeRoomToMenu);
 $('btnHostRestartFin').addEventListener('click', closeRoomToMenu);
+$('btnLeaveLobby').addEventListener('click', leaveRoom);
+$('btnLeaveGame').addEventListener('click', leaveRoom);
 
 /* ════════════════════════════════ INIT ═════════════════════════════════ */
 onValue(ref(db,'.info/serverTimeOffset'), s=>{ const v=s.val(); if(typeof v==='number') serverOffset=v; });
