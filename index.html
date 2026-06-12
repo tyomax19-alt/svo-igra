@@ -843,6 +843,9 @@ function resetToStart(){
   room=null; roomId=null; myId=null; prevScores={}; shownModForKey=null; scheduledModForKey=null; finishCelebrated=false;
   lastModalSig=null;
   stopBuzzTick(); hideModOverlay();
+  // вернуть кнопки лобби в исходное состояние (после createRoom/joinRoom они остаются disabled)
+  const bc=$('btnCreate'); if(bc){ bc.disabled=false; bc.textContent='Создать комнату'; }
+  const bj=$('btnJoin'); if(bj){ bj.disabled=false; bj.textContent='Войти'; }
   showScreen('startScreen');
 }
 
