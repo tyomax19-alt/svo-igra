@@ -155,7 +155,11 @@ body{
 .m-val{ font-family:'Unbounded',sans-serif; font-size:2rem; font-weight:900; color:var(--gold); line-height:1; }
 .who{ font-size:0.64rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--dim2); margin-bottom:12px; }
 .who b{ font-weight:700; }
-.m-q{ font-size:1.05rem; font-weight:500; line-height:1.6; margin-bottom:18px; }
+.m-q{ font-size:1.05rem; font-weight:500; line-height:1.6; margin-bottom:14px; }
+.q-img-wrap{ margin:0 0 14px; text-align:center; }
+.q-img{ max-width:100%; max-height:46vh; border-radius:12px; border:1px solid var(--border); background:var(--s2); object-fit:contain; }
+.ansbox .q-img{ max-height:34vh; }
+.q-img-err{ font-size:0.72rem; color:var(--dim2); padding:14px; border:1px dashed var(--border2); border-radius:10px; }
 .ansbox{ background:rgba(79,207,138,0.06); border:1px solid rgba(79,207,138,0.22); border-radius:10px; padding:13px 16px; margin-bottom:16px; animation:ansFade .25s ease; }
 @keyframes ansFade{ from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
 .ansbox .al{ font-size:0.54rem; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:rgba(79,207,138,0.55); margin-bottom:4px; }
@@ -277,6 +281,7 @@ footer{ text-align:center; padding:10px 16px 24px; font-size:0.56rem; color:#222
       <p>Загрузите свой JSON (3 раунда · 6 категорий · 5 вопросов) или используйте набор по умолчанию. Запуск возможен только при валидном наборе.</p>
       <div class="file-row">
         <button class="btn btn-ghost" id="btnPickFile">Выбрать JSON-файл</button>
+        <button class="btn btn-ghost" id="btnPack">Набор «Солянка» (с фото)</button>
         <button class="btn btn-ghost" id="btnDefault">Набор по умолчанию</button>
       </div>
       <input type="file" id="fileInput" accept=".json,application/json" style="display:none;">
@@ -624,8 +629,16 @@ function validateBoard(data){
       c.questions.forEach((q,qi)=>{
         const where = `Раунд ${RN}, ${cname}, вопрос ${qi+1}`;
         if(!q || typeof q!=='object'){ errors.push(`${where}: некорректный формат.`); return; }
-        if(typeof q.question!=='string' || !q.question.trim()){ errors.push(`${where}: отсутствует текст вопроса.`); }
-        if(typeof q.answer!=='string' || !q.answer.trim()){ errors.push(`${where}: отсутствует ответ.`); }
+        const hasQText = typeof q.question==='string' && q.question.trim();
+        const imgErr = validImageField(q.image);
+        const aimgErr = validImageField(q.answerImage);
+        if(imgErr) errors.push(`${where}: поле image — ${imgErr}.`);
+        if(aimgErr) errors.push(`${where}: поле answerImage — ${aimgErr}.`);
+        // вопрос: нужен текст ИЛИ картинка
+        if(!hasQText && !(q.image && !imgErr)){ errors.push(`${where}: нет ни текста вопроса, ни картинки.`); }
+        // ответ: нужен текст ИЛИ картинка ответа
+        const hasAText = typeof q.answer==='string' && q.answer.trim();
+        if(!hasAText && !(q.answerImage && !aimgErr)){ errors.push(`${where}: нет ни текста ответа, ни картинки ответа.`); }
         if(typeof q.value!=='number' || !Number.isFinite(q.value)){
           errors.push(`${where}: стоимость должна быть числом.`);
         } else if(expectVals && q.value!==expectVals[qi]){
@@ -642,6 +655,19 @@ function validateBoard(data){
   }
   return errors;
 }
+// поле картинки: строка или массив строк (путь/URL). Возвращает текст ошибки или null.
+function validImageField(v){
+  if(v===undefined || v===null) return null;
+  const arr = Array.isArray(v) ? v : [v];
+  if(arr.length===0) return null;
+  for(const x of arr){ if(typeof x!=='string' || !x.trim()) return 'ожидается путь к картинке (строка) или массив строк'; }
+  return null;
+}
+function normImage(v){
+  if(v===undefined || v===null) return null;
+  const arr = (Array.isArray(v) ? v : [v]).map(x=>String(x).trim()).filter(Boolean);
+  return arr.length ? arr : null;   // всегда массив или null
+}
 // нормализуем в чистую структуру для хранения
 function normalizeBoard(data){
   return {
@@ -650,12 +676,17 @@ function normalizeBoard(data){
       name: (r.name && String(r.name)) || `Раунд ${ri+1}`,
       categories: r.categories.map((c,ci)=>({
         name: (c.name && String(c.name)) || `Категория ${ci+1}`,
-        questions: c.questions.map(q=>({
-          value: q.value,
-          question: String(q.question),
-          answer: String(q.answer),
-          modifier: (q.modifier && VALID_MODIFIERS.includes(q.modifier)) ? q.modifier : null
-        }))
+        questions: c.questions.map(q=>{
+          const o = {
+            value: q.value,
+            question: typeof q.question==='string' ? q.question : '',
+            answer: typeof q.answer==='string' ? q.answer : '',
+            modifier: (q.modifier && VALID_MODIFIERS.includes(q.modifier)) ? q.modifier : null
+          };
+          const img = normImage(q.image); if(img) o.image = img;
+          const aimg = normImage(q.answerImage); if(aimg) o.answerImage = aimg;
+          return o;
+        })
       }))
     }))
   };
@@ -695,6 +726,20 @@ function loadDefault(){
   const b = defaultBoard();
   const errors = validateBoard(b);
   setBoardStatus(b, errors, 'по умолчанию');
+}
+// загрузка готового набора «Солянка» (igra.json) с того же сайта — фото лежат в /images
+async function loadPack(){
+  const list = $('validList');
+  list.innerHTML = '<div class="valid-ok" style="color:var(--dim2)">Загрузка набора...</div>';
+  try{
+    const resp = await fetch('igra.json', { cache:'no-store' });
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    const data = await resp.json();
+    const errors = validateBoard(data);
+    setBoardStatus(data, errors, 'Солянка, с фото');
+  }catch(e){
+    setBoardStatus(null, ['Не удалось загрузить igra.json: '+e.message+'. Убедитесь, что файл igra.json и папка images развёрнуты вместе с сайтом.']);
+  }
 }
 
 /* ════════════════════════════════ CREATE / JOIN ════════════════════════ */
@@ -979,6 +1024,8 @@ async function openQuestion(col,row){
     modifier: mod,
     question: q.question,
     answer: q.answer,
+    image: q.image || null,
+    answerImage: q.answerImage || null,
     picker,
     answerer: (mod && mod!=='all_in') ? null : picker,
     phase: mod ? 'modifier' : 'answering',
@@ -1238,6 +1285,15 @@ async function confirmTransfer(){
 }
 
 /* ════════════════════════════════ MODAL RENDER ═════════════════════════ */
+// рендер картинок вопроса/ответа (строка или массив путей)
+function imagesHtml(field){
+  if(!field) return '';
+  const arr = Array.isArray(field) ? field : [field];
+  return arr.filter(Boolean).map(src=>
+    `<div class="q-img-wrap"><img class="q-img" src="${esc(src)}" alt="" loading="eager"
+       onerror="this.parentElement.innerHTML='&lt;div class=&quot;q-img-err&quot;&gt;Изображение не загрузилось&lt;/div&gt;'"></div>`
+  ).join('');
+}
 let lastModalSig = null;   // подпись содержимого модалки — чтобы не перерисовывать без необходимости
 function renderModal(){
   const aq = room.activeQuestion;
@@ -1312,6 +1368,7 @@ function renderModal(){
         <div class="tbar"><div class="tfill" id="tfill" style="width:100%"></div></div>
       </div>`;
     html += `<div class="m-q">${esc(aq.question)}</div>`;
+    html += imagesHtml(aq.image);
     const canBuzz = aq.picker!==myId;
     if(canBuzz){
       html += `<button class="buzz-big" id="buzzBtn">ОТВЕТИТЬ</button>`;
@@ -1331,8 +1388,10 @@ function renderModal(){
   const iAnswer = answerer===myId;
   html += `<div class="who">Отвечает: <b style="color:${colorOf(answerer)}">${esc(playerName(answerer))}</b>${aq.buzzWinner?' (перехват)':(aq.returned?' (вопрос вернулся)':'')}</div>`;
   html += `<div class="m-q">${esc(aq.question)}</div>`;
+  html += imagesHtml(aq.image);
   if(aq.revealed){
-    html += `<div class="ansbox"><div class="al">Ответ</div><div class="at">${esc(aq.answer)}</div></div>`;
+    const aText = (aq.answer && aq.answer.trim()) ? `<div class="at">${esc(aq.answer)}</div>` : '';
+    html += `<div class="ansbox"><div class="al">Ответ</div>${aText}${imagesHtml(aq.answerImage)}</div>`;
   }
 
   if(iAnswer){
@@ -1442,6 +1501,7 @@ $('btnCopy').addEventListener('click', ()=>{
 $('btnPickFile').addEventListener('click', ()=> $('fileInput').click());
 $('fileInput').addEventListener('change', e=>{ if(e.target.files[0]) handleFile(e.target.files[0]); e.target.value=''; });
 $('btnDefault').addEventListener('click', loadDefault);
+$('btnPack').addEventListener('click', loadPack);
 $('btnStart').addEventListener('click', startGame);
 $('btnNewGame').addEventListener('click', ()=>{ clearSession(); location.href = location.origin+location.pathname; });
 $('btnHostRestart').addEventListener('click', closeRoomToMenu);

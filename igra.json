@@ -1,0 +1,722 @@
+{
+ "title": "Солянка (общие знания)",
+ "rounds": [
+  {
+   "name": "Раунд 1",
+   "categories": [
+    {
+     "name": "МЕМНЫЙ ФОН",
+     "questions": [
+      {
+       "value": 100,
+       "question": "Что на изображении?",
+       "image": "images/image27.png",
+       "answer": "This is fine",
+       "answerImage": "images/image10.jpg",
+       "modifier": null
+      },
+      {
+       "value": 200,
+       "question": "Что на изображении?",
+       "image": "images/image20.png",
+       "answer": "Щенок!",
+       "answerImage": "images/image12.jpg",
+       "modifier": null
+      },
+      {
+       "value": 300,
+       "question": "Что на изображении?",
+       "image": "images/image37.png",
+       "answer": "Была какая-то тактика и я ее придерживался",
+       "answerImage": "images/image51.jpg",
+       "modifier": null
+      },
+      {
+       "value": 400,
+       "question": "Что на изображении?",
+       "image": "images/image57.png",
+       "answer": "Никита Литвинков. Чай с капустой но не красный.",
+       "answerImage": "images/image24.jpg",
+       "modifier": null
+      },
+      {
+       "value": 500,
+       "question": "Что на изображении?",
+       "image": "images/image16.png",
+       "answer": "Бу. Испугался.",
+       "answerImage": "images/image3.jpg",
+       "modifier": null
+      }
+     ]
+    },
+    {
+     "name": "МИЛАШКИ ВОМБАТЫ",
+     "questions": [
+      {
+       "value": 100,
+       "question": "Кто бежит быстрее: вомбат или Тамби Масаев?",
+       "answer": "вомбат (они развивают скорость 40 км/ч)",
+       "modifier": null
+      },
+      {
+       "value": 200,
+       "question": "В форме чего фекалии у вомбатов?",
+       "answer": "кубики",
+       "modifier": null
+      },
+      {
+       "value": 300,
+       "question": "Вомбаты – необычные представители фауны Австралии. Дело в том, что у этих зверей ОНА повернута назад, чтобы не мешать при копании.",
+       "answer": "сумка",
+       "modifier": null
+      },
+      {
+       "value": 400,
+       "question": "В 2019 году к вомбатам и другим животным компания Google добавила ТУДА и некоторых вымирающих зверей, чтобы проблемы экологии стали ближе к офисным работникам.",
+       "answer": "Google-документы",
+       "modifier": null
+      },
+      {
+       "value": 500,
+       "question": "Упс! Минус 500 баллов просто так. Не стоило эту ячейку выбирать...",
+       "answer": "Спорный вопрос — решайте сами",
+       "modifier": "flip_sign"
+      }
+     ]
+    },
+    {
+     "name": "СУКИ-СУМКИ",
+     "questions": [
+      {
+       "value": 100,
+       "question": "Что на изображении?",
+       "image": "images/image41.png",
+       "answer": "Борсетка",
+       "modifier": null
+      },
+      {
+       "value": 200,
+       "question": "Что на изображении?",
+       "image": "images/image17.png",
+       "answer": "кейс \\ дипломат",
+       "modifier": "take_points"
+      },
+      {
+       "value": 300,
+       "question": "Что на изображении?",
+       "image": "images/image34.png",
+       "answer": "Клатч",
+       "modifier": null
+      },
+      {
+       "value": 400,
+       "question": "Что на изображении?",
+       "image": "images/image19.png",
+       "answer": "Конверт",
+       "modifier": null
+      },
+      {
+       "value": 500,
+       "question": "Что на изображении?",
+       "image": "images/image46.png",
+       "answer": "Ридикюль",
+       "modifier": null
+      }
+     ]
+    },
+    {
+     "name": "ЧЕХОСЛОВАЦКИЕ СТЕНКИ",
+     "questions": [
+      {
+       "value": 100,
+       "question": "Что на изображении?",
+       "image": "images/image5.png",
+       "answer": "Нет (румынская)",
+       "modifier": null
+      },
+      {
+       "value": 200,
+       "question": "Что на изображении?",
+       "image": "images/image18.png",
+       "answer": "Да",
+       "modifier": null
+      },
+      {
+       "value": 300,
+       "question": "Что на изображении?",
+       "image": "images/image45.png",
+       "answer": "Да",
+       "modifier": null
+      },
+      {
+       "value": 400,
+       "question": "Что на изображении?",
+       "image": "images/image32.png",
+       "answer": "Да",
+       "modifier": null
+      },
+      {
+       "value": 500,
+       "question": "Что на изображении?",
+       "image": "images/image55.png",
+       "answer": "Да",
+       "modifier": null
+      }
+     ]
+    },
+    {
+     "name": "ТРАНСПОРТ",
+     "questions": [
+      {
+       "value": 100,
+       "question": "На этой марке машины Даниэль работал в Такси.",
+       "answer": "Пежо",
+       "modifier": "give_points"
+      },
+      {
+       "value": 200,
+       "question": "Что может быть лучше чем 40 минут стоять в пробке в час пик?",
+       "answer": "Да Что Угодно",
+       "modifier": "double"
+      },
+      {
+       "value": 300,
+       "question": "Из-за фонаря какого цвета свободные советские такси получили свое народное название?",
+       "answer": "Зелёный - Зеленоглазое такси",
+       "modifier": null
+      },
+      {
+       "value": 400,
+       "question": "В каком году появилось такси в Москве",
+       "answer": "21 июня 1925 г., в этом году 100 лет",
+       "modifier": null
+      },
+      {
+       "value": 500,
+       "question": "Что растет также активно после концерта Анны Асти и во время дождя",
+       "answer": "спрос на такси",
+       "modifier": null
+      }
+     ]
+    },
+    {
+     "name": "СОБАЧИЙ КОСПЛЕЙ",
+     "questions": [
+      {
+       "value": 100,
+       "question": "Что на изображении?",
+       "image": "images/image38.png",
+       "answer": "Леонардо",
+       "modifier": "double"
+      },
+      {
+       "value": 200,
+       "question": "Что на изображении?",
+       "image": "images/image42.png",
+       "answer": "Лилу",
+       "modifier": null
+      },
+      {
+       "value": 300,
+       "question": "Что на изображении?",
+       "image": "images/image43.png",
+       "answer": "Тирион Ланнистер",
+       "modifier": null
+      },
+      {
+       "value": 400,
+       "question": "Что на изображении?",
+       "image": "images/image56.png",
+       "answer": "Уэнсдей (Wednesday)",
+       "modifier": null
+      },
+      {
+       "value": 500,
+       "question": "Что на изображении?",
+       "image": "images/image8.png",
+       "answer": "Демогоргон",
+       "modifier": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Раунд 2",
+   "categories": [
+    {
+     "name": "КТО ЛИШНИЙ",
+     "questions": [
+      {
+       "value": 200,
+       "question": "Кто лишний: Робин Гуд, Робин Уильямс, Робин-Бобин, Роб Шнайдер.",
+       "answer": "Спорный вопрос — решайте сами",
+       "modifier": null
+      },
+      {
+       "value": 400,
+       "question": "Кто лишний: Джаред Лето, Миа Бойка, леопард, стакан горячего молока.",
+       "answer": "Спорный вопрос — решайте сами",
+       "modifier": "double"
+      },
+      {
+       "value": 600,
+       "question": "Кто лишний: Нурлан Сабуров, Алексей Щербаков, Илья Макаров, Эмир Кашоков",
+       "answer": "Спорный вопрос — решайте сами",
+       "modifier": null
+      },
+      {
+       "value": 800,
+       "question": "Кто лишний: Принцесса Диана, просроченный сырок, Иран, новая солистка Линкин парка.",
+       "answer": "Спорный вопрос — решайте сами",
+       "modifier": "take_points"
+      },
+      {
+       "value": 1000,
+       "question": "Кто лишний: Коваль, Тамби, Сабина, Сатир.",
+       "answer": "Спорный вопрос — решайте сами",
+       "modifier": null
+      }
+     ]
+    },
+    {
+     "name": "КАПЧА",
+     "questions": [
+      {
+       "value": 200,
+       "question": "Что на изображении?",
+       "image": "images/image26.jpg",
+       "answer": "6",
+       "modifier": null
+      },
+      {
+       "value": 400,
+       "question": "Что на изображении?",
+       "image": "images/image33.jpg",
+       "answer": "6",
+       "modifier": null
+      },
+      {
+       "value": 600,
+       "question": "Что на изображении?",
+       "image": "images/image14.jpg",
+       "answer": "5",
+       "modifier": null
+      },
+      {
+       "value": 800,
+       "question": "Что на изображении?",
+       "image": "images/image1.jpg",
+       "answer": "8",
+       "modifier": null
+      },
+      {
+       "value": 1000,
+       "question": "Что на изображении?",
+       "image": "images/image15.jpg",
+       "answer": "6",
+       "modifier": null
+      }
+     ]
+    },
+    {
+     "name": "БИТВА ЭКСТРАСЕНСОВ",
+     "questions": [
+      {
+       "value": 200,
+       "question": "Что на изображении?",
+       "image": "images/image11.jpg",
+       "answer": "1",
+       "answerImage": "images/image28.jpg",
+       "modifier": null
+      },
+      {
+       "value": 400,
+       "question": "Что на изображении?",
+       "image": "images/image48.jpg",
+       "answer": "2",
+       "answerImage": "images/image47.jpg",
+       "modifier": null
+      },
+      {
+       "value": 600,
+       "question": "Что на изображении?",
+       "image": "images/image21.jpg",
+       "answer": "2",
+       "answerImage": "images/image13.jpg",
+       "modifier": null
+      },
+      {
+       "value": 800,
+       "question": "Попался! Поменяйся баллами с соперником справа.",
+       "answer": "Спорный вопрос — решайте сами",
+       "modifier": "give_points"
+      },
+      {
+       "value": 1000,
+       "question": "Что на изображении?",
+       "image": "images/image4.jpg",
+       "answer": "1",
+       "answerImage": "images/image31.jpg",
+       "modifier": null
+      }
+     ]
+    },
+    {
+     "name": "И ТОЛЬКО!",
+     "questions": [
+      {
+       "value": 200,
+       "question": "Что на изображении?",
+       "image": "images/image52.png",
+       "answer": "ирис",
+       "modifier": null
+      },
+      {
+       "value": 400,
+       "question": "В честь этого мифологического ГЕРОЯ назвали род жуков-навозников. Последние часто безуспешно и тщетно пытаются вкатить шар из навоза по труднодоступным дорожкам.",
+       "answer": "Сизиф",
+       "modifier": null
+      },
+      {
+       "value": 600,
+       "question": "В Южной Корее эта закуска так популярна, что во многих домах для неё держат отдельный холодильник.",
+       "answer": "кимчи",
+       "modifier": null
+      },
+      {
+       "value": 800,
+       "question": "Часто в ИХ ракушках рождаются жемчужины, очень маленького размера и мутного оттенка. Возможность найти жемчужину в Кувейте приравняли к азартным играм, поэтому там ОНИ всегда подаются к столу открытыми.",
+       "answer": "мидии",
+       "modifier": null
+      },
+      {
+       "value": 1000,
+       "question": "Что на изображении?",
+       "image": "images/image53.png",
+       "answer": "Чи-Ли",
+       "modifier": null
+      }
+     ]
+    },
+    {
+     "name": "АРМЯНЕ",
+     "questions": [
+      {
+       "value": 200,
+       "question": "Один из разработчиков компании Яндекс рассказывал, что навигатор не сразу прижился в Армении из-за этой ОСОБЕННОСТИ. Так, водители не хотели узнавать у навигатора маршрут и поворачивать в нужном месте.",
+       "answer": "женский голос",
+       "modifier": "flip_sign"
+      },
+      {
+       "value": 400,
+       "question": "15 ноября 2022 года по инициативе ООН в мире объявили об очередном изменении этого важного ЧИСЛА. Попасть в новости первыми стремилась Армения, наибольший вклад в увеличение ЧИСЛА все-таки внесли Индия и Китай.",
+       "answer": "нас стало 8 миллиардов",
+       "modifier": null
+      },
+      {
+       "value": 600,
+       "question": "В заметке «Дело тонкое» рассказывается история об армянском царе, который благодаря ЕМУ спасся из голодного плена. ОН был спрятан в доставленных царю доспехах, чтобы тот восполнил силы перед поединком за свою свободу.",
+       "answer": "лаваш",
+       "modifier": null
+      },
+      {
+       "value": 800,
+       "question": "В своих работах мультипликатор Роберт Саакянц ассоциировал злодеев с врагами своей страны. К примеру, в одном из его мультфильмов злодей стоит у плиты и символично держит в руках эту ПОСУДУ.",
+       "answer": "турка",
+       "modifier": "double"
+      },
+      {
+       "value": 1000,
+       "question": "Один армянский миф гласит, что Ваагн суровой зимой украл у родоначальника ассирийцев Баршама солому и скрылся. Когда он шел со своей добычей, то ронял соломинки, сотворив тем самым эту «ДОРОГУ».",
+       "answer": "Млечный путь",
+       "modifier": null
+      }
+     ]
+    },
+    {
+     "name": "ЭРУДИЦИЯ",
+     "questions": [
+      {
+       "value": 200,
+       "question": "Греки называли искусство цифр арифметикой, искусство букв – грамматикой, искусство управления хозяйством – экономикой. А как они называли искусство управления городом?",
+       "answer": "политика",
+       "modifier": null
+      },
+      {
+       "value": 400,
+       "question": "В России в XVIII веке эта БОЛЕЗНЬ считалась благородной, ведь она чаще встречалась у дворян, нежели чем у простых людей. Причина заключалась в рационе питания – у низших сословий в нем было много овощей: лука, моркови, капусты. Люди побогаче брезговали такой простой пищей.",
+       "answer": "цинга",
+       "modifier": null
+      },
+      {
+       "value": 600,
+       "question": "В Венгрии этот ФИЛЬМ называется «Заключенные надежды», в Норвегии – «Дождь свободы», в Румынии – «Тюрьмы ангелов»",
+       "answer": "Побег из Шоушенка",
+       "modifier": null
+      },
+      {
+       "value": 800,
+       "question": "Отравление – один из ​самых надежных способов убить человека, особенно при подмешивании яда в напиток. Какое ВЫРАЖЕНИЕ, означающее «наверняка» и «гарантированно», основано на этом факте?",
+       "answer": "как пить дать",
+       "modifier": null
+      },
+      {
+       "value": 1000,
+       "question": "В 1959 году Наследный принц Японии Акихито женился. Предвкушение радостного события сподвигло множество любопытных японцев приобрести именно этот ПРЕДМЕТ.",
+       "answer": "телевизор",
+       "modifier": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Раунд 3",
+   "categories": [
+    {
+     "name": "БУКВА ДО",
+     "questions": [
+      {
+       "value": 300,
+       "question": "Г",
+       "answer": "В",
+       "modifier": null
+      },
+      {
+       "value": 600,
+       "question": "М",
+       "answer": "Л",
+       "modifier": "double"
+      },
+      {
+       "value": 900,
+       "question": "О",
+       "answer": "Н",
+       "modifier": null
+      },
+      {
+       "value": 1200,
+       "question": "Ч",
+       "answer": "Ц",
+       "modifier": null
+      },
+      {
+       "value": 1500,
+       "question": "Е",
+       "answer": "Д",
+       "modifier": null
+      }
+     ]
+    },
+    {
+     "name": "НА ВНИМАТЕЛЬНОСТЬ",
+     "questions": [
+      {
+       "value": 300,
+       "question": "Что на изображении?",
+       "image": [
+        "images/image36.png",
+        "images/Screenshot_5.jpg"
+       ],
+       "answer": "розовая",
+       "modifier": null
+      },
+      {
+       "value": 600,
+       "question": "Что на изображении?",
+       "image": [
+        "images/image54.png",
+        "images/Screenshot_4.jpg"
+       ],
+       "answer": "нет",
+       "modifier": null
+      },
+      {
+       "value": 900,
+       "question": "Что на изображении?",
+       "image": [
+        "images/image23.png",
+        "images/Screenshot_3.jpg"
+       ],
+       "answer": "Honda",
+       "modifier": null
+      },
+      {
+       "value": 1200,
+       "question": "Что на изображении?",
+       "image": [
+        "images/image22.png",
+        "images/Screenshot_6.jpg"
+       ],
+       "answer": "полировка",
+       "modifier": null
+      },
+      {
+       "value": 1500,
+       "question": "Что на изображении?",
+       "image": [
+        "images/image30.png",
+        "images/Screenshot_1.jpg"
+       ],
+       "answer": "мир, мастеркард, виза",
+       "modifier": null
+      }
+     ]
+    },
+    {
+     "name": "ЦВЕТНЫЕ ФАМИЛИИ",
+     "questions": [
+      {
+       "value": 300,
+       "question": "Поздравляю! Забирай у лидера 1000 баллов, тебе нужнее.",
+       "answer": "Спорный вопрос — решайте сами",
+       "modifier": "take_points"
+      },
+      {
+       "value": 600,
+       "question": "Что на изображении?",
+       "image": "images/image49.png",
+       "answer": "Руслан Белый",
+       "answerImage": "images/image6.png",
+       "modifier": null
+      },
+      {
+       "value": 900,
+       "question": "Согласно официальной пропаганде, у диктатора не было личной жизни, он денно и нощно посвящал себя народу. Поэтому имя этой молодой блондинки стало известно только к концу войны.",
+       "answer": "Ева Браун",
+       "modifier": null
+      },
+      {
+       "value": 1200,
+       "question": "Ее настоящее имя – Марина Энн Хэнцис. А псевдоним, по одной из версий, она взяла в честь персонажа Оскара Уайльда.",
+       "answer": "Саша Грей",
+       "modifier": null
+      },
+      {
+       "value": 1500,
+       "question": "Если поменять местами имя и фамилию этого американского актера, то получится азартная карточная игра, где надо набрать 21 очко.",
+       "answer": "Джек Блэк",
+       "modifier": null
+      }
+     ]
+    },
+    {
+     "name": "НО ВСЁ-ТАКИ ОНА НАША",
+     "questions": [
+      {
+       "value": 300,
+       "question": "Где они живут?",
+       "image": "images/image50.png",
+       "answer": "на рублевке",
+       "modifier": null
+      },
+      {
+       "value": 600,
+       "question": "Кто из них Димон, а кто Славик?",
+       "image": "images/image29.png",
+       "answer": "Светлаков – Славик, Галустян – Димон",
+       "modifier": null
+      },
+      {
+       "value": 900,
+       "question": "Сборная какого города?",
+       "image": "images/image7.png",
+       "answer": "Омская сборная",
+       "modifier": null
+      },
+      {
+       "value": 1200,
+       "question": "Как его зовут? (имя и фамилия)",
+       "image": "images/image25.png",
+       "answer": "Иван Дулин",
+       "modifier": null
+      },
+      {
+       "value": 1500,
+       "question": "Название канала?",
+       "image": "images/image2.png",
+       "answer": "Сев-Кав TV",
+       "modifier": null
+      }
+     ]
+    },
+    {
+     "name": "ОБУВЬ НА Б",
+     "questions": [
+      {
+       "value": 300,
+       "question": "Что на изображении?",
+       "image": "images/image40.jpg",
+       "answer": "Балетки",
+       "modifier": null
+      },
+      {
+       "value": 600,
+       "question": "Что на изображении?",
+       "image": "images/image9.png",
+       "answer": "Берцы",
+       "modifier": "give_points"
+      },
+      {
+       "value": 900,
+       "question": "Что на изображении?",
+       "image": "images/image39.jpg",
+       "answer": "Бахилы",
+       "modifier": null
+      },
+      {
+       "value": 1200,
+       "question": "Что на изображении?",
+       "image": "images/image35.jpg",
+       "answer": "Ботильоны",
+       "modifier": null
+      },
+      {
+       "value": 1500,
+       "question": "Что на изображении?",
+       "image": "images/image44.jpg",
+       "answer": "Броги",
+       "modifier": "take_points"
+      }
+     ]
+    },
+    {
+     "name": "РАЗНОЕ",
+     "questions": [
+      {
+       "value": 300,
+       "question": "Животные, способные создать давку, в которой могут погибнуть сами: слоны, антилопы гну, олени карибу и эти МЛЕКОПИТАЮЩИЕ.",
+       "answer": "люди",
+       "modifier": null
+      },
+      {
+       "value": 600,
+       "question": "По описанию с алиэкспресса угадать, что за товар продается:\n2 кнопки безпровода колесо черный цвет НЕ ЖИВОТНЫЙ светодиодная оптический правша-левша Bluetooth беззвучная для игры клик",
+       "answer": "компьютерная мышь",
+       "modifier": null
+      },
+      {
+       "value": 900,
+       "question": "Какой газ преобладает в атмосфере Земли?",
+       "answer": "Азот (около 78%)",
+       "modifier": null
+      },
+      {
+       "value": 1200,
+       "question": "Сколько струн у классической гитары?",
+       "answer": "Шесть",
+       "modifier": null
+      },
+      {
+       "value": 1500,
+       "question": "В каком океане находится Марианская впадина?",
+       "answer": "Тихий океан",
+       "modifier": "double"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
