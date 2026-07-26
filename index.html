@@ -616,7 +616,6 @@ function validateBoard(data){
   const errors=[];
   if(!data || typeof data!=='object' || Array.isArray(data)){ return ['Файл не является корректным JSON-объектом.']; }
   if(!Array.isArray(data.rounds)){ return ['Отсутствует массив "rounds".']; }
-  if(data.rounds.length!==3){ errors.push(`Должно быть ровно 3 раунда, найдено: ${data.rounds.length}.`); }
 
   for(let ri=0; ri<data.rounds.length; ri++){
     const r = data.rounds[ri];
@@ -1140,6 +1139,7 @@ async function applyAndFinish(scoreOps, aq){
 // закрыть вопрос, продвинуть ход по кругу, проверить смену раунда и конец игры
 async function finalizeTurn(aq){
   const gs = room.gameState;
+  const board = room.board;
   const order = (gs.turnOrder && gs.turnOrder.length) ? gs.turnOrder : orderedPlayers().map(p=>p.id);
   const n = order.length;
   // currentTurn (= открывший вопрос) — источник истины для порядка хода.
@@ -1164,7 +1164,7 @@ async function finalizeTurn(aq){
   for(const k in used){ if(k.startsWith(`r${ri}c`)) countThisRound++; }
 
   if(countThisRound>=30){
-    if(ri<2){
+    if(ri<board.rounds.length-1){
       updates.currentRound = ri+1;
     } else {
       const t = Date.now();
