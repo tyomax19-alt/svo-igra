@@ -156,7 +156,7 @@ function renderDetail(){
   if(o.paymentAlert) box.append(el('p',{className:'alert',textContent:`Внимание, статус платежа: ${o.paymentAlert}. Проверьте кабинет Platega.`}));
   if(o.generationErrors) box.append(el('div',{className:'err',textContent:[].concat(o.generationErrors).join('\n')}));
   if(o.packId){
-    const link=`${location.origin}/?pack=${o.packId}`;
+    const link=new URL(`./?pack=${o.packId}`,location.href).href;
     const copy=el('button',{type:'button',className:'btn ghost',textContent:'Копировать ссылку'});
     copy.addEventListener('click',()=>navigator.clipboard.writeText(link));
     box.append(el('p',{className:'ok'},'Ссылка для покупателя: ',el('a',{href:link,textContent:link,style:'color:inherit'})),copy);
