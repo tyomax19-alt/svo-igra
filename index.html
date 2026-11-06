@@ -14,9 +14,10 @@
   <header class="site-head"><span>СВОИ ЛЮДИ</span></header>
   <main class="hero">
     <div class="hero-main">
-      <h1 class="hero-title"><img src="pixel/title.svg" alt="Игра про вас" width="656" height="256"></h1>
+      <h1 class="hero-title">ИГРА<br>ПРО <span>ВАС</span></h1>
       <p class="hero-text" id="heroText">Вопросы про вашу компанию на экране, ответы с телефонов. Без скачивания.</p>
       <a class="hero-demo" href="demo.html">Посмотреть демо</a>
+      <img class="hero-host host" src="pixel/host.svg" alt="" width="144" height="144">
     </div>
     <div class="play">
       <section class="card card-join">
@@ -36,7 +37,8 @@
       <div class="err" id="startErr"></div>
     </div>
   </main>
-  <div class="strip" aria-hidden="true"></div>
++
+
 </div>
 
 <!-- ── LOBBY ───────────────────────────────────────────── -->
@@ -86,7 +88,8 @@
 
 <!-- ── QUESTION MODAL ──────────────────────────────────── -->
 <div class="overlay" id="overlay">
-  <div class="modal" id="modalInner"></div>
+  <div class="modal-host host"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 280" shape-rendering="crispEdges" aria-hidden="true"><g class="q1"><rect x="128" y="8" width="8" height="8" fill="#ff6b3d"/><rect x="136" y="8" width="8" height="8" fill="#ff6b3d"/><rect x="144" y="8" width="8" height="8" fill="#ff6b3d"/><rect x="120" y="16" width="8" height="8" fill="#ff6b3d"/><rect x="152" y="16" width="8" height="8" fill="#ff6b3d"/><rect x="152" y="24" width="8" height="8" fill="#ff6b3d"/><rect x="136" y="32" width="8" height="8" fill="#ff6b3d"/><rect x="144" y="32" width="8" height="8" fill="#ff6b3d"/><rect x="136" y="40" width="8" height="8" fill="#ff6b3d"/><rect x="136" y="56" width="8" height="8" fill="#ff6b3d"/></g><g class="q2"><rect x="61" y="26" width="5" height="5" fill="#f3e7cf"/><rect x="66" y="26" width="5" height="5" fill="#f3e7cf"/><rect x="71" y="26" width="5" height="5" fill="#f3e7cf"/><rect x="56" y="31" width="5" height="5" fill="#f3e7cf"/><rect x="76" y="31" width="5" height="5" fill="#f3e7cf"/><rect x="76" y="36" width="5" height="5" fill="#f3e7cf"/><rect x="66" y="41" width="5" height="5" fill="#f3e7cf"/><rect x="71" y="41" width="5" height="5" fill="#f3e7cf"/><rect x="66" y="46" width="5" height="5" fill="#f3e7cf"/><rect x="66" y="56" width="5" height="5" fill="#f3e7cf"/></g><g class="q3"><rect x="176" y="30" width="4" height="4" fill="#f3e7cf"/><rect x="180" y="30" width="4" height="4" fill="#f3e7cf"/><rect x="184" y="30" width="4" height="4" fill="#f3e7cf"/><rect x="172" y="34" width="4" height="4" fill="#f3e7cf"/><rect x="188" y="34" width="4" height="4" fill="#f3e7cf"/><rect x="188" y="38" width="4" height="4" fill="#f3e7cf"/><rect x="180" y="42" width="4" height="4" fill="#f3e7cf"/><rect x="184" y="42" width="4" height="4" fill="#f3e7cf"/><rect x="180" y="46" width="4" height="4" fill="#f3e7cf"/><rect x="180" y="54" width="4" height="4" fill="#f3e7cf"/></g><rect x="56" y="168" width="8" height="8" fill="#08222a"/><rect x="64" y="168" width="48" height="8" fill="#ff6b3d"/><rect x="112" y="168" width="8" height="8" fill="#08222a"/><rect x="128" y="168" width="8" height="8" fill="#08222a"/><rect x="136" y="168" width="16" height="8" fill="#f3e7cf"/><rect x="152" y="168" width="8" height="8" fill="#08222a"/><rect x="48" y="176" width="8" height="8" fill="#08222a"/><rect x="56" y="176" width="64" height="8" fill="#ff6b3d"/><rect x="120" y="176" width="16" height="8" fill="#08222a"/><rect x="136" y="176" width="16" height="8" fill="#ff6b3d"/><rect x="152" y="176" width="8" height="8" fill="#08222a"/><rect x="48" y="184" width="8" height="8" fill="#08222a"/><rect x="56" y="184" width="96" height="8" fill="#ff6b3d"/><rect x="152" y="184" width="8" height="8" fill="#08222a"/><rect x="48" y="192" width="8" height="8" fill="#08222a"/><rect x="56" y="192" width="56" height="8" fill="#ff6b3d"/><rect x="112" y="192" width="40" height="8" fill="#08222a"/><rect x="48" y="200" width="8" height="8" fill="#08222a"/><rect x="56" y="200" width="56" height="8" fill="#ff6b3d"/><rect x="112" y="200" width="8" height="8" fill="#08222a"/><rect x="48" y="208" width="8" height="8" fill="#08222a"/><rect x="56" y="208" width="56" height="8" fill="#ff6b3d"/><rect x="112" y="208" width="48" height="8" fill="#08222a"/><rect x="40" y="216" width="8" height="8" fill="#08222a"/><rect x="48" y="216" width="112" height="8" fill="#f3e7cf"/><rect x="160" y="216" width="8" height="8" fill="#08222a"/><rect x="40" y="224" width="8" height="8" fill="#08222a"/><rect x="48" y="224" width="112" height="8" fill="#f3e7cf"/><rect x="160" y="224" width="8" height="8" fill="#08222a"/><rect x="40" y="232" width="88" height="8" fill="#08222a"/><rect x="128" y="232" width="32" height="8" fill="#f3e7cf"/><rect x="160" y="232" width="8" height="8" fill="#08222a"/><rect x="40" y="240" width="8" height="8" fill="#08222a"/><rect x="48" y="240" width="64" height="8" fill="#1b5157"/><rect x="112" y="240" width="8" height="8" fill="#08222a"/><rect x="128" y="240" width="8" height="8" fill="#08222a"/><rect x="136" y="240" width="16" height="8" fill="#f3e7cf"/><rect x="152" y="240" width="8" height="8" fill="#08222a"/><rect x="40" y="248" width="8" height="8" fill="#08222a"/><rect x="48" y="248" width="64" height="8" fill="#1b5157"/><rect x="112" y="248" width="8" height="8" fill="#08222a"/><rect x="128" y="248" width="8" height="8" fill="#08222a"/><rect x="136" y="248" width="16" height="8" fill="#f3e7cf"/><rect x="152" y="248" width="8" height="8" fill="#08222a"/><rect x="40" y="256" width="8" height="8" fill="#08222a"/><rect x="48" y="256" width="64" height="8" fill="#1b5157"/><rect x="112" y="256" width="8" height="8" fill="#08222a"/><rect x="128" y="256" width="8" height="8" fill="#08222a"/><rect x="136" y="256" width="16" height="8" fill="#f3e7cf"/><rect x="152" y="256" width="16" height="8" fill="#08222a"/><rect x="40" y="264" width="8" height="8" fill="#08222a"/><rect x="48" y="264" width="64" height="8" fill="#1b5157"/><rect x="112" y="264" width="8" height="8" fill="#08222a"/><rect x="128" y="264" width="8" height="8" fill="#08222a"/><rect x="136" y="264" width="32" height="8" fill="#f3e7cf"/><rect x="168" y="264" width="8" height="8" fill="#08222a"/><rect x="40" y="272" width="80" height="8" fill="#08222a"/><rect x="128" y="272" width="48" height="8" fill="#08222a"/><g class="h-front"><rect x="56" y="80" width="64" height="8" fill="#08222a"/><rect x="48" y="88" width="8" height="8" fill="#08222a"/><rect x="56" y="88" width="64" height="8" fill="#ff6b3d"/><rect x="120" y="88" width="8" height="8" fill="#08222a"/><rect x="48" y="96" width="8" height="8" fill="#08222a"/><rect x="56" y="96" width="64" height="8" fill="#ff6b3d"/><rect x="120" y="96" width="8" height="8" fill="#08222a"/><rect x="24" y="104" width="128" height="8" fill="#08222a"/><rect x="24" y="112" width="8" height="8" fill="#08222a"/><rect x="32" y="112" width="112" height="8" fill="#f3e7cf"/><rect x="144" y="112" width="8" height="8" fill="#08222a"/><rect x="24" y="120" width="8" height="8" fill="#08222a"/><rect x="32" y="120" width="32" height="8" fill="#f3e7cf"/><rect x="64" y="120" width="8" height="8" fill="#08222a"/><rect x="72" y="120" width="32" height="8" fill="#f3e7cf"/><rect x="104" y="120" width="8" height="8" fill="#08222a"/><rect x="112" y="120" width="32" height="8" fill="#f3e7cf"/><rect x="144" y="120" width="8" height="8" fill="#08222a"/><rect x="24" y="128" width="8" height="8" fill="#08222a"/><rect x="32" y="128" width="32" height="8" fill="#f3e7cf"/><rect x="64" y="128" width="8" height="8" fill="#08222a"/><rect x="72" y="128" width="32" height="8" fill="#f3e7cf"/><rect x="104" y="128" width="8" height="8" fill="#08222a"/><rect x="112" y="128" width="32" height="8" fill="#f3e7cf"/><rect x="144" y="128" width="8" height="8" fill="#08222a"/><rect x="24" y="136" width="8" height="8" fill="#08222a"/><rect x="32" y="136" width="24" height="8" fill="#f3e7cf"/><rect x="56" y="136" width="8" height="8" fill="#08222a"/><rect x="64" y="136" width="48" height="8" fill="#f3e7cf"/><rect x="112" y="136" width="8" height="8" fill="#08222a"/><rect x="120" y="136" width="24" height="8" fill="#f3e7cf"/><rect x="144" y="136" width="8" height="8" fill="#08222a"/><rect x="24" y="144" width="8" height="8" fill="#08222a"/><rect x="32" y="144" width="32" height="8" fill="#f3e7cf"/><rect x="64" y="144" width="48" height="8" fill="#08222a"/><rect x="112" y="144" width="32" height="8" fill="#f3e7cf"/><rect x="144" y="144" width="8" height="8" fill="#08222a"/><rect x="24" y="152" width="8" height="8" fill="#08222a"/><rect x="32" y="152" width="112" height="8" fill="#f3e7cf"/><rect x="144" y="152" width="8" height="8" fill="#08222a"/><rect x="32" y="160" width="112" height="8" fill="#08222a"/></g><g class="h-side"><rect x="64" y="80" width="64" height="8" fill="#08222a"/><rect x="56" y="88" width="8" height="8" fill="#08222a"/><rect x="64" y="88" width="64" height="8" fill="#ff6b3d"/><rect x="128" y="88" width="8" height="8" fill="#08222a"/><rect x="56" y="96" width="8" height="8" fill="#08222a"/><rect x="64" y="96" width="64" height="8" fill="#ff6b3d"/><rect x="128" y="96" width="8" height="8" fill="#08222a"/><rect x="32" y="104" width="136" height="8" fill="#08222a"/><rect x="32" y="112" width="8" height="8" fill="#08222a"/><rect x="40" y="112" width="112" height="8" fill="#f3e7cf"/><rect x="152" y="112" width="8" height="8" fill="#08222a"/><rect x="32" y="120" width="8" height="8" fill="#08222a"/><rect x="40" y="120" width="56" height="8" fill="#f3e7cf"/><rect x="96" y="120" width="8" height="8" fill="#08222a"/><rect x="104" y="120" width="24" height="8" fill="#f3e7cf"/><rect x="128" y="120" width="8" height="8" fill="#08222a"/><rect x="136" y="120" width="16" height="8" fill="#f3e7cf"/><rect x="152" y="120" width="8" height="8" fill="#08222a"/><rect x="32" y="128" width="8" height="8" fill="#08222a"/><rect x="40" y="128" width="56" height="8" fill="#f3e7cf"/><rect x="96" y="128" width="8" height="8" fill="#08222a"/><rect x="104" y="128" width="24" height="8" fill="#f3e7cf"/><rect x="128" y="128" width="8" height="8" fill="#08222a"/><rect x="136" y="128" width="16" height="8" fill="#f3e7cf"/><rect x="152" y="128" width="8" height="8" fill="#08222a"/><rect x="32" y="136" width="8" height="8" fill="#08222a"/><rect x="40" y="136" width="120" height="8" fill="#f3e7cf"/><rect x="160" y="136" width="8" height="8" fill="#08222a"/><rect x="32" y="144" width="8" height="8" fill="#08222a"/><rect x="40" y="144" width="72" height="8" fill="#f3e7cf"/><rect x="112" y="144" width="24" height="8" fill="#08222a"/><rect x="136" y="144" width="16" height="8" fill="#f3e7cf"/><rect x="152" y="144" width="8" height="8" fill="#08222a"/><rect x="32" y="152" width="8" height="8" fill="#08222a"/><rect x="40" y="152" width="112" height="8" fill="#f3e7cf"/><rect x="152" y="152" width="8" height="8" fill="#08222a"/><rect x="40" y="160" width="112" height="8" fill="#08222a"/><g class="h-blink"><rect x="96" y="120" width="8" height="16" fill="#f3e7cf"/><rect x="128" y="120" width="8" height="16" fill="#f3e7cf"/></g></g></svg></div>
+  <div class="modal-shadow"><div class="modal" id="modalInner"></div></div>
 </div>
 
 <!-- ── MODIFIER ANIMATION ──────────────────────────────── -->
@@ -151,7 +154,7 @@ const MOD_INFO = {
   take_points: { name:'Забрать очки', desc:'Игрок забирает стоимость вопроса у другого игрока. Вопрос не задаётся.' },
   all_in:      { name:'Ва-банк',      desc:'Игрок ставит весь свой счёт и обязан ответить на вопрос.' }
 };
-const PALETTE = ['#ffffff','#e8212b'];
+const PALETTE = ['#f3e7cf','#ff6b3d'];
 const MAX_PLAYERS = 10;
 const BUZZ_MS = 30000;
 const FINISHED_TTL_MS = 30 * 60 * 1000;   // удалять завершённые комнаты через 30 минут
@@ -165,6 +168,8 @@ let room = null;            // последний снимок комнаты
 let unsub = null;           // функция отписки от onValue
 let serverOffset = 0;       // коррекция часов сервера
 let prevScores = {};        // для анимации изменения счёта
+const shownScores = {};     // счёт на экране, пока он набегает
+let scoreTimer = null;
 let buzzTick = null;        // интервал таймера баззера
 let modAnimTimer = null;    // таймер анимации модификатора
 let shownModForKey = null;  // ключ вопроса, для которого уже показали анимацию
@@ -569,12 +574,15 @@ function renderGame(){
     banner.innerHTML = 'Игра завершена';
   } else {
     const isMine = turnPid===myId;
-    let html = isMine
-      ? '<b style="color:var(--red)">Ваш ход — выберите вопрос</b>'
+    const openQ = room.activeQuestion;
+    let html = openQ
+      ? `${openQ.phase==='select'?'Выбирает':'Отвечает'}: <b style="color:var(--orange)">${esc(playerName(openQ.answerer||openQ.picker))}</b>`
+      : isMine
+      ? '<b style="color:var(--orange)">Ваш ход — выберите вопрос</b>'
       : `Ходит: <b style="color:${colorOf(turnPid)}">${esc(playerName(turnPid))}</b>`;
     // защита от зависания: если текущий игрок не в сети и вопрос не открыт — любой может пропустить ход
     if(!room.activeQuestion && turnPlayer && turnPlayer.connected===false && !isMine){
-      html += ` · <span id="skipTurnBtn" style="color:var(--red);cursor:pointer;text-decoration:underline;font-weight:700">Пропустить ход</span>`;
+      html += ` · <span id="skipTurnBtn" style="color:var(--orange);cursor:pointer;text-decoration:underline;font-weight:700">Пропустить ход</span>`;
     }
     banner.innerHTML = html;
     const sb = $('skipTurnBtn');
@@ -591,6 +599,10 @@ function renderScoreboard(){
   const players = orderedPlayers();
   const aq = room.activeQuestion;
   sb.classList.toggle('center', players.length<=4);
+  players.forEach(p=>{
+    const prev=prevScores[p.id], cur=(room.scores&&room.scores[p.id])||0;
+    if(prev!==undefined && prev!==cur && shownScores[p.id]===undefined) shownScores[p.id]=prev;
+  });
   sb.innerHTML = players.map(p=>{
     const isTurn = room.currentTurn===p.id && !aq && room.gameState.status==='playing';
     const isAns = aq && aq.answerer===p.id;
@@ -599,7 +611,7 @@ function renderScoreboard(){
     return `<div class="pcard${isTurn?' turn':''}${isAns?' answerer':''}${p.id===myId?' me':''}${p.connected===false?' off':''}" style="${isTurn||isAns?`border-color:${col};color:${col}`:''}">
       <div class="turndot" style="${isTurn?`background:${col}`:''}"></div>
       <div class="pn">${esc(p.name)}</div>
-      <div class="ps" id="ps-${p.id}" style="color:${col}">${score}</div>
+      <div class="ps" id="ps-${p.id}" style="color:${col}">${shownScores[p.id]??score}</div>
     </div>`;
   }).join('');
   players.forEach(p=>{
@@ -608,9 +620,27 @@ function renderScoreboard(){
     if(prev!==undefined && prev!==cur){
       const el=$('ps-'+p.id);
       if(el){ el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
+      startScoreCount();
     }
     prevScores[p.id]=cur;
   });
+}
+// очки набегают к новому значению, а не меняются скачком
+function startScoreCount(){
+  if(scoreTimer) return;
+  scoreTimer=setInterval(()=>{
+    let active=false;
+    Object.keys(shownScores).forEach(pid=>{
+      const target=(room && room.scores && room.scores[pid]) || 0;
+      const d=target-shownScores[pid];
+      if(d===0){ delete shownScores[pid]; return; }
+      shownScores[pid]+=Math.sign(d)*Math.min(Math.abs(d),Math.max(10,Math.ceil(Math.abs(d)/8)));
+      const el=$('ps-'+pid);
+      if(el) el.textContent=shownScores[pid];
+      active=true;
+    });
+    if(!active){ clearInterval(scoreTimer); scoreTimer=null; }
+  },30);
 }
 
 function renderBoard(){
@@ -628,7 +658,7 @@ function renderBoard(){
       const key = `r${ri}c${col}q${row}`;
       const isUsed = !!used[key];
       const pickable = myTurn && !isUsed;
-      html += `<div class="cell ${isUsed?'used':pickable?'pickable':'locked'}" data-col="${col}" data-row="${row}">${isUsed?'':q.value}</div>`;
+      html += `<div class="tw${isUsed?' dead':''}"><div class="cell px ${isUsed?'used':pickable?'pickable':'locked'}" data-col="${col}" data-row="${row}">${isUsed?'':q.value}</div></div>`;
     });
   }
   el.innerHTML = html;
@@ -990,29 +1020,27 @@ function renderModal(){
     stopBuzzTick();
     const others = orderedPlayers().filter(p=>p.id!==aq.picker);
     const isPicker = aq.picker===myId;
-    const modName = MOD_INFO[aq.modifier].name;
-    let html = `<div class="m-top"><div><div class="m-cat">${esc(cat.name)} · ${esc(modName)}</div><div class="m-val">${aq.value}</div></div></div>`;
+    const give = aq.modifier==='give_points';
+    $('overlay').classList.add('plain');
+    let html = `<div class="mod-title">${give?'ОТДАТЬ':'ЗАБРАТЬ'} ${aq.value}</div>`;
     if(isPicker){
-      html += `<div class="target-sel"><div class="tl">${aq.modifier==='give_points'?'Кому отдать очки?':'У кого забрать очки?'}</div><div class="target-btns" id="targetBtns">`;
-      html += others.map(p=>`<button class="tbtn" data-pid="${p.id}">${esc(p.name)}</button>`).join('');
-      html += `</div></div>`;
-      html += `<div class="btn-row"><button class="btn btn-gold full" id="btnTransfer">Подтвердить</button></div>`;
+      html += `<div class="mod-sub">${esc(playerName(aq.picker))}, ${give?'кому отдаём?':'у кого забираем?'}</div><div class="target-btns" id="targetBtns">`;
+      html += others.map((p,i)=>`<div class="tw tw-t" style="animation-delay:${i*60}ms"><button class="tbtn" data-pid="${p.id}">${esc(p.name)}</button></div>`).join('');
+      html += `</div>`;
     } else {
-      html += `<div class="who">Выбирает: <b style="color:${colorOf(aq.picker)}">${esc(playerName(aq.picker))}</b></div><div class="wait-note">Ожидание выбора игрока</div>`;
+      html += `<div class="mod-sub">${esc(playerName(aq.picker))} выбирает</div>`;
     }
     inner.innerHTML = html;
     if(isPicker){
-      const btns = inner.querySelectorAll('#targetBtns .tbtn');
-      btns.forEach(b=> b.addEventListener('click', ()=>{
-        btns.forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); selectedTarget=b.dataset.pid;
+      inner.querySelectorAll('#targetBtns .tbtn').forEach(b=> b.addEventListener('click', ()=>{
+        selectedTarget=b.dataset.pid; confirmTransfer();
       }));
-      if(selectedTarget){ const cur=inner.querySelector(`.tbtn[data-pid="${selectedTarget}"]`); if(cur) cur.classList.add('sel'); }
-      $('btnTransfer').addEventListener('click', confirmTransfer);
     }
     return;
   }
 
   // ANSWERING / BUZZING
+  $('overlay').classList.remove('plain');
   const isAllIn = aq.modifier==='all_in';
   const dispVal = isAllIn ? (aq.allInStake||0) : aq.value;
   let html = `<div class="m-top"><div>

@@ -11,13 +11,13 @@
     "packs": {
       "$packId": {
         ".read": true,
-        ".write": "auth != null && auth.uid == 'OWNER_UID'"
+        ".write": "auth != null && auth.uid == 'HFjjKgS6l6ZMWHhYLApzPkl2qbi2'"
       }
     },
     "orders": {
-      ".read": "auth != null && auth.uid == 'OWNER_UID'",
+      ".read": "auth != null && auth.uid == 'HFjjKgS6l6ZMWHhYLApzPkl2qbi2'",
       "$orderId": {
-        ".write": "auth != null && auth.uid == 'OWNER_UID'"
+        ".write": "auth != null && auth.uid == 'HFjjKgS6l6ZMWHhYLApzPkl2qbi2'"
       }
     }
   }
