@@ -5,28 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Свои люди — игра про вашу компанию</title>
 <link rel="stylesheet" href="game.css">
+<script src="qrcode.js"></script>
 </head>
 <body>
 
 <!-- ── START ───────────────────────────────────────────── -->
 <div id="startScreen" class="screen active">
-  <header class="site-head">
-    <span>СВОИ ЛЮДИ</span>
-    <nav><a href="demo.html">ДЕМО</a><a href="order.html">ЗАКАЗАТЬ</a></nav>
-  </header>
+  <header class="site-head"><span>СВОИ ЛЮДИ</span></header>
   <main class="hero">
     <div class="hero-main">
       <h1 class="hero-title"><img src="pixel/title.svg" alt="Игра про вас" width="656" height="256"></h1>
-      <p class="hero-text">Вопросы про вашу компанию на телевизоре, ответы с телефонов. Без скачивания и подготовки.</p>
-      <div class="hero-links">
-        <a class="btn btn-red" href="order.html">Заказать игру</a>
-        <a class="btn btn-ghost" href="demo.html">Демо</a>
-      </div>
-      <img class="hero-deer" src="pixel/deer.svg" alt="" width="128" height="112">
+      <p class="hero-text" id="heroText">Вопросы про вашу компанию на экране, ответы с телефонов. Без скачивания.</p>
+      <a class="hero-demo" href="demo.html">Посмотреть демо</a>
     </div>
     <div class="play">
       <section class="card card-join">
-        <h2>Есть код?</h2>
+        <h2>Войти в игру</h2>
         <label class="field-label" for="joinName">Ваше имя</label>
         <input class="input" id="joinName" placeholder="Катя" maxlength="20" autocomplete="off">
         <label class="field-label" for="joinCode">Код комнаты</label>
@@ -34,15 +28,15 @@
         <button class="btn btn-gold" id="btnJoin">Войти</button>
       </section>
       <section class="card card-create">
-        <h2>Новая комната</h2>
+        <h2>Ваша игра готова</h2>
         <label class="field-label" for="createName">Ваше имя</label>
         <input class="input" id="createName" placeholder="Катя" maxlength="20" autocomplete="off">
-        <button class="btn btn-ghost" id="btnCreate">Создать комнату</button>
+        <button class="btn btn-gold" id="btnCreate">Создать комнату</button>
       </section>
+      <div class="err" id="startErr"></div>
     </div>
   </main>
-  <div class="err" id="startErr"></div>
-  <div class="band" aria-hidden="true"></div>
+  <div class="strip" aria-hidden="true"></div>
 </div>
 
 <!-- ── LOBBY ───────────────────────────────────────────── -->
@@ -51,7 +45,8 @@
     <div class="lobby-head">
       <div class="field-label" style="margin-bottom:8px;">Код комнаты</div>
       <div class="room-code" id="lobbyCode"></div>
-      <div class="room-hint">Отправьте гостям ссылку или код</div>
+      <div class="qr" id="lobbyQr" aria-label="QR-код для входа в комнату"></div>
+      <div class="room-hint">Гости наводят камеру телефона на код или открывают ссылку</div>
     </div>
     <div class="link-box">
       <input id="inviteLink" readonly>
@@ -62,14 +57,6 @@
     <div class="players-grid" id="playersGrid"></div>
 
     <div class="upload-card" id="uploadCard" style="display:none;">
-      <h3>Вопросы</h3>
-      <p>Можно загрузить свой JSON или играть в готовый набор.</p>
-      <div class="file-row">
-        <button class="btn btn-ghost" id="btnPickFile">Выбрать JSON-файл</button>
-        <button class="btn btn-ghost" id="btnPack">Набор «Солянка» (с фото)</button>
-        <button class="btn btn-ghost" id="btnDefault">Набор по умолчанию</button>
-      </div>
-      <input type="file" id="fileInput" accept=".json,application/json" style="display:none;">
       <div class="valid-list" id="validList"></div>
     </div>
 
@@ -315,150 +302,6 @@ async function cleanupMyRooms(){
   if(gone.length) saveMyRooms(loadMyRooms().filter(id=>!gone.includes(id)));
 }
 
-/* ════════════════════════════════ DEFAULT BOARD ════════════════════════ */
-function defaultBoard(){
-  const R = (name,questions)=>({name,questions});
-  const Q = (value,question,answer,modifier)=>({value,question,answer,modifier:modifier||null});
-  return {
-    title:'Свои люди',
-    rounds:[
-      { name:'Раунд 1', categories:[
-        R('Еда и напитки',[
-          Q(100,'Из чего делают настоящую текилу?','Из голубой агавы'),
-          Q(200,'Что такое умами?','Пятый базовый вкус — насыщенный «мясной»'),
-          Q(300,'Что входит в классический «Негрони»?','Джин, Кампари, сладкий вермут'),
-          Q(400,'Бананы с точки зрения ботаники — ягоды?','Да. А клубника — нет','double'),
-          Q(500,'В каком городе придумали пиццу «Маргарита»?','Неаполь, 1889 год'),
-        ]),
-        R('Кино',[
-          Q(100,'Сколько сезонов у «Игры престолов»?','8'),
-          Q(200,'Кто озвучивал Шрека в оригинале?','Майк Майерс'),
-          Q(300,'Как зовут злодеев в «Один дома»?','Гарри и Марв'),
-          Q(400,'Кто снял «Криминальное чтиво»?','Квентин Тарантино','all_in'),
-          Q(500,'Кто сыграл Ганнибала Лектера в «Молчании ягнят»?','Энтони Хопкинс'),
-        ]),
-        R('Правда или нет',[
-          Q(100,'Страусы прячут голову в песок при опасности?','Нет — миф'),
-          Q(200,'Великую Китайскую стену видно из космоса?','Нет — слишком узкая'),
-          Q(300,'У лошадей нет рвотного рефлекса?','Правда'),
-          Q(400,'Молния не бьёт дважды в одно место?','Миф'),
-          Q(500,'У осьминога три сердца?','Правда','give_points'),
-        ]),
-        R('География',[
-          Q(100,'Столица Австралии?','Канберра'),
-          Q(200,'В какой стране Мачу-Пикчу?','Перу'),
-          Q(300,'У какой страны самая длинная береговая линия?','Канада'),
-          Q(400,'Море между Австралией и Новой Зеландией?','Тасманово море'),
-          Q(500,'Самая высокогорная столица мира?','Ла-Пас, Боливия','take_points'),
-        ]),
-        R('Музыка',[
-          Q(100,'Из какой страны группа ABBA?','Швеция'),
-          Q(200,'Кто написал «Оду к радости»?','Бетховен'),
-          Q(300,'Самый продаваемый альбом всех времён?','Thriller — Майкл Джексон'),
-          Q(400,'Кто сжёг гитару на фестивале в Монтерее 1967?','Джими Хендрикс','flip_sign'),
-          Q(500,'Как зовут барабанщика The Beatles?','Ринго Старр'),
-        ]),
-        R('Странные факты',[
-          Q(100,'Какое крупное животное не умеет прыгать?','Слон'),
-          Q(200,'Сколько часов в сутки спят кошки?','12–16 часов'),
-          Q(300,'Почему фламинго розовые?','Из-за каротиноидов в рачках'),
-          Q(400,'Сколько костей у акулы?','Ноль — хрящевой скелет'),
-          Q(500,'На сколько % ДНК человека совпадает с бананом?','Около 60%'),
-        ]),
-      ]},
-      { name:'Раунд 2', categories:[
-        R('Наука',[
-          Q(200,'Химический символ золота','Au'),
-          Q(400,'Скорость света в вакууме приблизительно','300 000 км/с'),
-          Q(600,'Кто открыл пенициллин?','Александр Флеминг'),
-          Q(800,'Из чего состоит ядро атома?','Из протонов и нейтронов','all_in'),
-          Q(1000,'Как называется наука о грибах?','Микология'),
-        ]),
-        R('Спорт',[
-          Q(200,'Сколько игроков в баскетболе на площадке?','5'),
-          Q(400,'Где придумали волейбол?','США'),
-          Q(600,'Главный клубный турнир Европы по футболу?','Лига Чемпионов'),
-          Q(800,'Сколько колец на флаге Олимпиады?','5','flip_sign'),
-          Q(1000,'Сколько очков даёт тачдаун?','6'),
-        ]),
-        R('История',[
-          Q(200,'Год Октябрьской революции','1917'),
-          Q(400,'Первый президент США','Джордж Вашингтон'),
-          Q(600,'В каком году пал Константинополь?','1453'),
-          Q(800,'Флагман Колумба','Санта-Мария','give_points'),
-          Q(1000,'Сколько лет длилась Столетняя война?','116 лет'),
-        ]),
-        R('Поп-культура',[
-          Q(200,'Главный волшебник в «Гарри Поттере»?','Альбус Дамблдор'),
-          Q(400,'Кто написал «Властелин колец»?','Дж. Р. Р. Толкин'),
-          Q(600,'Как называется планета в «Аватаре»?','Пандора'),
-          Q(800,'Сколько фильмов в основной саге «Звёздных войн»?','9','take_points'),
-          Q(1000,'В каком году вышел «Аватар» Кэмерона?','2009'),
-        ]),
-        R('Природа',[
-          Q(200,'Самое высокое животное?','Жираф'),
-          Q(400,'Сколько сердец у осьминога?','3'),
-          Q(600,'Самый большой океан?','Тихий'),
-          Q(800,'Какое растение растёт быстрее всех?','Бамбук','double'),
-          Q(1000,'Сколько костей у акулы?','Ноль'),
-        ]),
-        R('Напитки',[
-          Q(200,'Из чего делают саке?','Из риса'),
-          Q(400,'Что значит IPA в названии пива?','India Pale Ale'),
-          Q(600,'Где изобрели шампанское?','Франция, Шампань'),
-          Q(800,'Из чего делают бурбон?','Из кукурузы'),
-          Q(1000,'Какой напиток делают из можжевельника?','Джин'),
-        ]),
-      ]},
-      { name:'Раунд 3', categories:[
-        R('Психология',[
-          Q(300,'Страх открытых пространств?','Агорафобия'),
-          Q(600,'Что такое эффект Даннинга-Крюгера?','Некомпетентные переоценивают себя'),
-          Q(900,'Приписывать другим свои чувства — это?','Проекция'),
-          Q(1200,'Когда толпа принимает худшие решения?','Групповое мышление','flip_sign'),
-          Q(1500,'Что такое когнитивный диссонанс?','Дискомфорт от противоречия убеждений и действий'),
-        ]),
-        R('Путешествия',[
-          Q(300,'Самый посещаемый музей в мире?','Лувр'),
-          Q(600,'В какой стране город Баку?','Азербайджан'),
-          Q(900,'В какой стране больше всего островов?','Швеция'),
-          Q(1200,'Как называется аэропорт в Дубае?','DXB'),
-          Q(1500,'Самая высокогорная столица мира?','Ла-Пас','double'),
-        ]),
-        R('Игры',[
-          Q(300,'В каком году вышел первый Minecraft?','2009'),
-          Q(600,'Имя героя The Legend of Zelda?','Линк'),
-          Q(900,'Кто сделал Dark Souls?','FromSoftware'),
-          Q(1200,'В каком году вышла первая GTA?','1997'),
-          Q(1500,'Что такое «рогалик»?','Roguelike — процедурные уровни','all_in'),
-        ]),
-        R('Космос',[
-          Q(300,'Сколько планет в Солнечной системе?','8'),
-          Q(600,'Как называется наша галактика?','Млечный путь'),
-          Q(900,'Самая большая планета системы?','Юпитер'),
-          Q(1200,'До ближайшей звезды (кроме Солнца)?','4.2 св. года','take_points'),
-          Q(1500,'Что такое чёрная дыра?','Область с гравитацией, из которой не вырывается свет'),
-        ]),
-        R('Кино 2',[
-          Q(300,'В каком году вышел «Крёстный отец»?','1972'),
-          Q(600,'Как звали механическую акулу «Челюстей»?','Брюс'),
-          Q(900,'Кто сыграл Джокера в «Тёмном рыцаре»?','Хит Леджер'),
-          Q(1200,'Сколько Оскаров у «Титаника» 1997?','11'),
-          Q(1500,'Какая студия сняла «Унесённых призраками»?','Studio Ghibli','give_points'),
-        ]),
-        R('На грани',[
-          Q(300,'Боязнь длинных слов называется?','Гиппопотомомонстросесквиппедалиофобия'),
-          Q(600,'Что будет с человеком в космосе без скафандра?','Потеряет сознание за ~15 секунд'),
-          Q(900,'Сколько свет идёт от Солнца до Земли?','Около 8 минут'),
-          Q(1200,'Парадокс о корабле с заменёнными деталями?','Парадокс Тесея'),
-          Q(1500,'На сколько % ДНК человека совпадает с бананом?','Около 60%'),
-        ]),
-      ]},
-    ]
-  };
-}
-
-/* ════════════════════════════════ VALIDATION ═══════════════════════════ */
 /* ════════════════════════════════ LOBBY: BOARD UPLOAD ══════════════════ */
 let pendingBoard = null;      // нормализованный валидный набор, ожидающий старта
 function setBoardStatus(board, errors, sourceLabel){
@@ -477,38 +320,6 @@ function setBoardStatus(board, errors, sourceLabel){
   updateStartButton();
   return true;
 }
-function handleFile(file){
-  const reader = new FileReader();
-  reader.onload = e=>{
-    let data;
-    try{ data = JSON.parse(e.target.result); }
-    catch(err){ setBoardStatus(null,['Не удалось разобрать JSON: '+err.message]); return; }
-    const errors = validateBoard(data);
-    setBoardStatus(data, errors, file.name);
-  };
-  reader.onerror = ()=> setBoardStatus(null,['Ошибка чтения файла.']);
-  reader.readAsText(file);
-}
-function loadDefault(){
-  const b = defaultBoard();
-  const errors = validateBoard(b);
-  setBoardStatus(b, errors, 'по умолчанию');
-}
-// загрузка готового набора «Солянка» (igra.json) с того же сайта — фото лежат в /images
-async function loadPack(){
-  const list = $('validList');
-  list.innerHTML = '<div class="valid-ok" style="color:var(--dim)">Загрузка набора...</div>';
-  try{
-    const resp = await fetch('igra.json', { cache:'no-store' });
-    if(!resp.ok) throw new Error('HTTP '+resp.status);
-    const data = await resp.json();
-    const errors = validateBoard(data);
-    setBoardStatus(data, errors, 'Солянка, с фото');
-  }catch(e){
-    setBoardStatus(null, ['Не удалось загрузить igra.json: '+e.message+'. Убедитесь, что файл igra.json и папка images развёрнуты вместе с сайтом.']);
-  }
-}
-
 // купленный пак по ссылке ?pack=ID: читается только по точному пути
 async function loadOrderedPack(id){
   $('validList').innerHTML = '<div class="valid-ok" style="color:var(--dim)">Загрузка пака...</div>';
@@ -517,20 +328,17 @@ async function loadOrderedPack(id){
     const snap = await get(ref(db,`packs/${id}`));
     if(!snap.exists()){ setBoardStatus(null,['Пак не найден. Проверьте ссылку.']); return; }
     const board = snap.val().board;
-    if(setBoardStatus(board, validateBoard(board), board && board.title)){
-      // покупателю не нужны другие наборы: остаётся только статус его пака
-      document.querySelectorAll('#uploadCard > p, #uploadCard .file-row').forEach(n=>{ n.style.display='none'; });
-      document.querySelector('#uploadCard h3').textContent='Ваш пак вопросов';
-    }
+    setBoardStatus(board, validateBoard(board), board && board.title);
+
   }catch(e){
     setBoardStatus(null,['Не удалось загрузить пак: '+e.message]);
   }
 }
-// набор для лобби: пак из ссылки, иначе чистый встроенный набор
+// вопросы лобби: только купленный пак из ссылки или из сохранённой сессии
+let currentPack = null;
 async function loadLobbyBoard(){
-  const packId = new URLSearchParams(location.search).get('pack');
-  if(packId){ await loadOrderedPack(packId); return; }
-  loadDefault();
+  if(currentPack){ await loadOrderedPack(currentPack); return; }
+  setBoardStatus(null,['Откройте игру по ссылке из заказа.']);
 }
 
 /* ════════════════════════════════ CREATE / JOIN ════════════════════════ */
@@ -628,7 +436,7 @@ function startError(m, keep){
   const e=$('startErr'); e.textContent=m; clearTimeout(startError._t);
   if(!keep) startError._t=setTimeout(()=>e.textContent='',4000);
 }
-function saveSession(){ try{ localStorage.setItem('svoigra_session', JSON.stringify({roomId,myId})); }catch(e){} }
+function saveSession(){ try{ localStorage.setItem('svoigra_session', JSON.stringify({roomId,myId,pack:currentPack})); }catch(e){} }
 function clearSession(){ try{ localStorage.removeItem('svoigra_session'); }catch(e){} }
 
 /* ════════════════════════════════ SUBSCRIBE ════════════════════════════ */
@@ -671,6 +479,7 @@ function renderLobby(){
   $('lobbyCode').textContent = roomId;
   const link = location.origin + location.pathname + '?room=' + roomId;
   $('inviteLink').value = link;
+  renderQr(link);
 
   const players = orderedPlayers();
   $('playerCount').textContent = `(${players.length}/${MAX_PLAYERS})`;
@@ -698,6 +507,15 @@ function renderLobby(){
   }
 }
 let lobbyDefaultLoaded=false;
+let qrLink=null;
+function renderQr(link){
+  if(link===qrLink) return;
+  qrLink=link;
+  const q=qrcode(0,'M');
+  q.addData(link);
+  q.make();
+  $('lobbyQr').innerHTML=q.createSvgTag({scalable:true,margin:2});
+}
 function updateStartButton(){
   const btn=$('btnStart');
   if(!btn) return;
@@ -706,7 +524,7 @@ function updateStartButton(){
   const hasBoard = !!pendingBoard;
   btn.disabled = !(enough && hasBoard);
   btn.textContent = !enough ? 'Нужно минимум 2 игрока'
-                  : !hasBoard ? 'Загрузите вопросы (или набор по умолчанию)'
+                  : !hasBoard ? 'Вопросы не загружены'
                   : 'Начать игру';
 }
 
@@ -1338,10 +1156,6 @@ $('btnCopy').addEventListener('click', ()=>{
       .catch(()=>{ $('inviteLink').select(); document.execCommand('copy'); toast('Ссылка скопирована'); });
   } else { $('inviteLink').select(); document.execCommand('copy'); toast('Ссылка скопирована'); }
 });
-$('btnPickFile').addEventListener('click', ()=> $('fileInput').click());
-$('fileInput').addEventListener('change', e=>{ if(e.target.files[0]) handleFile(e.target.files[0]); e.target.value=''; });
-$('btnDefault').addEventListener('click', loadDefault);
-$('btnPack').addEventListener('click', loadPack);
 $('btnStart').addEventListener('click', startGame);
 $('btnNewGame').addEventListener('click', ()=>{ clearSession(); location.href = location.origin+location.pathname; });
 $('btnHostRestart').addEventListener('click', closeRoomToMenu);
@@ -1354,7 +1168,8 @@ $('btnLeaveGame').addEventListener('click', leaveRoom);
   const params = new URLSearchParams(location.search);
   const urlRoom = params.get('room');
   if(urlRoom){ $('joinCode').value = urlRoom.toUpperCase(); $('startScreen').classList.add('has-room'); }
-  if(params.get('pack')){ $('startScreen').classList.add('has-pack'); }
+  currentPack = params.get('pack');
+  if(currentPack){ $('startScreen').classList.add('has-pack'); $('heroText').textContent='Введите имя и создайте комнату. Гости войдут по QR-коду с экрана.'; }
 
   try{
     await ensureAuth();
@@ -1369,7 +1184,7 @@ $('btnLeaveGame').addEventListener('click', leaveRoom);
   // авто-восстановление сессии после обновления страницы
   let session=null;
   try{ session = JSON.parse(localStorage.getItem('svoigra_session')||'null'); }catch(e){}
-  if(session && session.roomId && session.myId && !params.get('pack')){
+  if(session && session.roomId && session.myId && (!currentPack || session.pack===currentPack)){
     if(!urlRoom || urlRoom.toUpperCase()===session.roomId){
       try{
         const snap = await get(ref(db,`rooms/${session.roomId}`));
@@ -1378,7 +1193,7 @@ $('btnLeaveGame').addEventListener('click', leaveRoom);
           await remove(ref(db,`rooms/${session.roomId}`)).catch(()=>{});
           clearSession();
         } else if(r && r.players && r.players[session.myId]){
-          roomId=session.roomId; myId=session.myId;
+          roomId=session.roomId; myId=session.myId; currentPack=session.pack||null;
           attachPresence(); subscribeRoom();
           return;
         } else { clearSession(); }
