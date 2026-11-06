@@ -364,9 +364,13 @@ import {
   getDatabase, ref, set, get, update, onValue, runTransaction,
   remove, onDisconnect
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import {
+  getAuth, signInAnonymously, onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+const auth = getAuth(app);
 
 /* ════════════════════════════════ CONSTANTS ════════════════════════════ */
 const ROUND_VALUES = [
@@ -446,26 +450,82 @@ function attachPresence(){
   onDisconnect(cRef).set(false).catch(()=>{});
 }
 
+/* ════════════════════════════════ AUTH ═════════════════════════════════ */
+// Анонимный вход. Любая операция с базой выполняется только после него:
+// правила базы пускают в rooms/{id} только авторизованных клиентов.
+let authPromise = null;
+let serverOffsetWatched = false;
+function watchServerOffset(){
+  if(serverOffsetWatched) return;
+  serverOffsetWatched = true;
+  onValue(ref(db,'.info/serverTimeOffset'), s=>{ const v=s.val(); if(typeof v==='number') serverOffset=v; });
+}
+function ensureAuth(){
+  if(authPromise) return authPromise;
+  authPromise = new Promise((resolve,reject)=>{
+    const off = onAuthStateChanged(auth, user=>{
+      if(user){ off(); resolve(user); }
+    }, err=>{ off(); reject(err); });
+    // при сохранённой анонимной сессии вернёт того же пользователя
+    signInAnonymously(auth).catch(err=>{ off(); reject(err); });
+  }).then(user=>{
+    $('startErr').textContent = '';   // убрать закреплённую ошибку прошлой попытки входа
+    watchServerOffset();
+    return user;
+  }).catch(err=>{
+    authPromise = null;   // следующая попытка (кнопка) повторит вход
+    throw err;
+  });
+  return authPromise;
+}
+function authErrorText(e){
+  const code = (e && e.code) || '';
+  if(code==='auth/operation-not-allowed' || code==='auth/admin-restricted-operation' || code==='auth/configuration-not-found'){
+    return 'Вход в игру сейчас отключён в настройках сервера. Сообщите об этом владельцу сайта.';
+  }
+  if(code==='auth/network-request-failed'){
+    return 'Нет связи с сервером. Проверьте интернет и попробуйте ещё раз.';
+  }
+  if(code==='auth/too-many-requests'){
+    return 'Слишком много попыток входа. Подождите пару минут и попробуйте снова.';
+  }
+  return 'Не удалось войти в игру. Обновите страницу и попробуйте ещё раз.';
+}
+
 /* ════════════════════════════════ CLEANUP ══════════════════════════════ */
-async function cleanupStaleRooms(){
+// Правила запрещают читать всю коллекцию rooms, поэтому комната проверяется по ключу:
+// при открытии (вход по коду, восстановление сессии) и при запуске сайта у её создателя.
+const MY_ROOMS_KEY = 'svoigra_my_rooms';
+const MY_ROOMS_MAX = 20;
+function isRoomExpired(r){
+  const t = Date.now();
+  const finishedAt = r.finishedAt || (r.gameState && r.gameState.finishedAt);
+  const createdAt = r.createdAt || 0;
+  if(finishedAt) return (t - finishedAt) > FINISHED_TTL_MS;
+  return !!createdAt && (t - createdAt) > STALE_TTL_MS;
+}
+function loadMyRooms(){
   try{
-    const snap = await get(ref(db,'rooms'));
-    if(!snap.exists()) return;
-    const rooms = snap.val();
-    const t = Date.now();
-    const jobs=[];
-    Object.keys(rooms).forEach(id=>{
-      const r = rooms[id] || {};
-      const finishedAt = r.finishedAt || (r.gameState && r.gameState.finishedAt);
-      const createdAt = r.createdAt || 0;
-      if(finishedAt && (t - finishedAt) > FINISHED_TTL_MS){
-        jobs.push(remove(ref(db,`rooms/${id}`)));
-      } else if(!finishedAt && createdAt && (t - createdAt) > STALE_TTL_MS){
-        jobs.push(remove(ref(db,`rooms/${id}`)));
-      }
-    });
-    await Promise.allSettled(jobs);
-  }catch(e){ /* нет прав на чтение корня — пропускаем */ }
+    const v = JSON.parse(localStorage.getItem(MY_ROOMS_KEY)||'[]');
+    return Array.isArray(v) ? v : [];
+  }catch(e){ return []; }
+}
+function saveMyRooms(list){ try{ localStorage.setItem(MY_ROOMS_KEY, JSON.stringify(list)); }catch(e){} }
+function rememberMyRoom(id){
+  saveMyRooms(loadMyRooms().filter(x=>x!==id).concat(id).slice(-MY_ROOMS_MAX));
+}
+// удаляет просроченные комнаты, созданные в этом браузере
+async function cleanupMyRooms(){
+  const gone = [];
+  await Promise.allSettled(loadMyRooms().map(async id=>{
+    const snap = await get(ref(db,`rooms/${id}`));
+    if(!snap.exists()){ gone.push(id); return; }
+    if(isRoomExpired(snap.val())){
+      await remove(ref(db,`rooms/${id}`));
+      gone.push(id);
+    }
+  }));
+  if(gone.length) saveMyRooms(loadMyRooms().filter(id=>!gone.includes(id)));
 }
 
 /* ════════════════════════════════ DEFAULT BOARD ════════════════════════ */
@@ -752,6 +812,13 @@ async function createRoom(){
   if(!name){ startError('Введите имя'); return; }
   const btn=$('btnCreate'); btn.disabled=true; btn.textContent='Создаём...';
   try{
+    await ensureAuth();
+  }catch(e){
+    startError(authErrorText(e), true);
+    btn.disabled=false; btn.textContent='Создать комнату';
+    return;
+  }
+  try{
     const code = genCode();
     const pid = newPlayerId();
     const t = Date.now();
@@ -769,6 +836,7 @@ async function createRoom(){
     };
     await set(ref(db,`rooms/${code}`), data);
     roomId = code; myId = pid;
+    rememberMyRoom(code);
     saveSession();
     attachPresence();
     subscribeRoom();
@@ -786,9 +854,19 @@ async function joinRoom(autoName, autoCode){
   const btn=$('btnJoin'); btn.disabled=true; btn.textContent='Входим...';
   const restore=()=>{ btn.disabled=false; btn.textContent='Войти'; };
   try{
+    await ensureAuth();
+  }catch(e){
+    startError(authErrorText(e), true); restore();
+    return;
+  }
+  try{
     const snap = await get(ref(db,`rooms/${code}`));
     if(!snap.exists()){ startError('Комната не найдена'); restore(); return; }
     const r = snap.val();
+    if(isRoomExpired(r)){
+      await remove(ref(db,`rooms/${code}`)).catch(()=>{});
+      startError('Комната не найдена'); restore(); return;
+    }
     const players = r.players || {};
     const status = r.gameState ? r.gameState.status : 'lobby';
 
@@ -819,7 +897,10 @@ async function joinRoom(autoName, autoCode){
     startError('Ошибка: '+e.message); restore();
   }
 }
-function startError(m){ const e=$('startErr'); e.textContent=m; clearTimeout(startError._t); startError._t=setTimeout(()=>e.textContent='',4000); }
+function startError(m, keep){
+  const e=$('startErr'); e.textContent=m; clearTimeout(startError._t);
+  if(!keep) startError._t=setTimeout(()=>e.textContent='',4000);
+}
 function saveSession(){ try{ localStorage.setItem('svoigra_session', JSON.stringify({roomId,myId})); }catch(e){} }
 function clearSession(){ try{ localStorage.removeItem('svoigra_session'); }catch(e){} }
 
@@ -1542,14 +1623,20 @@ $('btnLeaveLobby').addEventListener('click', leaveRoom);
 $('btnLeaveGame').addEventListener('click', leaveRoom);
 
 /* ════════════════════════════════ INIT ═════════════════════════════════ */
-onValue(ref(db,'.info/serverTimeOffset'), s=>{ const v=s.val(); if(typeof v==='number') serverOffset=v; });
-
 (async function init(){
-  await cleanupStaleRooms();
-
   const params = new URLSearchParams(location.search);
   const urlRoom = params.get('room');
   if(urlRoom){ $('joinCode').value = urlRoom.toUpperCase(); }
+
+  try{
+    await ensureAuth();
+  }catch(e){
+    showScreen('startScreen');
+    startError(authErrorText(e), true);
+    return;
+  }
+
+  cleanupMyRooms().catch(()=>{});
 
   // авто-восстановление сессии после обновления страницы
   let session=null;
@@ -1557,8 +1644,12 @@ onValue(ref(db,'.info/serverTimeOffset'), s=>{ const v=s.val(); if(typeof v==='n
   if(session && session.roomId && session.myId){
     if(!urlRoom || urlRoom.toUpperCase()===session.roomId){
       try{
-        const snap = await get(ref(db,`rooms/${session.roomId}/players/${session.myId}`));
-        if(snap.exists()){
+        const snap = await get(ref(db,`rooms/${session.roomId}`));
+        const r = snap.exists() ? snap.val() : null;
+        if(r && isRoomExpired(r)){
+          await remove(ref(db,`rooms/${session.roomId}`)).catch(()=>{});
+          clearSession();
+        } else if(r && r.players && r.players[session.myId]){
           roomId=session.roomId; myId=session.myId;
           attachPresence(); subscribeRoom();
           return;
