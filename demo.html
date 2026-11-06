@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Демо — Своя Игра</title>
+<link rel="stylesheet" href="site.css">
+<style>
+.scores{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+.score{ background:var(--s2); border:1.5px solid var(--border2); border-radius:10px; padding:8px 12px; font-size:0.85rem; }
+.score.turn{ border-color:var(--gold); }
+.score b{ display:block; font-family:'Unbounded',sans-serif; color:var(--gold); }
+.board{ display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:6px; }
+.cat{ font-size:0.68rem; font-weight:700; text-align:center; padding:6px 2px; color:var(--dim2); overflow-wrap:anywhere; }
+.cell{ background:var(--s3); color:var(--gold); border:1.5px solid var(--border2); border-radius:8px; padding:14px 0; font:inherit; font-weight:700; cursor:pointer; }
+.cell:disabled{ background:transparent; color:transparent; border-color:var(--border); cursor:default; }
+.q{ font-size:1.2rem; margin:14px 0; }
+.a{ color:var(--green); font-size:1.05rem; margin-bottom:14px; }
+.actions{ display:flex; gap:10px; flex-wrap:wrap; }
+@media (max-width:560px){ .cell{ padding:10px 0; font-size:0.78rem; } .cat{ font-size:0.56rem; } }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>Демо-раунд</h1>
+  <p class="lead">Один раунд на одном устройстве, без регистрации и оплаты. В полной игре каждый играет со своего телефона, есть три раунда, модификаторы, борьба за вопрос и вопросы под вашу тему.</p>
+
+  <section class="card" id="setup">
+    <h2>Кто играет</h2>
+    <label class="f">Имена через запятую, от 2 до 10
+      <input id="names" value="Игрок 1, Игрок 2" maxlength="200">
+    </label>
+    <div class="err" id="err" role="alert"></div>
+    <button class="btn block" id="start" type="button">Начать</button>
+  </section>
+
+  <section id="game" hidden>
+    <div class="scores" id="scores"></div>
+    <div class="card" id="question" hidden aria-live="polite"></div>
+    <div class="board" id="board"></div>
+  </section>
+
+  <section class="card" id="finish" hidden>
+    <h2>Раунд окончен</h2>
+    <p id="result" style="margin-bottom:14px"></p>
+    <a class="btn block" href="order.html">Заказать игру под свою вечеринку</a>
+  </section>
+  <div class="foot"><a href="index.html">На главную</a></div>
+</main>
+
+<script type="module">
+const $ = id => document.getElementById(id);
+let pack=null, players=[], turn=0, left=0;
+
+function renderScores(){
+  const box=$('scores'); box.replaceChildren();
+  players.forEach((p,i)=>{
+    const el=document.createElement('div'); el.className='score'+(i===turn?' turn':'');
+    const v=document.createElement('b'); v.textContent=p.score;
+    el.append(p.name,v); box.append(el);
+  });
+}
+function renderBoard(){
+  const board=$('board'); board.replaceChildren();
+  for(const c of pack.categories){
+    const el=document.createElement('div'); el.className='cat'; el.textContent=c.name; board.append(el);
+  }
+  for(let qi=0;qi<5;qi++){
+    pack.categories.forEach(c=>{
+      const q=c.questions[qi];
+      const b=document.createElement('button'); b.type='button'; b.className='cell'; b.textContent=q.value;
+      b.setAttribute('aria-label',`${c.name}, ${q.value}`);
+      b.addEventListener('click',()=>{ b.disabled=true; openQuestion(c,q); });
+      board.append(b);
+    });
+  }
+}
+function setBoardLocked(locked){
+  $('board').hidden=locked;
+}
+function openQuestion(c,q){
+  setBoardLocked(true);
+  const box=$('question'); box.hidden=false; box.replaceChildren();
+  const h=document.createElement('h2'); h.textContent=`${c.name}, ${q.value}. Отвечает: ${players[turn].name}`;
+  const t=document.createElement('p'); t.className='q'; t.textContent=q.question;
+  const actions=document.createElement('div'); actions.className='actions';
+  const show=document.createElement('button'); show.type='button'; show.className='btn'; show.textContent='Показать ответ';
+  show.addEventListener('click',()=>{
+    const a=document.createElement('p'); a.className='a'; a.textContent=q.answer;
+    t.after(a); actions.replaceChildren();
+    const mk=(label,cls,delta)=>{
+      const b=document.createElement('button'); b.type='button'; b.className='btn '+cls; b.textContent=label;
+      b.addEventListener('click',()=>closeQuestion(delta)); actions.append(b);
+    };
+    mk(`Правильно +${q.value}`,'good',q.value);
+    mk(`Неправильно -${q.value}`,'bad',-q.value);
+  });
+  actions.append(show); box.append(h,t,actions);
+}
+function closeQuestion(delta){
+  players[turn].score+=delta;
+  turn=(turn+1)%players.length;
+  left--;
+  $('question').hidden=true;
+  setBoardLocked(false);
+  renderScores();
+  if(left===0) finish();
+}
+function finish(){
+  $('game').hidden=true; $('finish').hidden=false;
+  const top=[...players].sort((a,b)=>b.score-a.score)[0];
+  $('result').textContent=`Победитель: ${top.name}, ${top.score} очков.`;
+}
+$('start').addEventListener('click',async()=>{
+  const names=$('names').value.split(',').map(s=>s.trim()).filter(Boolean);
+  if(names.length<2||names.length>10){ $('err').textContent='Укажите от 2 до 10 имён.'; return; }
+  try{
+    const res=await fetch('demo-pack.json'); if(!res.ok) throw new Error();
+    pack=await res.json();
+  }catch(e){ $('err').textContent='Не удалось загрузить вопросы. Обновите страницу.'; return; }
+  players=names.map(name=>({name,score:0}));
+  turn=0; left=pack.categories.length*5;
+  $('setup').hidden=true; $('game').hidden=false;
+  renderScores(); renderBoard();
+});
+</script>
+</body>
+</html>

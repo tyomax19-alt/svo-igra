@@ -259,6 +259,11 @@ footer{ text-align:center; padding:10px 16px 24px; font-size:0.56rem; color:#222
     <button class="btn btn-gold" id="btnJoin">Войти</button>
   </div>
   <div class="err" id="startErr"></div>
+  <div style="margin-top:10px; font-size:0.85rem; text-align:center;">
+    <a href="order.html" style="color:var(--gold);">Заказать игру под вечеринку</a>
+    <span style="color:var(--dim); margin:0 8px;">·</span>
+    <a href="demo.html" style="color:var(--gold);">Демо</a>
+  </div>
 </div>
 
 <!-- ── LOBBY ───────────────────────────────────────────── -->
@@ -367,18 +372,13 @@ import {
 import {
   getAuth, signInAnonymously, onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { validateBoard, normalizeBoard } from "./pack-validator.js";
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 
 /* ════════════════════════════════ CONSTANTS ════════════════════════════ */
-const ROUND_VALUES = [
-  [100,200,300,400,500],
-  [200,400,600,800,1000],
-  [300,600,900,1200,1500]
-];
-const VALID_MODIFIERS = ['double','flip_sign','give_points','take_points','all_in'];
 const MOD_INFO = {
   double:      { name:'Удвоение',     desc:'Текущий счёт игрока умножается на два. Вопрос не задаётся.' },
   flip_sign:   { name:'Смена знака',  desc:'Знак текущего счёта игрока меняется на противоположный. Вопрос не задаётся.' },
@@ -681,90 +681,6 @@ function defaultBoard(){
 }
 
 /* ════════════════════════════════ VALIDATION ═══════════════════════════ */
-function validateBoard(data){
-  const errors=[];
-  if(!data || typeof data!=='object' || Array.isArray(data)){ return ['Файл не является корректным JSON-объектом.']; }
-  if(!Array.isArray(data.rounds)){ return ['Отсутствует массив "rounds".']; }
-
-  for(let ri=0; ri<data.rounds.length; ri++){
-    const r = data.rounds[ri];
-    const RN = ri+1;
-    if(!r || typeof r!=='object'){ errors.push(`Раунд ${RN}: некорректный формат.`); continue; }
-    if(!Array.isArray(r.categories)){ errors.push(`Раунд ${RN}: отсутствует массив "categories".`); continue; }
-    if(r.categories.length!==6){ errors.push(`Раунд ${RN}: должно быть 6 категорий, найдено: ${r.categories.length}.`); }
-    const expectVals = ROUND_VALUES[ri] || null;   // проверка стоимости только для раундов 1–3
-    let modCount=0;
-    r.categories.forEach((c,ci)=>{
-      const cname = (c && c.name) ? `"${c.name}"` : `№${ci+1}`;
-      if(!c || typeof c!=='object'){ errors.push(`Раунд ${RN}, категория ${cname}: некорректный формат.`); return; }
-      if(!Array.isArray(c.questions)){ errors.push(`Раунд ${RN}, категория ${cname}: отсутствует массив "questions".`); return; }
-      if(c.questions.length!==5){ errors.push(`Раунд ${RN}, категория ${cname}: должно быть 5 вопросов, найдено: ${c.questions.length}.`); }
-      c.questions.forEach((q,qi)=>{
-        const where = `Раунд ${RN}, ${cname}, вопрос ${qi+1}`;
-        if(!q || typeof q!=='object'){ errors.push(`${where}: некорректный формат.`); return; }
-        const hasQText = typeof q.question==='string' && q.question.trim();
-        const imgErr = validImageField(q.image);
-        const aimgErr = validImageField(q.answerImage);
-        if(imgErr) errors.push(`${where}: поле image — ${imgErr}.`);
-        if(aimgErr) errors.push(`${where}: поле answerImage — ${aimgErr}.`);
-        // вопрос: нужен текст ИЛИ картинка
-        if(!hasQText && !(q.image && !imgErr)){ errors.push(`${where}: нет ни текста вопроса, ни картинки.`); }
-        // ответ: нужен текст ИЛИ картинка ответа
-        const hasAText = typeof q.answer==='string' && q.answer.trim();
-        if(!hasAText && !(q.answerImage && !aimgErr)){ errors.push(`${where}: нет ни текста ответа, ни картинки ответа.`); }
-        if(typeof q.value!=='number' || !Number.isFinite(q.value)){
-          errors.push(`${where}: стоимость должна быть числом.`);
-        } else if(expectVals && q.value!==expectVals[qi]){
-          errors.push(`${where}: стоимость должна быть ${expectVals[qi]}, найдено: ${q.value}.`);
-        }
-        if(q.modifier!==undefined && q.modifier!==null && q.modifier!==''){
-          if(typeof q.modifier!=='string' || !VALID_MODIFIERS.includes(q.modifier)){
-            errors.push(`${where}: неизвестный модификатор "${q.modifier}". Допустимы: ${VALID_MODIFIERS.join(', ')}.`);
-          } else { modCount++; }
-        }
-      });
-    });
-    if(modCount>5){ errors.push(`Раунд ${RN}: модификаторов не более 5, найдено: ${modCount}.`); }
-  }
-  return errors;
-}
-// поле картинки: строка или массив строк (путь/URL). Возвращает текст ошибки или null.
-function validImageField(v){
-  if(v===undefined || v===null) return null;
-  const arr = Array.isArray(v) ? v : [v];
-  if(arr.length===0) return null;
-  for(const x of arr){ if(typeof x!=='string' || !x.trim()) return 'ожидается путь к картинке (строка) или массив строк'; }
-  return null;
-}
-function normImage(v){
-  if(v===undefined || v===null) return null;
-  const arr = (Array.isArray(v) ? v : [v]).map(x=>String(x).trim()).filter(Boolean);
-  return arr.length ? arr : null;   // всегда массив или null
-}
-// нормализуем в чистую структуру для хранения
-function normalizeBoard(data){
-  return {
-    title: typeof data.title==='string' ? data.title : 'Своя Игра',
-    rounds: data.rounds.map((r,ri)=>({
-      name: (r.name && String(r.name)) || `Раунд ${ri+1}`,
-      categories: r.categories.map((c,ci)=>({
-        name: (c.name && String(c.name)) || `Категория ${ci+1}`,
-        questions: c.questions.map(q=>{
-          const o = {
-            value: q.value,
-            question: typeof q.question==='string' ? q.question : '',
-            answer: typeof q.answer==='string' ? q.answer : '',
-            modifier: (q.modifier && VALID_MODIFIERS.includes(q.modifier)) ? q.modifier : null
-          };
-          const img = normImage(q.image); if(img) o.image = img;
-          const aimg = normImage(q.answerImage); if(aimg) o.answerImage = aimg;
-          return o;
-        })
-      }))
-    }))
-  };
-}
-
 /* ════════════════════════════════ LOBBY: BOARD UPLOAD ══════════════════ */
 let pendingBoard = null;      // нормализованный валидный набор, ожидающий старта
 function setBoardStatus(board, errors, sourceLabel){
@@ -813,6 +729,27 @@ async function loadPack(){
   }catch(e){
     setBoardStatus(null, ['Не удалось загрузить igra.json: '+e.message+'. Убедитесь, что файл igra.json и папка images развёрнуты вместе с сайтом.']);
   }
+}
+
+// купленный пак по ссылке ?pack=ID: читается только по точному пути
+async function loadOrderedPack(id){
+  $('validList').innerHTML = '<div class="valid-ok" style="color:var(--dim2)">Загрузка пака...</div>';
+  if(!/^[a-z0-9]{8,40}$/.test(id)){ setBoardStatus(null,['Ссылка на пак некорректна.']); return; }
+  try{
+    const snap = await get(ref(db,`packs/${id}`));
+    if(!snap.exists()){ setBoardStatus(null,['Пак не найден. Проверьте ссылку.']); return; }
+    const board = snap.val().board;
+    setBoardStatus(board, validateBoard(board,{exactRounds:3}), board && board.title);
+  }catch(e){
+    setBoardStatus(null,['Не удалось загрузить пак: '+e.message]);
+  }
+}
+// набор для лобби: пак из ссылки, иначе igra.json, при сбое встроенный набор
+async function loadLobbyBoard(){
+  const packId = new URLSearchParams(location.search).get('pack');
+  if(packId){ await loadOrderedPack(packId); return; }
+  await loadPack();
+  if(!pendingBoard) loadDefault();
 }
 
 /* ════════════════════════════════ CREATE / JOIN ════════════════════════ */
@@ -975,7 +912,7 @@ function renderLobby(){
   $('lobbyWait').style.display = isHost ? 'none' : 'block';
   if(isHost){
     // один раз при первом входе в лобби подгружаем набор по умолчанию — игра готова к запуску сразу
-    if(!lobbyDefaultLoaded){ lobbyDefaultLoaded=true; if(!pendingBoard) loadDefault(); }
+    if(!lobbyDefaultLoaded){ lobbyDefaultLoaded=true; if(!pendingBoard) loadLobbyBoard(); }
     updateStartButton();
   }
 }
@@ -1651,7 +1588,7 @@ $('btnLeaveGame').addEventListener('click', leaveRoom);
   // авто-восстановление сессии после обновления страницы
   let session=null;
   try{ session = JSON.parse(localStorage.getItem('svoigra_session')||'null'); }catch(e){}
-  if(session && session.roomId && session.myId){
+  if(session && session.roomId && session.myId && !params.get('pack')){
     if(!urlRoom || urlRoom.toUpperCase()===session.roomId){
       try{
         const snap = await get(ref(db,`rooms/${session.roomId}`));
