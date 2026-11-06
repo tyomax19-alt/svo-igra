@@ -443,11 +443,19 @@ function orderedPlayers(){
 }
 
 // onDisconnect / connected tracking
+let presenceRef = null;     // путь, для которого на сервере ждёт запись onDisconnect
 function attachPresence(){
   if(!roomId || !myId) return;
   const cRef = ref(db, `rooms/${roomId}/players/${myId}/connected`);
+  presenceRef = cRef;
   set(cRef, true).catch(()=>{});
   onDisconnect(cRef).set(false).catch(()=>{});
+}
+// Без отмены сервер при закрытии вкладки запишет connected в уже удалённую комнату и создаст её заново.
+function detachPresence(){
+  if(!presenceRef) return;
+  onDisconnect(presenceRef).cancel().catch(()=>{});
+  presenceRef = null;
 }
 
 /* ════════════════════════════════ AUTH ═════════════════════════════════ */
@@ -502,7 +510,8 @@ function isRoomExpired(r){
   const finishedAt = r.finishedAt || (r.gameState && r.gameState.finishedAt);
   const createdAt = r.createdAt || 0;
   if(finishedAt) return (t - finishedAt) > FINISHED_TTL_MS;
-  return !!createdAt && (t - createdAt) > STALE_TTL_MS;
+  if(!createdAt) return true;   // обрывок удалённой комнаты: у настоящей комнаты createdAt есть всегда
+  return (t - createdAt) > STALE_TTL_MS;
 }
 function loadMyRooms(){
   try{
@@ -920,6 +929,7 @@ function subscribeRoom(){
 }
 function resetToStart(){
   if(unsub){ unsub(); unsub=null; }
+  detachPresence();
   room=null; roomId=null; myId=null; prevScores={}; shownModForKey=null; scheduledModForKey=null; finishCelebrated=false;
   lastModalSig=null;
   stopBuzzTick(); hideModOverlay();
