@@ -76,6 +76,7 @@
   <div class="topbar">
     <div class="title">СВОИ ЛЮДИ</div>
     <div class="topbar-actions">
+      <button class="restart-btn" id="btnSound" style="display:none">Звук: вкл</button>
       <button class="restart-btn" id="btnLeaveGame" style="display:none">Покинуть</button>
       <button class="restart-btn" id="btnHostRestart" style="display:none">Перезапустить</button>
     </div>
@@ -141,6 +142,7 @@ import {
   getAuth, signInAnonymously, onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { validateBoard, normalizeBoard } from "./pack-validator.js";
+import * as sound from "./sound.js";
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
@@ -464,6 +466,7 @@ function resetToStart(){
   room=null; roomId=null; myId=null; prevScores={}; shownModForKey=null; scheduledModForKey=null; finishCelebrated=false;
   lastModalSig=null;
   stopBuzzTick(); hideModOverlay();
+  sound.stopMusic(); sndSeen=null;
   // вернуть кнопки лобби в исходное состояние (после createRoom/joinRoom они остаются disabled)
   const bc=$('btnCreate'); if(bc){ bc.disabled=false; bc.textContent='Создать комнату'; }
   const bj=$('btnJoin'); if(bj){ bj.disabled=false; bj.textContent='Войти'; }
@@ -476,6 +479,36 @@ function render(){
   if(status==='lobby'){ renderLobby(); }
   else if(status==='finished'){ renderGame(); renderFinish(); }
   else { renderGame(); }
+  updateSound();
+}
+
+/* ════════════════════════════════ ЗВУК ══════════════════════════════════ */
+// звук только у создателя комнаты: его экран стоит перед всеми
+let sndSeen = null;
+function updateSound(){
+  const gs = room.gameState || {};
+  const amHost = myId===gs.hostId;
+  const status = gs.status || 'lobby';
+  $('btnSound').style.display = amHost ? 'inline-block' : 'none';
+  if(!amHost || status==='lobby'){ sound.stopMusic(); sndSeen=null; return; }
+  const aq = room.activeQuestion;
+  const scores = Object.assign({}, room.scores);
+  const cur = { key:aq?aq.key:null, revealed:!!(aq&&aq.revealed), status, scores };
+  const was = sndSeen;
+  sndSeen = cur;
+  if(was){   // после перезагрузки страницы первый снимок молчит
+    if(status==='finished'){ if(was.status!=='finished') sound.play('win'); }
+    else if(cur.key && cur.key!==was.key){ sound.play(aq.modifier ? 'mod' : 'open'); }
+    else {
+      const ids = Object.keys(Object.assign({}, was.scores, scores));
+      const up = ids.some(id=>(scores[id]||0)>(was.scores[id]||0));
+      const down = ids.some(id=>(scores[id]||0)<(was.scores[id]||0));
+      if(up) sound.play('good');
+      else if(down) sound.play('bad');
+      else if(cur.revealed && !was.revealed) sound.play('reveal');
+    }
+  }
+  if(status==='playing' && !aq) sound.startMusic(); else sound.stopMusic();
 }
 
 /* ════════════════════════════════ LOBBY RENDER ═════════════════════════ */
@@ -1190,6 +1223,10 @@ $('btnHostRestart').addEventListener('click', closeRoomToMenu);
 $('btnHostRestartFin').addEventListener('click', closeRoomToMenu);
 $('btnLeaveLobby').addEventListener('click', leaveRoom);
 $('btnLeaveGame').addEventListener('click', leaveRoom);
+function soundLabel(){ $('btnSound').textContent = sound.isMuted() ? 'Звук: выкл' : 'Звук: вкл'; }
+soundLabel();
+$('btnSound').addEventListener('click', ()=>{ sound.toggleMute(); soundLabel(); if(room) updateSound(); });
+['pointerdown','keydown'].forEach(ev=> document.addEventListener(ev, ()=>{ sound.unlock(); if(room && sndSeen) updateSound(); }));
 
 /* ════════════════════════════════ INIT ═════════════════════════════════ */
 (async function init(){

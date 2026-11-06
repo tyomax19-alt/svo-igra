@@ -257,7 +257,7 @@ a{ color:inherit; }
 .tbtn:hover{ transform:none; background:var(--orange); color:var(--cream); }
 @media (min-width:900px){
   .round-pills{ left:230px; top:20px; }
-  .turn-banner{ left:auto; right:190px; top:20px; transform:none; max-width:56vw; text-align:right; }
+  .turn-banner{ left:auto; right:300px; top:20px; transform:none; max-width:56vw; text-align:right; }
   .topbar,.scoreboard-wrap{ position:relative; }
   .topbar,.turn-banner,.round-pills,.scoreboard-wrap{ z-index:201; }
   .board-wrap{ order:2; padding-bottom:12px; }
