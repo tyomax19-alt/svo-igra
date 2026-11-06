@@ -3,17 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Заказать игру — Своя Игра</title>
+<title>Заказать игру — Свои люди</title>
 <link rel="stylesheet" href="site.css">
 </head>
 <body>
 <main class="wrap">
-  <h1>Своя Игра под вашу вечеринку</h1>
-  <p class="lead">Заполните бриф. Мы подготовим вопросы по вашей теме, проверим их вручную и пришлём ссылку на игру. Сначала можно <a href="demo.html">сыграть демо-раунд</a>.</p>
+  <h1>Игра про вашу компанию</h1>
+  <p class="lead">Вы рассказываете про свою компанию, мы собираем вопросы, проверяем их и присылаем ссылку на игру.</p>
 
   <div class="card" id="closedCard" hidden>
-    <h2>Приём заказов скоро откроется</h2>
-    <p class="muted">Пока можно попробовать <a href="demo.html">демо-раунд</a>.</p>
+    <h2>Как заказать</h2>
+    <p>Пока заказы принимаем на Авито. Сначала можно попробовать <a href="demo.html" style="color:inherit">демо-раунд</a>.</p>
+    <p style="margin-top:16px" id="avitoWrap" hidden><a class="btn" id="avitoLink" rel="noopener">Написать на Авито</a></p>
   </div>
 
   <form id="form" novalidate hidden>
@@ -71,6 +72,7 @@
   </form>
   <div class="foot"><a href="index.html">На главную</a></div>
 </main>
+<div class="band" aria-hidden="true"></div>
 
 <script type="module">
 import { SITE, PRICES, PRICE_NOTES, PHOTO_LIMITS } from './config.js';
@@ -209,6 +211,7 @@ if(SITE.ordersOpen){
   $('form').addEventListener('submit',submit);
 } else {
   $('closedCard').hidden=false;
+  if(SITE.avitoUrl){ $('avitoLink').href=SITE.avitoUrl; $('avitoWrap').hidden=false; }
 }
 </script>
 </body>

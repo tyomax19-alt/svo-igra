@@ -11,6 +11,7 @@ export function validateBoard(data, opts = {}){
   const errors=[];
   if(!data || typeof data!=='object' || Array.isArray(data)){ return ['Файл не является корректным JSON-объектом.']; }
   if(!Array.isArray(data.rounds)){ return ['Отсутствует массив "rounds".']; }
+  if(!data.rounds.length){ errors.push('Нет ни одного раунда.'); }
   if(opts.exactRounds && data.rounds.length!==opts.exactRounds){
     errors.push(`Должно быть раундов: ${opts.exactRounds}, найдено: ${data.rounds.length}.`);
   }
@@ -73,7 +74,7 @@ export function normImage(v){
 // нормализуем в чистую структуру для хранения
 export function normalizeBoard(data){
   return {
-    title: typeof data.title==='string' ? data.title : 'Своя Игра',
+    title: typeof data.title==='string' ? data.title : 'Свои люди',
     rounds: data.rounds.map((r,ri)=>({
       name: (r.name && String(r.name)) || `Раунд ${ri+1}`,
       categories: r.categories.map((c,ci)=>({

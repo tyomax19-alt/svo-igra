@@ -4,24 +4,24 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex">
-<title>Панель оператора — Своя Игра</title>
+<title>Панель оператора — Свои люди</title>
 <link rel="stylesheet" href="site.css">
 <style>
 .orders{ display:flex; flex-direction:column; gap:8px; }
-.order-btn{ display:flex; justify-content:space-between; gap:12px; width:100%; text-align:left; background:var(--s2); color:var(--text); border:1.5px solid var(--border2); border-radius:10px; padding:12px; font:inherit; cursor:pointer; }
-.order-btn.sel{ border-color:var(--gold); }
-.status{ color:var(--gold); white-space:nowrap; font-size:0.82rem; }
+.order-btn{ display:flex; justify-content:space-between; gap:12px; width:100%; text-align:left; background:var(--s2); color:var(--text); border:4px solid #fff; padding:10px 12px; font:inherit; cursor:pointer; }
+.order-btn.sel{ border-color:var(--red); }
+.status{ color:var(--red); white-space:nowrap; }
 .alert{ color:var(--red); font-weight:600; }
-.facts{ display:grid; grid-template-columns:max-content 1fr; gap:4px 14px; font-size:0.88rem; margin-bottom:14px; }
+.facts{ display:grid; grid-template-columns:max-content 1fr; gap:4px 14px; margin-bottom:14px; }
 .facts dt{ color:var(--dim2); }
 .facts dd{ overflow-wrap:anywhere; }
 .actions{ display:flex; flex-wrap:wrap; gap:10px; margin:12px 0; }
 .q-row{ display:grid; grid-template-columns:60px 2fr 1.4fr 130px 1.4fr; gap:6px; margin-bottom:6px; align-items:center; }
-.q-row input,.q-row select{ margin-top:0; padding:7px 9px; font-size:0.85rem; }
+.q-row input,.q-row select{ margin-top:0; padding:6px 8px; font-size:22px; }
 .cat-name{ margin:14px 0 8px; }
 .photos{ display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; }
-.photos figure{ background:var(--s2); border-radius:10px; padding:8px; font-size:0.78rem; }
-.photos img{ width:100%; height:110px; object-fit:cover; border-radius:6px; }
+.photos figure{ border:4px solid #fff; padding:8px; font-size:20px; }
+.photos img{ width:100%; height:110px; object-fit:cover; }
 @media (max-width:760px){ .q-row{ grid-template-columns:1fr; margin-bottom:14px; } }
 </style>
 </head>
@@ -39,6 +39,23 @@
 
   <div id="panel" hidden>
     <div class="actions"><button class="btn ghost" id="logout" type="button">Выйти</button></div>
+    <form class="card" id="newPack">
+      <h2>Новый пак</h2>
+      <div class="row">
+        <label class="f">Ник покупателя <input id="npContact" maxlength="80" autocomplete="off"></label>
+        <label class="f">Повод <input id="npTheme" maxlength="200" placeholder="30 лет Ане" autocomplete="off"></label>
+        <label class="f">Цена, ₽ <input id="npPrice" type="number" min="0" value="1990"></label>
+      </div>
+      <label class="f">Вопросы в формате JSON
+        <textarea id="npJson" rows="6" spellcheck="false"></textarea>
+      </label>
+      <div class="err" id="npErr" role="alert"></div>
+      <div class="ok" id="npOk" role="status"></div>
+      <div class="actions">
+        <button class="btn" type="submit">Создать и открыть в редакторе</button>
+        <button class="btn ghost" id="copyPrompt" type="button">Скопировать промпт для нейросети</button>
+      </div>
+    </form>
     <section class="card">
       <h2>Заказы</h2>
       <div class="err" id="listErr" role="alert"></div>
@@ -66,6 +83,7 @@ import { getDatabase, ref, onValue, set, update } from "https://www.gstatic.com/
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { validateBoard, normalizeBoard, VALID_MODIFIERS } from "./pack-validator.js";
 import { AGE_GROUPS, DIFFICULTIES, LANGUAGES } from "./order-schema.js";
+import { CHAT_PROMPT } from "./pack-prompt.js";
 
 const app = initializeApp({
   apiKey: "AIzaSyD2BJ0Stblry4i3wD_ml0d7WqVsPDwW8RM",
@@ -126,24 +144,31 @@ function renderDetail(){
   box.hidden=false; box.replaceChildren(el('h2',{textContent:`Заказ ${selectedId}`}));
   const facts=el('dl',{className:'facts'});
   fact(facts,'Статус',STATUS[o.status]||o.status);
-  fact(facts,'Ник на Авито',o.contact); fact(facts,'Email',o.email);
-  fact(facts,'Тема',o.theme); fact(facts,'Игроков',o.players);
-  fact(facts,'Возраст',AGE_GROUPS[o.ageGroup]||o.ageGroup); fact(facts,'Сложность',DIFFICULTIES[o.difficulty]||o.difficulty);
-  fact(facts,'Язык',LANGUAGES[o.language]||o.language); fact(facts,'Дата вечеринки',o.partyDate);
-  fact(facts,'18+',o.adult18?'Да':'Нет'); fact(facts,'Цена',`${o.priceRub} ₽`);
+  fact(facts,'Ник на Авито',o.contact);
+  fact(facts,'Тема',o.theme); fact(facts,'Цена',`${o.priceRub} ₽`);
+  if(!o.manual){
+    fact(facts,'Email',o.email); fact(facts,'Игроков',o.players);
+    fact(facts,'Возраст',AGE_GROUPS[o.ageGroup]||o.ageGroup); fact(facts,'Сложность',DIFFICULTIES[o.difficulty]||o.difficulty);
+    fact(facts,'Язык',LANGUAGES[o.language]||o.language); fact(facts,'Дата вечеринки',o.partyDate);
+    fact(facts,'18+',o.adult18?'Да':'Нет');
+  }
   box.append(facts);
   if(o.paymentAlert) box.append(el('p',{className:'alert',textContent:`Внимание, статус платежа: ${o.paymentAlert}. Проверьте кабинет Platega.`}));
   if(o.generationErrors) box.append(el('div',{className:'err',textContent:[].concat(o.generationErrors).join('\n')}));
   if(o.packId){
     const link=`${location.origin}/?pack=${o.packId}`;
-    box.append(el('p',{className:'ok'},'Ссылка для покупателя: ',el('a',{href:link,textContent:link,style:'color:inherit'})));
+    const copy=el('button',{type:'button',className:'btn ghost',textContent:'Копировать ссылку'});
+    copy.addEventListener('click',()=>navigator.clipboard.writeText(link));
+    box.append(el('p',{className:'ok'},'Ссылка для покупателя: ',el('a',{href:link,textContent:link,style:'color:inherit'})),copy);
   }
-  const actions=el('div',{className:'actions'});
-  const gen=el('button',{type:'button',className:'btn',textContent:o.draft?'Сгенерировать заново':'Сгенерировать черновик'});
-  gen.disabled=!GENERATABLE.includes(o.status);
-  gen.addEventListener('click',()=>startGeneration(gen));
-  actions.append(gen); box.append(actions);
-  if(!GENERATABLE.includes(o.status) && o.status!=='generating' && o.status!=='published'){
+  if(!o.manual){
+    const actions=el('div',{className:'actions'});
+    const gen=el('button',{type:'button',className:'btn',textContent:o.draft?'Сгенерировать заново':'Сгенерировать черновик'});
+    gen.disabled=!GENERATABLE.includes(o.status);
+    gen.addEventListener('click',()=>startGeneration(gen));
+    actions.append(gen); box.append(actions);
+  }
+  if(!o.manual && !GENERATABLE.includes(o.status) && o.status!=='generating' && o.status!=='published'){
     box.append(el('p',{className:'muted',textContent:'Генерация и публикация доступны после оплаты.'}));
   }
   const photos=Object.values(o.photos||{});
@@ -222,7 +247,7 @@ function renderEditor(){
   });
 }
 function validateDraft(){
-  const errors=validateBoard(draft,{exactRounds:3});
+  const errors=validateBoard(draft);
   $('editErr').textContent=errors.slice(0,30).join('\n');
   $('editOk').textContent=errors.length?'':'Пак прошёл проверку.';
   return errors.length===0;
@@ -244,6 +269,39 @@ async function publish(){
 }
 const guarded = fn => async () => { try{ await fn(); }catch(e){ $('editErr').textContent='Ошибка: '+e.message; } };
 
+// Ручной заказ: оплату оператор получил сам, поэтому заказ сразу считается оплаченным.
+function loadBase(){
+  return JSON.parse($('npJson').value.replace(/^\s*```(?:json)?|```\s*$/g,''));
+}
+async function createManualPack(e){
+  e.preventDefault();
+  $('npErr').textContent=''; $('npOk').textContent='';
+  const contact=$('npContact').value.trim(), theme=$('npTheme').value.trim();
+  if(!contact||!theme){ $('npErr').textContent='Укажите ник покупателя и повод.'; return; }
+  let board;
+  try{ board=loadBase(); }
+  catch(err){ $('npErr').textContent='Не удалось прочитать вопросы: '+err.message; return; }
+  const errors=validateBoard(board);
+  if(errors.length){ $('npErr').textContent=errors.slice(0,15).join('\n'); return; }
+  const id=randomPackId().slice(0,12);
+  const now=Date.now();
+  try{
+    await set(ref(db,`orders/${id}`),{
+      manual:true, contact, theme, priceRub:Number($('npPrice').value)||0,
+      status:'draft_ready', createdAt:now, paidAt:now, draft:normalizeBoard(board)
+    });
+  }catch(err){ $('npErr').textContent='Не удалось сохранить: '+err.message; return; }
+  $('newPack').reset();
+  orders[id]=orders[id]||{ manual:true, contact, theme, status:'draft_ready', createdAt:now, paidAt:now, draft:normalizeBoard(board) };
+  selectOrder(id);
+  $('editorCard').scrollIntoView({behavior:'smooth'});
+}
+$('newPack').addEventListener('submit',createManualPack);
+$('copyPrompt').addEventListener('click',async()=>{
+  await navigator.clipboard.writeText(CHAT_PROMPT);
+  $('npOk').textContent='Промпт скопирован. Допишите бриф и вставьте в чат с нейросетью.';
+});
+
 $('check').addEventListener('click',validateDraft);
 $('save').addEventListener('click',guarded(saveDraft));
 $('publish').addEventListener('click',guarded(publish));
@@ -257,8 +315,10 @@ window.addEventListener('beforeunload',e=>{ if(dirty) e.preventDefault(); });
 
 onAuthStateChanged(auth,user=>{
   if(stopOrders){ stopOrders(); stopOrders=null; }
-  $('loginCard').hidden=!!user; $('panel').hidden=!user;
-  if(!user){ orders={}; selectedId=null; draft=null; dirty=false; return; }
+  // в этом браузере мог остаться анонимный вход из игры: он панель не открывает
+  const signedIn = !!user && !user.isAnonymous;
+  $('loginCard').hidden=signedIn; $('panel').hidden=!signedIn;
+  if(!signedIn){ orders={}; selectedId=null; draft=null; dirty=false; return; }
   stopOrders=onValue(ref(db,'orders'),snap=>{
     $('listErr').textContent='';
     orders=snap.val()||{};
