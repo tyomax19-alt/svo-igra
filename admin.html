@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Панель оператора — Своя Игра</title>
+<link rel="stylesheet" href="site.css">
+<style>
+.orders{ display:flex; flex-direction:column; gap:8px; }
+.order-btn{ display:flex; justify-content:space-between; gap:12px; width:100%; text-align:left; background:var(--s2); color:var(--text); border:1.5px solid var(--border2); border-radius:10px; padding:12px; font:inherit; cursor:pointer; }
+.order-btn.sel{ border-color:var(--gold); }
+.status{ color:var(--gold); white-space:nowrap; font-size:0.82rem; }
+.alert{ color:var(--red); font-weight:600; }
+.facts{ display:grid; grid-template-columns:max-content 1fr; gap:4px 14px; font-size:0.88rem; margin-bottom:14px; }
+.facts dt{ color:var(--dim2); }
+.facts dd{ overflow-wrap:anywhere; }
+.actions{ display:flex; flex-wrap:wrap; gap:10px; margin:12px 0; }
+.q-row{ display:grid; grid-template-columns:60px 2fr 1.4fr 130px 1.4fr; gap:6px; margin-bottom:6px; align-items:center; }
+.q-row input,.q-row select{ margin-top:0; padding:7px 9px; font-size:0.85rem; }
+.cat-name{ margin:14px 0 8px; }
+.photos{ display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; }
+.photos figure{ background:var(--s2); border-radius:10px; padding:8px; font-size:0.78rem; }
+.photos img{ width:100%; height:110px; object-fit:cover; border-radius:6px; }
+@media (max-width:760px){ .q-row{ grid-template-columns:1fr; margin-bottom:14px; } }
+</style>
+</head>
+<body>
+<main class="wrap wide">
+  <h1>Панель оператора</h1>
+
+  <form class="card" id="loginCard" hidden>
+    <h2>Вход</h2>
+    <label class="f">Email <input id="email" type="email" autocomplete="username"></label>
+    <label class="f">Пароль <input id="password" type="password" autocomplete="current-password"></label>
+    <div class="err" id="loginErr" role="alert"></div>
+    <button class="btn" type="submit">Войти</button>
+  </form>
+
+  <div id="panel" hidden>
+    <div class="actions"><button class="btn ghost" id="logout" type="button">Выйти</button></div>
+    <section class="card">
+      <h2>Заказы</h2>
+      <div class="err" id="listErr" role="alert"></div>
+      <div class="orders" id="orders"></div>
+    </section>
+    <section class="card" id="detail" hidden></section>
+    <section class="card" id="editorCard" hidden>
+      <h2>Черновик пака</h2>
+      <label class="f">Название <input id="packTitle"></label>
+      <div id="editor"></div>
+      <div class="err" id="editErr" role="alert"></div>
+      <div class="ok" id="editOk" role="status"></div>
+      <div class="actions">
+        <button class="btn ghost" id="check" type="button">Проверить</button>
+        <button class="btn ghost" id="save" type="button">Сохранить черновик</button>
+        <button class="btn" id="publish" type="button">Опубликовать</button>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, set, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { validateBoard, normalizeBoard, VALID_MODIFIERS } from "./pack-validator.js";
+import { AGE_GROUPS, DIFFICULTIES, LANGUAGES } from "./order-schema.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyD2BJ0Stblry4i3wD_ml0d7WqVsPDwW8RM",
+  authDomain: "svoua-igra.firebaseapp.com",
+  databaseURL: "https://svoua-igra-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "svoua-igra"
+});
+const db = getDatabase(app);
+const auth = getAuth(app);
+
+const STATUS = {
+  new:'Новый', awaiting_payment:'Ждёт оплаты', payment_failed:'Оплата не прошла', paid:'Оплачен',
+  generating:'Генерация', draft_ready:'Черновик готов', generation_failed:'Ошибка генерации', published:'Опубликован'
+};
+const GENERATABLE = ['paid','draft_ready','generation_failed'];
+const PUBLISHABLE = ['draft_ready','published'];
+const MOD_LABELS = { double:'Удвоение', flip_sign:'Смена знака', give_points:'Отдать очки', take_points:'Забрать очки', all_in:'Ва-банк' };
+
+const $ = id => document.getElementById(id);
+let orders = {};
+let selectedId = null;
+let draft = null;        // редактируемая копия черновика
+let dirty = false;
+let stopOrders = null;
+
+function el(tag, props = {}, ...children){
+  const node = Object.assign(document.createElement(tag), props);
+  node.append(...children.filter(c => c !== null && c !== undefined));
+  return node;
+}
+function randomPackId(){
+  const chars='abcdefghijkmnopqrstuvwxyz23456789';
+  return [...crypto.getRandomValues(new Uint8Array(20))].map(b=>chars[b%chars.length]).join('');
+}
+
+function renderOrders(){
+  const list=$('orders'); list.replaceChildren();
+  const ids=Object.keys(orders).sort((a,b)=>(orders[b].createdAt||0)-(orders[a].createdAt||0));
+  if(!ids.length){ list.append(el('p',{className:'muted',textContent:'Заказов пока нет.'})); return; }
+  for(const id of ids){
+    const o=orders[id];
+    const btn=el('button',{type:'button',className:'order-btn'+(id===selectedId?' sel':'')},
+      el('span',{textContent:`${new Date(o.createdAt||0).toLocaleDateString('ru-RU')} · ${o.contact||''} · ${(o.theme||'').slice(0,60)}`}),
+      el('span',{className:'status',textContent:(o.paymentAlert?`${o.paymentAlert} · `:'')+(STATUS[o.status]||o.status||'')}));
+    btn.addEventListener('click',()=>selectOrder(id));
+    list.append(btn);
+  }
+}
+function selectOrder(id){
+  if(dirty && id!==selectedId && !confirm('Несохранённые правки будут потеряны. Перейти к другому заказу?')) return;
+  selectedId=id; draft=null; dirty=false;
+  renderOrders(); renderDetail(); syncEditor();
+}
+function fact(list,label,value){ list.append(el('dt',{textContent:label}),el('dd',{textContent:value})); }
+function renderDetail(){
+  const box=$('detail'); const o=orders[selectedId];
+  if(!o){ box.hidden=true; return; }
+  box.hidden=false; box.replaceChildren(el('h2',{textContent:`Заказ ${selectedId}`}));
+  const facts=el('dl',{className:'facts'});
+  fact(facts,'Статус',STATUS[o.status]||o.status);
+  fact(facts,'Ник на Авито',o.contact); fact(facts,'Email',o.email);
+  fact(facts,'Тема',o.theme); fact(facts,'Игроков',o.players);
+  fact(facts,'Возраст',AGE_GROUPS[o.ageGroup]||o.ageGroup); fact(facts,'Сложность',DIFFICULTIES[o.difficulty]||o.difficulty);
+  fact(facts,'Язык',LANGUAGES[o.language]||o.language); fact(facts,'Дата вечеринки',o.partyDate);
+  fact(facts,'18+',o.adult18?'Да':'Нет'); fact(facts,'Цена',`${o.priceRub} ₽`);
+  box.append(facts);
+  if(o.paymentAlert) box.append(el('p',{className:'alert',textContent:`Внимание, статус платежа: ${o.paymentAlert}. Проверьте кабинет Platega.`}));
+  if(o.generationErrors) box.append(el('div',{className:'err',textContent:[].concat(o.generationErrors).join('\n')}));
+  if(o.packId){
+    const link=`${location.origin}/?pack=${o.packId}`;
+    box.append(el('p',{className:'ok'},'Ссылка для покупателя: ',el('a',{href:link,textContent:link,style:'color:inherit'})));
+  }
+  const actions=el('div',{className:'actions'});
+  const gen=el('button',{type:'button',className:'btn',textContent:o.draft?'Сгенерировать заново':'Сгенерировать черновик'});
+  gen.disabled=!GENERATABLE.includes(o.status);
+  gen.addEventListener('click',()=>startGeneration(gen));
+  actions.append(gen); box.append(actions);
+  if(!GENERATABLE.includes(o.status) && o.status!=='generating' && o.status!=='published'){
+    box.append(el('p',{className:'muted',textContent:'Генерация и публикация доступны после оплаты.'}));
+  }
+  const photos=Object.values(o.photos||{});
+  if(photos.length){
+    box.append(el('h2',{textContent:'Фото'}),el('p',{className:'muted',textContent:'Скопируйте адрес фото в поле «Картинка» нужного вопроса.'}));
+    const grid=el('div',{className:'photos'});
+    for(const p of photos){
+      const url=`/.netlify/functions/photo?key=${encodeURIComponent(p.key)}`;
+      const copy=el('button',{type:'button',className:'btn ghost',textContent:'Копировать адрес'});
+      copy.addEventListener('click',()=>navigator.clipboard.writeText(url));
+      grid.append(el('figure',{},el('img',{src:url,alt:p.caption||'Фото заказа'}),el('figcaption',{textContent:p.caption||''}),copy));
+    }
+    box.append(grid);
+  }
+}
+async function startGeneration(btn){
+  if(orders[selectedId].draft && !confirm('Черновик будет заменён новым, запрос платный. Продолжить?')) return;
+  btn.disabled=true;
+  try{
+    const token=await auth.currentUser.getIdToken();
+    const res=await fetch('/.netlify/functions/generate-pack-background',{
+      method:'POST', headers:{'content-type':'application/json',authorization:`Bearer ${token}`},
+      body:JSON.stringify({orderId:selectedId})
+    });
+    if(res.status!==202) throw new Error(`HTTP ${res.status}`);
+    dirty=false; draft=null;
+  }catch(e){ alert('Не удалось запустить генерацию: '+e.message); btn.disabled=false; }
+}
+
+function syncEditor(){
+  const o=orders[selectedId];
+  if(!o || !o.draft){ $('editorCard').hidden=true; return; }
+  if(dirty) return;   // не затираем правки оператора обновлением из базы
+  draft=structuredClone(o.draft);
+  renderEditor();
+  $('editorCard').hidden=false;
+}
+function bind(input,obj,key){
+  input.value=obj[key]??'';
+  input.oninput=()=>{ obj[key]=input.value; dirty=true; };
+  return input;
+}
+function imageInput(q){
+  const input=el('input',{placeholder:'Картинка: адрес',ariaLabel:'Адрес картинки'});
+  input.value=[].concat(q.image||[]).join(' ');
+  input.addEventListener('input',()=>{
+    const v=input.value.trim();
+    if(v) q.image=v.split(/\s+/); else delete q.image;
+    dirty=true;
+  });
+  return input;
+}
+function modifierSelect(q){
+  const sel=el('select',{ariaLabel:'Модификатор'},el('option',{value:'',textContent:'Без модификатора'}),
+    ...VALID_MODIFIERS.map(m=>el('option',{value:m,textContent:MOD_LABELS[m]||m})));
+  sel.value=q.modifier||'';
+  sel.addEventListener('change',()=>{ q.modifier=sel.value||null; dirty=true; });
+  return sel;
+}
+function renderEditor(){
+  bind($('packTitle'),draft,'title');
+  const box=$('editor'); box.replaceChildren();
+  draft.rounds.forEach((r,ri)=>{
+    const d=el('details',{open:ri===0},el('summary',{textContent:r.name||`Раунд ${ri+1}`}));
+    for(const c of r.categories){
+      d.append(el('div',{className:'cat-name'},bind(el('input',{ariaLabel:'Название категории'}),c,'name')));
+      for(const q of c.questions){
+        d.append(el('div',{className:'q-row'},
+          el('span',{textContent:q.value}),
+          bind(el('input',{placeholder:'Вопрос',ariaLabel:'Вопрос'}),q,'question'),
+          bind(el('input',{placeholder:'Ответ',ariaLabel:'Ответ'}),q,'answer'),
+          modifierSelect(q), imageInput(q)));
+      }
+    }
+    box.append(d);
+  });
+}
+function validateDraft(){
+  const errors=validateBoard(draft,{exactRounds:3});
+  $('editErr').textContent=errors.slice(0,30).join('\n');
+  $('editOk').textContent=errors.length?'':'Пак прошёл проверку.';
+  return errors.length===0;
+}
+async function saveDraft(){
+  await update(ref(db,`orders/${selectedId}`),{draft});
+  dirty=false; $('editOk').textContent='Черновик сохранён.';
+}
+async function publish(){
+  const o=orders[selectedId];
+  if(!PUBLISHABLE.includes(o.status) || !o.paidAt){ $('editErr').textContent='Публикация доступна только для оплаченного заказа с готовым черновиком.'; return; }
+  if(!validateDraft()) return;
+  if(!confirm('Опубликовать пак? Он станет доступен всем, у кого есть ссылка.')) return;
+  const packId=o.packId||randomPackId();
+  const board=normalizeBoard(draft);
+  await set(ref(db,`packs/${packId}`),{board,publishedAt:Date.now()});
+  await update(ref(db,`orders/${selectedId}`),{status:'published',packId,draft});
+  dirty=false; $('editOk').textContent='Пак опубликован.';
+}
+const guarded = fn => async () => { try{ await fn(); }catch(e){ $('editErr').textContent='Ошибка: '+e.message; } };
+
+$('check').addEventListener('click',validateDraft);
+$('save').addEventListener('click',guarded(saveDraft));
+$('publish').addEventListener('click',guarded(publish));
+$('logout').addEventListener('click',()=>signOut(auth));
+$('loginCard').addEventListener('submit',async e=>{
+  e.preventDefault(); $('loginErr').textContent='';
+  try{ await signInWithEmailAndPassword(auth,$('email').value.trim(),$('password').value); }
+  catch(err){ $('loginErr').textContent='Не удалось войти. Проверьте email и пароль.'; }
+});
+window.addEventListener('beforeunload',e=>{ if(dirty) e.preventDefault(); });
+
+onAuthStateChanged(auth,user=>{
+  if(stopOrders){ stopOrders(); stopOrders=null; }
+  $('loginCard').hidden=!!user; $('panel').hidden=!user;
+  if(!user){ orders={}; selectedId=null; draft=null; dirty=false; return; }
+  stopOrders=onValue(ref(db,'orders'),snap=>{
+    $('listErr').textContent='';
+    orders=snap.val()||{};
+    renderOrders();
+    if(selectedId){ renderDetail(); syncEditor(); }
+  },()=>{ $('listErr').textContent='Нет доступа к заказам. Проверьте uid владельца в правилах базы.'; });
+});
+</script>
+</body>
+</html>
