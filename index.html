@@ -21,6 +21,7 @@
 <title>Своя игра про именинника и вашу компанию на заказ — Игра про вас</title>
 <link rel="stylesheet" href="game.css">
 <link rel="stylesheet" href="landing.css">
+<script src="metrika.js"></script>
 <script src="qrcode.js"></script>
 </head>
 <body>
@@ -37,8 +38,8 @@
       <h1 class="ln-h1">Своя игра про вашего <span>именинника</span></h1>
       <p class="ln-lead">Все вопросы про героя праздника и ваших гостей. Табло на телевизоре, каждый отвечает со своего телефона. Готово за 2&nbsp;дня, от 1&nbsp;490&nbsp;₽.</p>
       <div class="ln-ctas">
-        <a class="btn btn-gold ln-btn" href="demo">Сыграть демо бесплатно</a>
-        <a class="btn btn-ghost ln-btn" href="https://www.avito.ru/moskva/sport_i_otdyh/svoya_igra_pro_vashu_kompaniyu_na_prazdnik_8379413152" target="_blank" rel="noopener">Заказать на Авито</a>
+        <a class="btn btn-gold ln-btn" href="demo" data-goal="demo_click">Сыграть демо бесплатно</a>
+        <a class="btn btn-ghost ln-btn" href="https://www.avito.ru/moskva/sport_i_otdyh/svoya_igra_pro_vashu_kompaniyu_na_prazdnik_8379413152" target="_blank" rel="noopener" data-goal="avito_click">Заказать на Авито</a>
       </div>
       <a class="ln-small" href="#play" data-join>У меня есть код игры</a>
     </div>
@@ -116,9 +117,13 @@
   </section>
 
   <section class="ln-end">
-    <a class="btn btn-gold ln-btn" href="https://www.avito.ru/moskva/sport_i_otdyh/svoya_igra_pro_vashu_kompaniyu_na_prazdnik_8379413152" target="_blank" rel="noopener">Заказать на Авито</a>
-    <a class="ln-small" href="demo">или сначала сыграть демо</a>
+    <a class="btn btn-gold ln-btn" href="https://www.avito.ru/moskva/sport_i_otdyh/svoya_igra_pro_vashu_kompaniyu_na_prazdnik_8379413152" target="_blank" rel="noopener" data-goal="avito_click">Заказать на Авито</a>
+    <a class="ln-small" href="demo" data-goal="demo_click">или сначала сыграть демо</a>
   </section>
+
+  <footer class="ln-foot">
+    <a href="voprosy-pro-imeninnika">Вопросы про именинника для гостей</a>
+  </footer>
 </div>
 
 <!-- ── START ───────────────────────────────────────────── -->

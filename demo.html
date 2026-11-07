@@ -19,6 +19,7 @@
 <meta name="description" content="Сыграйте демо-раунд прямо сейчас, без регистрации.">
 <title>Демо-раунд — Игра про вас</title>
 <link rel="stylesheet" href="site.css">
+<script src="metrika.js"></script>
 <style>
 .scores{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
 .score{ background:var(--s1); padding:6px 14px; font-weight:600; }
@@ -82,7 +83,7 @@
     <div class="pitch">
       <h2>Теперь представьте, что это про вашего именинника</h2>
       <p>Соберём такую же игру про вашего героя и ваших гостей. В настоящей игре каждый отвечает со своего телефона. 30 вопросов за 1&nbsp;490&nbsp;₽, готово за 2&nbsp;дня.</p>
-      <a class="btn block" href="https://www.avito.ru/moskva/sport_i_otdyh/svoya_igra_pro_vashu_kompaniyu_na_prazdnik_8379413152" target="_blank" rel="noopener">Заказать на Авито</a>
+      <a class="btn block" href="https://www.avito.ru/moskva/sport_i_otdyh/svoya_igra_pro_vashu_kompaniyu_na_prazdnik_8379413152" target="_blank" rel="noopener" data-goal="avito_click">Заказать на Авито</a>
     </div>
   </section>
   <div class="foot"><a href="./">На главную</a></div>
@@ -148,6 +149,7 @@ function closeQuestion(delta){
 }
 function finish(){
   $('game').hidden=true; $('finish').hidden=false;
+  window.goal && window.goal('demo_finish');
   const top=[...players].sort((a,b)=>b.score-a.score)[0];
   $('result').textContent=`Победитель: ${top.name}, ${top.score} очков.`;
 }
@@ -166,6 +168,7 @@ $('start').addEventListener('click',async()=>{
 $('play').addEventListener('click',()=>{
   $('hero').hidden=true; $('game').hidden=false;
   renderScores(); renderBoard();
+  window.goal && window.goal('demo_start');
   window.scrollTo(0,0);
 });
 </script>

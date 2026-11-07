@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /anketa
+Disallow: /admin
+Disallow: /order
+Sitemap: https://igra-pro-vas.ru/sitemap.xml
