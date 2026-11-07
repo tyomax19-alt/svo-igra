@@ -242,13 +242,10 @@ function watchServerOffset(){
 }
 function ensureAuth(){
   if(authPromise) return authPromise;
-  authPromise = new Promise((resolve,reject)=>{
-    const off = onAuthStateChanged(auth, user=>{
-      if(user){ off(); resolve(user); }
-    }, err=>{ off(); reject(err); });
-    // при сохранённой анонимной сессии вернёт того же пользователя
-    signInAnonymously(auth).catch(err=>{ off(); reject(err); });
-  }).then(user=>{
+  // если в браузере уже есть вход (анонимный или владельца), используем его: иначе анонимный вход выбивает владельца из панели
+  authPromise = auth.authStateReady()
+    .then(()=> auth.currentUser || signInAnonymously(auth).then(c=>c.user))
+    .then(user=>{
     $('startErr').textContent = '';   // убрать закреплённую ошибку прошлой попытки входа
     watchServerOffset();
     return user;

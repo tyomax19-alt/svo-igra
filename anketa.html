@@ -8,15 +8,15 @@
 <link rel="stylesheet" href="site.css">
 <style>
 .top{ display:flex; align-items:flex-end; justify-content:space-between; gap:16px; }
-.top img{ width:96px; height:96px; flex:none; image-rendering:pixelated; }
+.host-s{ width:110px; flex:none; animation:bob 2.4s ease-in-out infinite; }
 .steps{ font-weight:600; color:var(--dim2); margin-bottom:8px; }
 .occ{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; margin:8px 0 18px; }
 .occ label{ display:flex; align-items:center; background:var(--s2); padding:14px; font-weight:600; cursor:pointer; clip-path:polygon(0 6px,6px 6px,6px 0,calc(100% - 6px) 0,calc(100% - 6px) 6px,100% 6px,100% calc(100% - 6px),calc(100% - 6px) calc(100% - 6px),calc(100% - 6px) 100%,6px 100%,6px calc(100% - 6px),0 calc(100% - 6px)); }
 .occ label:has(input:checked){ background:var(--red); color:var(--ink); }
 .occ input{ position:absolute; opacity:0; pointer-events:none; }
-.q{ margin-bottom:18px; }
-.q b{ display:block; font-size:19px; }
-.q small{ display:block; color:var(--dim2); font-size:15px; margin-top:2px; }
+.q{ display:block; margin-bottom:26px; }
+.q b{ display:block; font-size:19px; line-height:1.2; }
+.q small{ display:block; color:var(--dim2); font-size:15px; line-height:1.25; margin-top:3px; }
 .q textarea{ min-height:96px; resize:vertical; }
 .topics{ display:flex; flex-wrap:wrap; gap:8px 18px; margin-top:8px; }
 .topics label{ display:flex; align-items:center; font-size:17px; }
@@ -26,12 +26,12 @@
 .linkrow input{ margin-top:0; }
 .linkrow .btn{ flex:none; }
 .note{ color:var(--dim2); font-size:15px; margin-top:22px; }
-@media (max-width:560px){ .top img{ width:72px; height:72px; } .linkrow{ flex-direction:column; } }
+@media (max-width:560px){ .host-s{ width:84px; } .linkrow{ flex-direction:column; } }
 </style>
 </head>
 <body>
 <main class="wrap">
-  <div class="top"><h1 id="title">Анкета</h1><img src="pixel/host.svg" alt="" width="96" height="96"></div>
+  <div class="top"><h1 id="title">Анкета</h1><div class="host-s"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 280" shape-rendering="crispEdges" aria-hidden="true"><g class="q1"><rect x="128" y="8" width="8" height="8" fill="#ff6b3d"/><rect x="136" y="8" width="8" height="8" fill="#ff6b3d"/><rect x="144" y="8" width="8" height="8" fill="#ff6b3d"/><rect x="120" y="16" width="8" height="8" fill="#ff6b3d"/><rect x="152" y="16" width="8" height="8" fill="#ff6b3d"/><rect x="152" y="24" width="8" height="8" fill="#ff6b3d"/><rect x="136" y="32" width="8" height="8" fill="#ff6b3d"/><rect x="144" y="32" width="8" height="8" fill="#ff6b3d"/><rect x="136" y="40" width="8" height="8" fill="#ff6b3d"/><rect x="136" y="56" width="8" height="8" fill="#ff6b3d"/></g><g class="q2"><rect x="61" y="26" width="5" height="5" fill="#f3e7cf"/><rect x="66" y="26" width="5" height="5" fill="#f3e7cf"/><rect x="71" y="26" width="5" height="5" fill="#f3e7cf"/><rect x="56" y="31" width="5" height="5" fill="#f3e7cf"/><rect x="76" y="31" width="5" height="5" fill="#f3e7cf"/><rect x="76" y="36" width="5" height="5" fill="#f3e7cf"/><rect x="66" y="41" width="5" height="5" fill="#f3e7cf"/><rect x="71" y="41" width="5" height="5" fill="#f3e7cf"/><rect x="66" y="46" width="5" height="5" fill="#f3e7cf"/><rect x="66" y="56" width="5" height="5" fill="#f3e7cf"/></g><g class="q3"><rect x="176" y="30" width="4" height="4" fill="#f3e7cf"/><rect x="180" y="30" width="4" height="4" fill="#f3e7cf"/><rect x="184" y="30" width="4" height="4" fill="#f3e7cf"/><rect x="172" y="34" width="4" height="4" fill="#f3e7cf"/><rect x="188" y="34" width="4" height="4" fill="#f3e7cf"/><rect x="188" y="38" width="4" height="4" fill="#f3e7cf"/><rect x="180" y="42" width="4" height="4" fill="#f3e7cf"/><rect x="184" y="42" width="4" height="4" fill="#f3e7cf"/><rect x="180" y="46" width="4" height="4" fill="#f3e7cf"/><rect x="180" y="54" width="4" height="4" fill="#f3e7cf"/></g><rect x="56" y="168" width="8" height="8" fill="#08222a"/><rect x="64" y="168" width="48" height="8" fill="#ff6b3d"/><rect x="112" y="168" width="8" height="8" fill="#08222a"/><rect x="128" y="168" width="8" height="8" fill="#08222a"/><rect x="136" y="168" width="16" height="8" fill="#f3e7cf"/><rect x="152" y="168" width="8" height="8" fill="#08222a"/><rect x="48" y="176" width="8" height="8" fill="#08222a"/><rect x="56" y="176" width="64" height="8" fill="#ff6b3d"/><rect x="120" y="176" width="16" height="8" fill="#08222a"/><rect x="136" y="176" width="16" height="8" fill="#ff6b3d"/><rect x="152" y="176" width="8" height="8" fill="#08222a"/><rect x="48" y="184" width="8" height="8" fill="#08222a"/><rect x="56" y="184" width="96" height="8" fill="#ff6b3d"/><rect x="152" y="184" width="8" height="8" fill="#08222a"/><rect x="48" y="192" width="8" height="8" fill="#08222a"/><rect x="56" y="192" width="56" height="8" fill="#ff6b3d"/><rect x="112" y="192" width="40" height="8" fill="#08222a"/><rect x="48" y="200" width="8" height="8" fill="#08222a"/><rect x="56" y="200" width="56" height="8" fill="#ff6b3d"/><rect x="112" y="200" width="8" height="8" fill="#08222a"/><rect x="48" y="208" width="8" height="8" fill="#08222a"/><rect x="56" y="208" width="56" height="8" fill="#ff6b3d"/><rect x="112" y="208" width="48" height="8" fill="#08222a"/><rect x="40" y="216" width="8" height="8" fill="#08222a"/><rect x="48" y="216" width="112" height="8" fill="#f3e7cf"/><rect x="160" y="216" width="8" height="8" fill="#08222a"/><rect x="40" y="224" width="8" height="8" fill="#08222a"/><rect x="48" y="224" width="112" height="8" fill="#f3e7cf"/><rect x="160" y="224" width="8" height="8" fill="#08222a"/><rect x="40" y="232" width="88" height="8" fill="#08222a"/><rect x="128" y="232" width="32" height="8" fill="#f3e7cf"/><rect x="160" y="232" width="8" height="8" fill="#08222a"/><rect x="40" y="240" width="8" height="8" fill="#08222a"/><rect x="48" y="240" width="64" height="8" fill="#1b5157"/><rect x="112" y="240" width="8" height="8" fill="#08222a"/><rect x="128" y="240" width="8" height="8" fill="#08222a"/><rect x="136" y="240" width="16" height="8" fill="#f3e7cf"/><rect x="152" y="240" width="8" height="8" fill="#08222a"/><rect x="40" y="248" width="8" height="8" fill="#08222a"/><rect x="48" y="248" width="64" height="8" fill="#1b5157"/><rect x="112" y="248" width="8" height="8" fill="#08222a"/><rect x="128" y="248" width="8" height="8" fill="#08222a"/><rect x="136" y="248" width="16" height="8" fill="#f3e7cf"/><rect x="152" y="248" width="8" height="8" fill="#08222a"/><rect x="40" y="256" width="8" height="8" fill="#08222a"/><rect x="48" y="256" width="64" height="8" fill="#1b5157"/><rect x="112" y="256" width="8" height="8" fill="#08222a"/><rect x="128" y="256" width="8" height="8" fill="#08222a"/><rect x="136" y="256" width="16" height="8" fill="#f3e7cf"/><rect x="152" y="256" width="16" height="8" fill="#08222a"/><rect x="40" y="264" width="8" height="8" fill="#08222a"/><rect x="48" y="264" width="64" height="8" fill="#1b5157"/><rect x="112" y="264" width="8" height="8" fill="#08222a"/><rect x="128" y="264" width="8" height="8" fill="#08222a"/><rect x="136" y="264" width="32" height="8" fill="#f3e7cf"/><rect x="168" y="264" width="8" height="8" fill="#08222a"/><rect x="40" y="272" width="80" height="8" fill="#08222a"/><rect x="128" y="272" width="48" height="8" fill="#08222a"/><g class="h-side"><rect x="64" y="80" width="64" height="8" fill="#08222a"/><rect x="56" y="88" width="8" height="8" fill="#08222a"/><rect x="64" y="88" width="64" height="8" fill="#ff6b3d"/><rect x="128" y="88" width="8" height="8" fill="#08222a"/><rect x="56" y="96" width="8" height="8" fill="#08222a"/><rect x="64" y="96" width="64" height="8" fill="#ff6b3d"/><rect x="128" y="96" width="8" height="8" fill="#08222a"/><rect x="32" y="104" width="136" height="8" fill="#08222a"/><rect x="32" y="112" width="8" height="8" fill="#08222a"/><rect x="40" y="112" width="112" height="8" fill="#f3e7cf"/><rect x="152" y="112" width="8" height="8" fill="#08222a"/><rect x="32" y="120" width="8" height="8" fill="#08222a"/><rect x="40" y="120" width="56" height="8" fill="#f3e7cf"/><rect x="96" y="120" width="8" height="8" fill="#08222a"/><rect x="104" y="120" width="24" height="8" fill="#f3e7cf"/><rect x="128" y="120" width="8" height="8" fill="#08222a"/><rect x="136" y="120" width="16" height="8" fill="#f3e7cf"/><rect x="152" y="120" width="8" height="8" fill="#08222a"/><rect x="32" y="128" width="8" height="8" fill="#08222a"/><rect x="40" y="128" width="56" height="8" fill="#f3e7cf"/><rect x="96" y="128" width="8" height="8" fill="#08222a"/><rect x="104" y="128" width="24" height="8" fill="#f3e7cf"/><rect x="128" y="128" width="8" height="8" fill="#08222a"/><rect x="136" y="128" width="16" height="8" fill="#f3e7cf"/><rect x="152" y="128" width="8" height="8" fill="#08222a"/><rect x="32" y="136" width="8" height="8" fill="#08222a"/><rect x="40" y="136" width="120" height="8" fill="#f3e7cf"/><rect x="160" y="136" width="8" height="8" fill="#08222a"/><rect x="32" y="144" width="8" height="8" fill="#08222a"/><rect x="40" y="144" width="72" height="8" fill="#f3e7cf"/><rect x="112" y="144" width="24" height="8" fill="#08222a"/><rect x="136" y="144" width="16" height="8" fill="#f3e7cf"/><rect x="152" y="144" width="8" height="8" fill="#08222a"/><rect x="32" y="152" width="8" height="8" fill="#08222a"/><rect x="40" y="152" width="112" height="8" fill="#f3e7cf"/><rect x="152" y="152" width="8" height="8" fill="#08222a"/><rect x="40" y="160" width="112" height="8" fill="#08222a"/></g></svg></div></div>
   <p class="lead" id="lead">Расскажите про своих, а я соберу из этого игру. Займёт минут десять, писать можно коротко.</p>
 
   <!-- шаг 1: повод и герой -->
@@ -59,7 +59,7 @@
     <div class="saved" id="saved" role="status"></div>
     <div class="err" id="err2" role="alert"></div>
     <div class="row" style="gap:10px">
-      <button class="btn ghost" type="button" id="back2" hidden>Назад</button>
+      <button class="btn ghost" type="button" id="back2">Назад</button>
       <button class="btn" type="submit" id="next2">Дальше</button>
     </div>
   </form>
@@ -95,7 +95,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, get, set, update, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { OCCASIONS, HERO_LABEL, TOPICS, BUYER, BUYER_END, GUEST, setOf } from "./anketa-schema.js";
 
 const app = initializeApp({
@@ -141,10 +141,15 @@ function renderStep1(){
     l.append(r, o.label);
     return l;
   }));
-  const sel = $('players');
+  const sel = $('players'); sel.replaceChildren();
   for(let n = 2; n <= 10; n++) sel.append(new Option(String(n), n));
   sel.append(new Option('Больше 10', 11));
-  sel.value = '6';
+  sel.value = meta ? String(meta.players) : '6';
+  if(meta){
+    const r = document.querySelector(`input[name=occ][value="${meta.occasion}"]`); if(r) r.checked = true;
+    $('hero').value = meta.hero; $('avito').value = meta.avito || '';
+  }
+  $('next1').disabled = false;
   syncHeroLabel();
   show('step1');
 }
@@ -156,6 +161,12 @@ $('step1').addEventListener('submit', async e => {
   const hero = $('hero').value.trim();
   if(!hero){ $('err1').textContent = 'Напишите, про кого игра.'; return; }
   $('next1').disabled = true; $('err1').textContent = '';
+  if(formId && meta){   // вернулись назад: правим повод и героя в той же анкете
+    const upd = { occasion: occValue(), hero, players: Number($('players').value), avito: $('avito').value.trim() };
+    try{ await update(ref(db, `forms/${formId}/meta`), upd); Object.assign(meta, upd); page = 0; renderStep2(); }
+    catch(err){ $('err1').textContent = 'Не получилось сохранить. Проверьте интернет и попробуйте ещё раз.'; $('next1').disabled = false; }
+    return;
+  }
   const id = newId();
   const m = { occasion: occValue(), hero, players: Number($('players').value), avito: $('avito').value.trim(), uid: auth.currentUser.uid, createdAt: serverTimestamp() };
   try{
@@ -177,14 +188,13 @@ function renderStep2(){
   $('lead').textContent = `${OCCASIONS[meta.occasion]?.label || 'Игра'}. Ответы сохраняются сами, можно закрыть и вернуться.`;
   $('steps2').textContent = page === 0 ? 'Шаг 2 из 3' : 'Шаг 3 из 3';
   $('h2').textContent = page === 0 ? 'Истории' : 'Последнее';
-  $('back2').hidden = page === 0;
   $('next2').textContent = page === 0 ? 'Дальше' : 'Готово';
   const box = $('fields'); box.replaceChildren();
   if(page === 0){
     BUYER[set_].forEach(([id, l, h]) => box.append(field(id, l, h, answers[id])));
     const t = document.createElement('div'); t.className = 'q';
     t.append(Object.assign(document.createElement('b'), { textContent: 'Общие темы для передышки' }),
-             Object.assign(document.createElement('small'), { textContent: 'Пара простых вопросов не про вас, чтобы все отдохнули' }));
+             Object.assign(document.createElement('small'), { textContent: 'Простые вопросы не про вас, чтобы все отдохнули. Отметьте темы или впишите свои' }));
     const wrap = document.createElement('div'); wrap.className = 'topics';
     const chosen = (answers.topics || '').split(', ').filter(Boolean);
     TOPICS.forEach(tp => {
@@ -193,17 +203,19 @@ function renderStep2(){
       c.addEventListener('change', () => queueSave());
       l.append(c, tp); wrap.append(l);
     });
-    t.append(wrap); box.append(t);
+    const other = Object.assign(document.createElement('input'), { type: 'text', maxLength: 300, placeholder: 'Другие темы: например, «Гарри Поттер», рыбалка, K-pop', value: answers.othertopics || '' });
+    other.dataset.key = 'othertopics';
+    t.append(wrap, other); box.append(t);
   } else {
     BUYER_END.forEach(([id, l, h]) => box.append(field(id, l, h, answers[id])));
   }
-  box.querySelectorAll('textarea').forEach(ta => ta.addEventListener('input', () => queueSave()));
+  box.querySelectorAll('[data-key]').forEach(ta => ta.addEventListener('input', () => queueSave()));
   show('step2');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 function collect(){
   const out = {};
-  $('fields').querySelectorAll('textarea').forEach(ta => { out[ta.dataset.key] = ta.value.trim(); });
+  $('fields').querySelectorAll('[data-key]').forEach(ta => { out[ta.dataset.key] = ta.value.trim(); });
   const boxes = $('fields').querySelectorAll('.topics input');
   if(boxes.length) out.topics = [...boxes].filter(b => b.checked).map(b => b.value).join(', ');
   return out;
@@ -236,7 +248,11 @@ $('step2').addEventListener('submit', async e => {
   if(page === 0){ page = 1; renderStep2(); }
   else showDone();
 });
-$('back2').addEventListener('click', async () => { await saveNow(); page = 0; renderStep2(); });
+$('back2').addEventListener('click', async () => {
+  await saveNow();
+  if(page === 1){ page = 0; renderStep2(); }
+  else { renderStep1(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+});
 
 function showDone(){
   $('code').textContent = formId;
@@ -288,11 +304,11 @@ async function start(user){
   try{ answers = (await get(ref(db, `forms/${formId}/buyer`))).val() || {}; }catch(err){ answers = {}; }
   page = 0; renderStep2();
 }
-let started = false;
-onAuthStateChanged(auth, user => {
-  if(user && !started){ started = true; start(user); }
-});
-signInAnonymously(auth).catch(() => { $('fatal').textContent = 'Не удалось подключиться. Проверьте интернет и обновите страницу.'; });
+// уже вошедшего (например, владельца) не выбиваем анонимным входом
+auth.authStateReady()
+  .then(() => auth.currentUser || signInAnonymously(auth).then(c => c.user))
+  .then(start)
+  .catch(() => { $('fatal').textContent = 'Не удалось подключиться. Проверьте интернет и обновите страницу.'; });
 </script>
 </body>
 </html>

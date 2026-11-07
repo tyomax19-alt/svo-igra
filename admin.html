@@ -5,15 +5,41 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex">
 <title>Панель оператора — Свои люди</title>
-<link rel="stylesheet" href="site.css">
 <style>
-.orders{ display:flex; flex-direction:column; gap:8px; }
-.order-btn{ display:flex; justify-content:space-between; gap:12px; width:100%; text-align:left; background:var(--s2); color:var(--text); border:none; padding:10px 12px; font:inherit; cursor:pointer; }
-.order-btn.sel{ outline:3px solid var(--red); outline-offset:-3px; }
-.status{ color:var(--red); white-space:nowrap; }
+/* Панель оператора: обычный рабочий интерфейс, без игрового стиля */
+:root{ --bg:#f5f6f8; --card:#fff; --line:#e3e6eb; --text:#16191d; --dim:#666e78; --accent:#1f6feb; --red:#d1242f; --green:#1a7f37;
+  --s2:#f0f2f5; --dim2:#666e78; }
+*{ box-sizing:border-box; margin:0; padding:0; }
+[hidden]{ display:none !important; }
+body{ background:var(--bg); color:var(--text); font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif; }
+.wrap{ max-width:1100px; margin:0 auto; padding:24px 16px 48px; }
+h1{ font-size:24px; font-weight:650; margin-bottom:16px; }
+h2{ font-size:17px; font-weight:650; margin-bottom:12px; }
+.card{ background:var(--card); border:1px solid var(--line); border-radius:10px; padding:18px; margin-bottom:16px; }
+label.f{ display:block; font-size:13px; font-weight:600; color:var(--dim); margin-bottom:12px; }
+input,select,textarea{ display:block; width:100%; margin-top:4px; background:#fff; border:1px solid #cfd4db; border-radius:6px; padding:8px 10px; color:var(--text); font:inherit; }
+input:focus,select:focus,textarea:focus{ outline:2px solid var(--accent); outline-offset:-1px; border-color:transparent; }
+textarea{ font-family:ui-monospace,Consolas,monospace; font-size:13px; }
+.row{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:0 12px; }
+.btn{ display:inline-block; padding:8px 14px; border:1px solid var(--accent); border-radius:6px; background:var(--accent); color:#fff; font:inherit; font-weight:600; cursor:pointer; text-decoration:none; }
+.btn:hover:not(:disabled){ filter:brightness(1.08); }
+.btn.ghost{ background:#fff; color:var(--text); border-color:#cfd4db; }
+.btn.ghost:hover:not(:disabled){ background:var(--s2); filter:none; }
+.btn:disabled{ opacity:.5; cursor:not-allowed; }
+.err{ color:var(--red); margin:8px 0; white-space:pre-line; }
+.err:empty,.ok:empty{ display:none; }
+.ok{ color:var(--green); margin:8px 0; }
+.muted{ color:var(--dim); }
+details{ margin-bottom:10px; }
+details summary{ cursor:pointer; font-weight:600; padding:4px 0; }
+.orders{ display:flex; flex-direction:column; gap:6px; }
+.order-btn{ display:flex; justify-content:space-between; gap:12px; width:100%; text-align:left; background:#fff; color:var(--text); border:1px solid var(--line); border-radius:6px; padding:9px 12px; font:inherit; cursor:pointer; }
+.order-btn:hover{ background:var(--s2); }
+.order-btn.sel{ border-color:var(--accent); box-shadow:0 0 0 1px var(--accent); }
+.status{ color:var(--dim); white-space:nowrap; font-size:13px; }
 .alert{ color:var(--red); font-weight:600; }
 .facts{ display:grid; grid-template-columns:max-content 1fr; gap:4px 14px; margin-bottom:14px; }
-.facts dt{ color:var(--dim2); }
+.facts dt{ color:var(--dim); }
 .facts dd{ overflow-wrap:anywhere; }
 .actions{ display:flex; flex-wrap:wrap; gap:10px; margin:12px 0; }
 .q-row{ display:grid; grid-template-columns:60px 2fr 1.4fr 130px 1.4fr; gap:6px; margin-bottom:6px; align-items:center; }
@@ -340,7 +366,7 @@ function renderForms(){
 function formText(id){
   const f=forms[id], m=f.meta||{}, s=setOf(m.occasion), b=f.buyer||{};
   const lines=[`Анкета ${id}`,`Повод: ${(OCCASIONS[m.occasion]||{}).label||m.occasion}`,`Герой: ${m.hero}`,`Игроков: ${m.players>10?'больше 10':m.players}`,`Ник на Авито: ${m.avito||'-'}`,''];
-  for(const [k,label] of [...(BUYER[s]||[]),...BUYER_END,['topics','Общие темы']]) if(b[k]) lines.push(`${label}:\n${b[k]}`,'');
+  for(const [k,label] of [...(BUYER[s]||[]),...BUYER_END,['topics','Общие темы'],['othertopics','Другие темы']]) if(b[k]) lines.push(`${label}:\n${b[k]}`,'');
   const gs=Object.values(f.guests||{});
   gs.forEach((g,i)=>{
     lines.push(`Гость ${i+1}${g.name?` (${g.name})`:''}:`);
@@ -354,7 +380,7 @@ function renderFormDetail(){
   if(!f){ box.hidden=true; return; }
   box.hidden=false;
   const text=formText(selectedForm);
-  const pre=el('pre',{textContent:text,style:'white-space:pre-wrap;font:inherit;font-size:17px;background:var(--s2);padding:14px;margin:10px 0;max-height:520px;overflow:auto'});
+  const pre=el('pre',{textContent:text,style:'white-space:pre-wrap;font:inherit;background:var(--s2);border-radius:6px;padding:14px;margin:10px 0;max-height:560px;overflow:auto'});
   const copy=el('button',{type:'button',className:'btn',textContent:'Копировать всё'});
   copy.addEventListener('click',async()=>{ await navigator.clipboard.writeText(text); copy.textContent='Скопировано'; });
   const toPack=el('button',{type:'button',className:'btn ghost',textContent:'Заполнить «Новый пак»'});

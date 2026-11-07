@@ -26,14 +26,14 @@
         ".write": "auth != null && auth.uid == 'HFjjKgS6l6ZMWHhYLApzPkl2qbi2'",
         "meta": {
           ".read": "auth != null",
-          ".write": "auth != null && !data.exists() && $formId.matches(/^[a-z0-9]{12}$/)",
+          ".write": "auth != null && $formId.matches(/^[a-z0-9]{12}$/) && (!data.exists() || data.child('uid').val() == auth.uid)",
           ".validate": "newData.hasChildren(['occasion', 'hero', 'players', 'uid', 'createdAt'])",
           "occasion": { ".validate": "newData.isString() && newData.val().length <= 20" },
           "hero": { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 80" },
           "players": { ".validate": "newData.isNumber() && newData.val() >= 2 && newData.val() <= 11" },
           "avito": { ".validate": "newData.isString() && newData.val().length <= 80" },
           "uid": { ".validate": "newData.val() == auth.uid" },
-          "createdAt": { ".validate": "newData.val() == now" },
+          "createdAt": { ".validate": "newData.val() == now || newData.val() == data.val()" },
           "$other": { ".validate": false }
         },
         "buyer": {
