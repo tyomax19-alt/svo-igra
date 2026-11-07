@@ -244,10 +244,12 @@ function field(id, label, hint, value, by){
 async function startRec(fieldId, by, vbox, mic){
   if(activeRec){ activeRec.flash(); return; }
   let stream;
-  try{ stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+  // моно, без авторегулировки громкости: она «качает» голос; шумоподавление и эхо оставляем
+  try{ stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: false } }); }
   catch(e){ vbox.prepend(note('Нет доступа к микрофону. Разрешите его в настройках браузера и нажмите ещё раз.')); return; }
   const mime = pickMime();
-  const rec = new MediaRecorder(stream, mime ? { mimeType: mime, audioBitsPerSecond: 32000 } : { audioBitsPerSecond: 32000 });
+  // 64 кбит/с: голос звучит чисто, а три минуты укладываются в лимит базы
+  const rec = new MediaRecorder(stream, mime ? { mimeType: mime, audioBitsPerSecond: 64000 } : { audioBitsPerSecond: 64000 });
   const chunks = [];
   let acc = 0, since = Date.now(), paused = false, discard = false;
   const elapsed = () => Math.floor((acc + (paused ? 0 : Date.now() - since)) / 1000);
@@ -291,11 +293,31 @@ async function startRec(fieldId, by, vbox, mic){
   rec.start(1000);
 }
 
+// Плеер для только что записанного звука. У таких записей браузеры часто не знают длину
+// (Chrome показывает бесконечность, Safari ставит позицию в конец), из-за чего первый «плей» молчит.
+// Поэтому заранее вычисляем длину и перед запуском всегда возвращаемся в начало.
+function player(url){
+  const a = Object.assign(document.createElement('audio'), { controls: true, preload: 'auto' });
+  a.addEventListener('loadedmetadata', () => {
+    if(a.duration === Infinity || isNaN(a.duration)){
+      const back = () => { a.removeEventListener('timeupdate', back); a.currentTime = 0; };
+      a.addEventListener('timeupdate', back);
+      a.currentTime = 1e7;
+    }
+  }, { once: true });
+  a.addEventListener('play', () => {
+    if(a.ended || (isFinite(a.duration) && a.currentTime >= a.duration - 0.05)) a.currentTime = 0;
+  });
+  a.src = url;
+  a.load();
+  return a;
+}
+
 // запись готова: можно послушать, удалить или отправить
 function preview(blob, sec, fieldId, by){
   const url = URL.createObjectURL(blob);
   const box = document.createElement('div'); box.className = 'prev';
-  const audio = Object.assign(document.createElement('audio'), { controls: true, src: url, preload: 'metadata' });
+  const audio = player(url);
   const del = iconBtn('trash', 'Удалить', 'del');
   const send = iconBtn('send', 'Отправить', 'main');
   const st = Object.assign(document.createElement('span'), { className: 'rlim', textContent: fmt(sec) });
@@ -324,7 +346,7 @@ function preview(blob, sec, fieldId, by){
 // отправленное голосовое: можно переслушать (в этой сессии) и удалить
 function sentItem(vid, sec, url){
   const box = document.createElement('div'); box.className = 'prev sent';
-  if(url) box.append(Object.assign(document.createElement('audio'), { controls: true, src: url, preload: 'metadata' }));
+  if(url) box.append(player(url));
   const st = Object.assign(document.createElement('span'), { className: 'rlim', textContent: `Голосовое ${fmt(sec)}, отправлено` });
   const del = iconBtn('trash', 'Удалить', 'del');
   const ctrls = document.createElement('div'); ctrls.className = 'rbtns';
