@@ -29,6 +29,36 @@
 .occ label:has(input:checked){ background:var(--red); color:var(--ink); }
 .occ input{ position:absolute; opacity:0; pointer-events:none; }
 .q{ display:block; margin-bottom:26px; }
+.qh{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+.qh > div{ min-width:0; }
+.q textarea{ margin-top:8px; }
+.ib{ display:inline-flex; align-items:center; gap:6px; flex:none; border:none; padding:8px 10px; background:var(--s2); color:var(--text); font:inherit; font-size:15px; font-weight:600; cursor:pointer; clip-path:polygon(0 4px,4px 4px,4px 0,calc(100% - 4px) 0,calc(100% - 4px) 4px,100% 4px,100% calc(100% - 4px),calc(100% - 4px) calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,4px calc(100% - 4px),0 calc(100% - 4px)); transition:background .15s, transform .2s var(--spring); }
+.ib svg{ width:18px; height:18px; fill:currentColor; flex:none; shape-rendering:crispEdges; }
+.ib:hover:not(:disabled){ transform:translateY(-2px); }
+.ib:disabled{ opacity:.45; cursor:not-allowed; }
+.ib.mic{ color:var(--red); padding:10px 12px; }
+.ib.mic svg{ width:22px; height:22px; }
+.ib.main{ background:var(--red); color:var(--ink); }
+.ib.del{ background:transparent; color:var(--dim2); }
+.vbox{ display:flex; flex-direction:column; gap:8px; margin-top:8px; }
+.vbox:empty{ display:none; }
+.recp,.prev{ display:flex; align-items:center; flex-wrap:wrap; gap:8px 10px; background:var(--s2); padding:8px 10px; }
+.prev{ flex-direction:column; align-items:stretch; }
+.prev audio{ width:100%; height:38px; }
+.prev.sent{ background:transparent; padding:0; }
+.rbtns{ display:flex; align-items:center; gap:6px; margin-left:auto; flex-wrap:wrap; }
+.prev .rbtns{ margin-left:0; }
+.dot{ width:12px; height:12px; background:var(--red); flex:none; animation:recblink 1s steps(2) infinite; }
+.recp.paused .dot{ animation:none; background:var(--dim2); }
+@keyframes recblink{ 50%{ opacity:.25; } }
+.rtime{ font-family:var(--pixel); font-weight:700; font-size:30px; line-height:1; }
+.rlim{ color:var(--dim2); font-size:15px; }
+.prev .rlim{ margin-right:auto; }
+.rnote{ color:var(--red); font-size:15px; }
+.recp.flash{ animation:flash .6s ease 2; }
+@keyframes flash{ 50%{ background:var(--red); } }
+@media (max-width:560px){ .ib.mic span{ display:none; } .recp .rbtns{ margin-left:0; width:100%; } .recp .rbtns .main{ margin-left:auto; } }
+
 .q b{ display:block; font-size:19px; line-height:1.2; }
 .q small{ display:block; color:var(--dim2); font-size:15px; line-height:1.25; margin-top:3px; }
 .q textarea{ min-height:96px; resize:vertical; }
@@ -79,8 +109,7 @@
   <form class="card" id="step2" hidden>
     <div class="steps" id="steps2">Шаг 2 из 3</div>
     <h2 id="h2">Истории</h2>
-    <p class="muted" style="margin-bottom:16px">Всё необязательно, но чем больше подробностей, тем смешнее вопросы. Фамилии не нужны, имена можно поменять.</p>
-    <div id="voiceBuyer"></div>
+    <p class="muted" style="margin-bottom:16px">Всё необязательно, но чем больше подробностей, тем смешнее вопросы. На любой вопрос можно ответить голосовым: кнопка с микрофоном справа. Фамилии не нужны, имена можно поменять.</p>
     <div id="fields"></div>
     <div class="saved" id="saved" role="status"></div>
     <div class="err" id="err2" role="alert"></div>
@@ -104,7 +133,6 @@
   <!-- гость -->
   <form class="card" id="guest" hidden>
     <label class="f">Ваше имя <input id="gname" maxlength="80" autocomplete="off" placeholder="Можно не писать"></label>
-    <div id="voiceGuest"></div>
     <div id="gfields"></div>
     <div class="err" id="errg" role="alert"></div>
     <button class="btn block" type="submit" id="gsend">Отправить</button>
@@ -149,78 +177,161 @@ function newId(){
 function linkFor(id, guest){
   return new URL(`anketa?z=${id}${guest ? '&g=1' : ''}`, location.href).href;
 }
-function field(id, label, hint, value){
-  const ta = Object.assign(document.createElement('textarea'), { id: 'f_' + id, maxLength: 2500, value: value || '' });
-  ta.dataset.key = id;
-  const wrap = document.createElement('label');
-  wrap.className = 'q';
-  wrap.append(Object.assign(document.createElement('b'), { textContent: label }),
-              Object.assign(document.createElement('small'), { textContent: hint }), ta);
-  return wrap;
-}
-
-/* ── голосовые ── */
+/* ── голосовые у каждого поля: запись, пауза, прослушивание, удаление, отправка ── */
 const MAX_SEC = 180;
+const CAN_RECORD = !!(window.MediaRecorder && navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+const ICON = {
+  mic:   '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 1h4v1h1v6h-1v1H6V8H5V2h1z"/><path d="M3 6h1v2h1v1h6V8h1V6h1v2h-1v1h-1v1H9v2h2v2H5v-2h2v-2H5V9H4V8H3z"/></svg>',
+  pause: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 3h3v10H4zM9 3h3v10H9z"/></svg>',
+  play:  '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2h2v1h1v1h1v1h1v1h1v1h1v2h-1v1h-1v1H9v1H8v1H7v1H5z"/></svg>',
+  stop:  '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4h8v8H4z"/></svg>',
+  trash: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 1h4v1h4v2H2V2h4zM3 5h10v10H3zm2 2v6h2V7zm4 0v6h2V7z"/></svg>',
+  send:  '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 2h2v1h2v1h2v1h2v1h2v1h2v2h-2v1h-2v1H8v1H6v1H4v1H2V9h6V7H2z"/></svg>',
+};
+let activeRec = null;      // одна запись за раз на всю страницу
+let sentVoices = [];       // уже отправленные голосовые покупателя (из базы)
+
+const fmt = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+function iconBtn(icon, text, cls){
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'ib' + (cls ? ' ' + cls : '');
+  b.innerHTML = ICON[icon] + `<span>${text}</span>`;
+  return b;
+}
 function pickMime(){
   return ['audio/webm;codecs=opus', 'audio/mp4', 'audio/ogg;codecs=opus', 'audio/webm'].find(t => MediaRecorder.isTypeSupported(t)) || '';
 }
 function blobToB64(blob){
   return new Promise((ok, bad) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(',')[1] || ''); r.onerror = bad; r.readAsDataURL(blob); });
 }
-function voiceBlock(by, getName){
-  const box = document.createElement('div'); box.className = 'voice';
-  box.append(Object.assign(document.createElement('b'), { textContent: 'Удобнее голосом?' }),
-             Object.assign(document.createElement('small'), { textContent: 'Запишите голосовое, сколько хотите. Одна запись до трёх минут, отправляется сразу.' }));
-  if(!window.MediaRecorder || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-    box.append(Object.assign(document.createElement('div'), { className: 'vstatus', textContent: 'Этот браузер не умеет записывать звук. Напишите текстом или откройте анкету в другом браузере.' }));
-    return box;
+
+function field(id, label, hint, value, by){
+  const wrap = document.createElement('div'); wrap.className = 'q';
+  const head = document.createElement('div'); head.className = 'qh';
+  const txt = document.createElement('div');
+  const b = Object.assign(document.createElement('b'), { textContent: label, id: 'l_' + id });
+  txt.append(b, Object.assign(document.createElement('small'), { textContent: hint }));
+  head.append(txt);
+  const ta = Object.assign(document.createElement('textarea'), { id: 'f_' + id, maxLength: 2500, value: value || '' });
+  ta.dataset.key = id; ta.setAttribute('aria-labelledby', 'l_' + id);
+  const vbox = document.createElement('div'); vbox.className = 'vbox';
+  if(CAN_RECORD && by){
+    const mic = iconBtn('mic', 'Голосом', 'mic');
+    mic.setAttribute('aria-label', 'Ответить голосовым');
+    mic.addEventListener('click', () => startRec(id, by, vbox, mic));
+    head.append(mic);
   }
-  const btn = Object.assign(document.createElement('button'), { type: 'button', className: 'btn ghost', textContent: 'Записать голосовое' });
-  const status = Object.assign(document.createElement('div'), { className: 'vstatus' });
-  const list = Object.assign(document.createElement('ul'), { className: 'vlist' });
-  box.append(btn, status, list);
-  let rec = null, stream = null, chunks = [], t0 = 0, tick = null;
-  btn.addEventListener('click', async () => {
-    if(rec){ rec.stop(); return; }
-    try{ stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
-    catch(e){ status.textContent = 'Нет доступа к микрофону. Разрешите его в настройках браузера.'; return; }
-    const mime = pickMime();
-    rec = new MediaRecorder(stream, mime ? { mimeType: mime, audioBitsPerSecond: 32000 } : { audioBitsPerSecond: 32000 });
-    chunks = [];
-    rec.ondataavailable = e => { if(e.data && e.data.size) chunks.push(e.data); };
-    rec.onstop = () => {
-      clearInterval(tick); stream.getTracks().forEach(t => t.stop());
-      const sec = Math.max(1, Math.round((Date.now() - t0) / 1000));
-      const blob = new Blob(chunks, { type: (rec.mimeType || mime || 'audio/webm').split(';')[0] });
-      rec = null; btn.textContent = 'Записать ещё'; btn.classList.remove('rec'); status.textContent = '';
-      sendVoice(blob, sec, by, getName(), list);
-    };
-    rec.start(1000); t0 = Date.now();
-    btn.textContent = 'Остановить и отправить'; btn.classList.add('rec');
-    tick = setInterval(() => {
-      const s = Math.floor((Date.now() - t0) / 1000);
-      status.textContent = `Идёт запись ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')} из 3:00`;
-      if(s >= MAX_SEC && rec) rec.stop();
-    }, 250);
+  sentVoices.filter(v => v.field === id).forEach(v => vbox.append(sentItem(v.id, v.sec, null)));
+  wrap.append(head, ta, vbox);
+  return wrap;
+}
+
+async function startRec(fieldId, by, vbox, mic){
+  if(activeRec){ activeRec.flash(); return; }
+  let stream;
+  try{ stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+  catch(e){ vbox.prepend(note('Нет доступа к микрофону. Разрешите его в настройках браузера и нажмите ещё раз.')); return; }
+  const mime = pickMime();
+  const rec = new MediaRecorder(stream, mime ? { mimeType: mime, audioBitsPerSecond: 32000 } : { audioBitsPerSecond: 32000 });
+  const chunks = [];
+  let acc = 0, since = Date.now(), paused = false, discard = false;
+  const elapsed = () => Math.floor((acc + (paused ? 0 : Date.now() - since)) / 1000);
+
+  const panel = document.createElement('div'); panel.className = 'recp';
+  const dot = Object.assign(document.createElement('span'), { className: 'dot' });
+  const time = Object.assign(document.createElement('span'), { className: 'rtime', textContent: '0:00' });
+  const limit = Object.assign(document.createElement('span'), { className: 'rlim', textContent: 'из 3:00' });
+  const pauseBtn = iconBtn('pause', 'Пауза');
+  const stopBtn = iconBtn('stop', 'Готово', 'main');
+  const delBtn = iconBtn('trash', 'Удалить', 'del');
+  if(typeof rec.pause !== 'function') pauseBtn.hidden = true;
+  const ctrls = document.createElement('div'); ctrls.className = 'rbtns';
+  ctrls.append(delBtn, pauseBtn, stopBtn);
+  panel.append(dot, time, limit, ctrls);
+  vbox.append(panel);
+  mic.disabled = true;
+
+  const tick = setInterval(() => {
+    const s = elapsed(); time.textContent = fmt(s);
+    if(s >= MAX_SEC && rec.state !== 'inactive') rec.stop();
+  }, 250);
+  activeRec = { flash(){ panel.classList.remove('flash'); void panel.offsetWidth; panel.classList.add('flash'); panel.scrollIntoView({ block: 'center', behavior: 'smooth' }); } };
+
+  pauseBtn.addEventListener('click', () => {
+    if(!paused){ rec.pause(); acc += Date.now() - since; paused = true; panel.classList.add('paused'); pauseBtn.innerHTML = ICON.play + '<span>Дальше</span>'; }
+    else { rec.resume(); since = Date.now(); paused = false; panel.classList.remove('paused'); pauseBtn.innerHTML = ICON.pause + '<span>Пауза</span>'; }
+  });
+  stopBtn.addEventListener('click', () => rec.stop());
+  delBtn.addEventListener('click', () => { discard = true; rec.stop(); });
+
+  rec.ondataavailable = e => { if(e.data && e.data.size) chunks.push(e.data); };
+  rec.onstop = () => {
+    clearInterval(tick); stream.getTracks().forEach(t => t.stop());
+    const sec = Math.max(1, elapsed());
+    activeRec = null; mic.disabled = false;
+    if(discard){ panel.remove(); return; }
+    const blob = new Blob(chunks, { type: (rec.mimeType || mime || 'audio/webm').split(';')[0] });
+    panel.replaceWith(preview(blob, sec, fieldId, by));
+  };
+  rec.start(1000);
+}
+
+// запись готова: можно послушать, удалить или отправить
+function preview(blob, sec, fieldId, by){
+  const url = URL.createObjectURL(blob);
+  const box = document.createElement('div'); box.className = 'prev';
+  const audio = Object.assign(document.createElement('audio'), { controls: true, src: url, preload: 'metadata' });
+  const del = iconBtn('trash', 'Удалить', 'del');
+  const send = iconBtn('send', 'Отправить', 'main');
+  const st = Object.assign(document.createElement('span'), { className: 'rlim', textContent: fmt(sec) });
+  const ctrls = document.createElement('div'); ctrls.className = 'rbtns';
+  ctrls.append(st, del, send);
+  box.append(audio, ctrls);
+  del.addEventListener('click', () => { URL.revokeObjectURL(url); box.remove(); });
+  send.addEventListener('click', async () => {
+    send.disabled = del.disabled = true; st.textContent = 'Отправляется...';
+    try{
+      const data = await blobToB64(blob);
+      if(data.length > 3000000){ st.textContent = 'Слишком длинная запись'; send.disabled = del.disabled = false; return; }
+      const vid = push(ref(db, `voices/${formId}`)).key;
+      const name = by === 'guest' ? $('gname').value.trim().slice(0, 80) : '';
+      await update(ref(db), {
+        [`voices/${formId}/${vid}`]: { data, mime: blob.type.slice(0, 60) || 'audio/webm' },
+        [`forms/${formId}/vlist/${vid}`]: { by, name, sec, field: fieldId, uid: auth.currentUser.uid, createdAt: serverTimestamp() },
+      });
+      sentVoices.push({ id: vid, field: fieldId, sec });
+      box.replaceWith(sentItem(vid, sec, url));
+    }catch(err){ st.textContent = 'Не отправилось, попробуйте ещё раз'; send.disabled = del.disabled = false; }
   });
   return box;
 }
-async function sendVoice(blob, sec, by, name, list){
-  const li = document.createElement('li');
-  const audio = Object.assign(document.createElement('audio'), { controls: true, src: URL.createObjectURL(blob) });
-  const st = Object.assign(document.createElement('span'), { textContent: 'Отправляется...' });
-  li.append(audio, st); list.append(li);
-  try{
-    const data = await blobToB64(blob);
-    if(data.length > 3000000){ st.textContent = 'Слишком большая запись, разбейте на две покороче.'; return; }
-    const vid = push(ref(db, `voices/${formId}`)).key;
-    await update(ref(db), {
-      [`voices/${formId}/${vid}`]: { data, mime: blob.type.slice(0, 60) || 'audio/webm' },
-      [`forms/${formId}/vlist/${vid}`]: { by, name: (name || '').slice(0, 80), sec, createdAt: serverTimestamp() },
-    });
-    st.textContent = `Отправлено, ${sec} с`;
-  }catch(err){ st.textContent = 'Не отправилось. Проверьте интернет и запишите ещё раз.'; }
+
+// отправленное голосовое: можно переслушать (в этой сессии) и удалить
+function sentItem(vid, sec, url){
+  const box = document.createElement('div'); box.className = 'prev sent';
+  if(url) box.append(Object.assign(document.createElement('audio'), { controls: true, src: url, preload: 'metadata' }));
+  const st = Object.assign(document.createElement('span'), { className: 'rlim', textContent: `Голосовое ${fmt(sec)}, отправлено` });
+  const del = iconBtn('trash', 'Удалить', 'del');
+  const ctrls = document.createElement('div'); ctrls.className = 'rbtns';
+  ctrls.append(st, del);
+  box.append(ctrls);
+  del.addEventListener('click', async () => {
+    if(!confirm('Удалить это голосовое? Вернуть его будет нельзя.')) return;
+    del.disabled = true;
+    try{
+      await update(ref(db), { [`voices/${formId}/${vid}`]: null, [`forms/${formId}/vlist/${vid}`]: null });
+      sentVoices = sentVoices.filter(v => v.id !== vid);
+      box.remove();
+    }catch(err){ st.textContent = 'Не удалилось, попробуйте ещё раз'; del.disabled = false; }
+  });
+  return box;
 }
+function note(text){
+  const n = Object.assign(document.createElement('div'), { className: 'rnote', textContent: text });
+  setTimeout(() => n.remove(), 6000);
+  return n;
+}
+
 function renderStep1(){
   $('occ').replaceChildren(...Object.entries(OCCASIONS).map(([k, o], i) => {
     const l = document.createElement('label');
@@ -277,11 +388,9 @@ function renderStep2(){
   $('steps2').textContent = page === 0 ? 'Шаг 2 из 3' : 'Шаг 3 из 3';
   $('h2').textContent = page === 0 ? 'Истории' : 'Последнее';
   $('next2').textContent = page === 0 ? 'Дальше' : 'Готово';
-  if(!$('voiceBuyer').firstChild) $('voiceBuyer').append(voiceBlock('buyer', () => ''));
-  $('voiceBuyer').hidden = page !== 0;
   const box = $('fields'); box.replaceChildren();
   if(page === 0){
-    BUYER[set_].forEach(([id, l, h]) => box.append(field(id, l, h, answers[id])));
+    BUYER[set_].forEach(([id, l, h]) => box.append(field(id, l, h, answers[id], 'buyer')));
     const t = document.createElement('div'); t.className = 'q';
     t.append(Object.assign(document.createElement('b'), { textContent: 'Общие темы для передышки' }),
              Object.assign(document.createElement('small'), { textContent: 'Простые вопросы не про вас, чтобы все отдохнули. Отметьте темы или впишите свои' }));
@@ -297,7 +406,7 @@ function renderStep2(){
     other.dataset.key = 'othertopics';
     t.append(wrap, other); box.append(t);
   } else {
-    BUYER_END.forEach(([id, l, h]) => box.append(field(id, l, h, answers[id])));
+    BUYER_END.forEach(([id, l, h]) => box.append(field(id, l, h, answers[id], 'buyer')));
   }
   box.querySelectorAll('[data-key]').forEach(ta => ta.addEventListener('input', () => queueSave()));
   show('step2');
@@ -365,15 +474,14 @@ function renderGuest(){
   $('lead').textContent = set_ === 'person'
     ? `Друзья готовят игру-викторину. Герой: ${meta.hero}. Расскажите что-нибудь: герой увидит это только в игре.`
     : 'Друзья готовят игру-викторину про вашу компанию. Расскажите что-нибудь, остальные увидят это только в игре.';
-  if(!$('voiceGuest').firstChild) $('voiceGuest').append(voiceBlock('guest', () => $('gname').value.trim()));
-  $('gfields').replaceChildren(...GUEST[set_].map(([id, l, h]) => field(id, l, h, '')));
+  $('gfields').replaceChildren(...GUEST[set_].map(([id, l, h]) => field(id, l, h, '', 'guest')));
   show('guest');
 }
 $('guest').addEventListener('submit', async e => {
   e.preventDefault();
   const data = { name: $('gname').value.trim() };
   $('gfields').querySelectorAll('textarea').forEach(ta => { data[ta.dataset.key] = ta.value.trim(); });
-  if(!Object.entries(data).some(([k, v]) => k !== 'name' && v)){ $('errg').textContent = 'Напишите хотя бы одну историю. Если уже отправили голосовое, этого достаточно.'; return; }
+  if(!Object.entries(data).some(([k, v]) => k !== 'name' && v)){ $('errg').textContent = 'Напишите хотя бы одну историю. Если уже отправили голосовые, этого достаточно.'; return; }
   $('gsend').disabled = true; $('errg').textContent = '';
   try{
     await push(ref(db, `forms/${formId}/guests`), { ...data, createdAt: serverTimestamp() });
@@ -393,6 +501,7 @@ async function start(user){
   }catch(err){ $('fatal').textContent = 'Не удалось открыть анкету. Проверьте интернет.'; return; }
   if(params.get('g') === '1' || meta.uid !== user.uid){ renderGuest(); return; }
   try{ answers = (await get(ref(db, `forms/${formId}/buyer`))).val() || {}; }catch(err){ answers = {}; }
+  try{ const vl = (await get(ref(db, `forms/${formId}/vlist`))).val() || {}; sentVoices = Object.entries(vl).filter(([, v]) => v.uid === user.uid).map(([id, v]) => ({ id, field: v.field, sec: v.sec })); }catch(err){ sentVoices = []; }
   page = 0; renderStep2();
 }
 // уже вошедшего (например, владельца) не выбиваем анонимным входом

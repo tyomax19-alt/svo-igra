@@ -388,7 +388,9 @@ function voiceList(id){
   if(!items.length) return null;
   const box=el('div',{style:'margin:14px 0'},el('h2',{textContent:'Голосовые'}));
   for(const [vid,v] of items){
-    const who=v.by==='buyer'?'Покупатель':`Гость${v.name?` (${v.name})`:''}`;
+    const s=setOf((forms[id].meta||{}).occasion);
+    const fl=v.field?(([...(v.by==='guest'?GUEST[s]||[]:[...(BUYER[s]||[]),...BUYER_END])].find(x=>x[0]===v.field)||[])[1]||v.field):'';
+    const who=(v.by==='buyer'?'Покупатель':`Гость${v.name?` (${v.name})`:''}`)+(fl?` · ${fl}`:'');
     const row=el('div',{style:'display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)'},
       el('span',{textContent:`${who} · ${v.sec||'?'} с · ${new Date(v.createdAt||0).toLocaleString('ru-RU')}`,style:'flex:1;min-width:220px'}));
     const play=el('button',{type:'button',className:'btn ghost',textContent:'Слушать'});
