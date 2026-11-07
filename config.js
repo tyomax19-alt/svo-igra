@@ -4,7 +4,7 @@
 // Включать только после заполнения реквизитов оператора и проверки текста политики.
 export const SITE = {
   ordersOpen: false,
-  avitoUrl: '',   // ссылка на объявление или профиль на Авито
+  avitoUrl: 'https://www.avito.ru/moskva/sport_i_otdyh/svoya_igra_pro_vashu_kompaniyu_na_prazdnik_8379413152',
   notifyUrl: '',  // адрес скрипта, который присылает в Telegram сообщение о новой анкете (токен бота хранится в самом скрипте, не здесь)
   operator: {
     name: '',      // ИП Фамилия Имя Отчество
@@ -17,7 +17,7 @@ export const SITE = {
 // Цены: стартовая гипотеза, менять только здесь.
 export const PRICES = {
   base:  { id: 'base',  name: 'Базовый пак', rub: 1490, desc: '90 вопросов по вашей теме, без фото' },
-  photo: { id: 'photo', name: 'Пак с фото',  rub: 2490, desc: '90 вопросов по вашей теме и ваши фото в игре' }
+  photo: { id: 'photo', name: 'Пак с фото',  rub: 2690, desc: '90 вопросов по вашей теме и ваши фото в игре' }
 };
 export const PRICE_NOTES = [
   'Демо-раунд бесплатно',

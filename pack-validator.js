@@ -74,7 +74,7 @@ export function normImage(v){
 // нормализуем в чистую структуру для хранения
 export function normalizeBoard(data){
   return {
-    title: typeof data.title==='string' ? data.title : 'Свои люди',
+    title: typeof data.title==='string' ? data.title : 'Игра про вас',
     rounds: data.rounds.map((r,ri)=>({
       name: (r.name && String(r.name)) || `Раунд ${ri+1}`,
       categories: r.categories.map((c,ci)=>({

@@ -9,23 +9,121 @@
 <meta name="theme-color" content="#0f3b40">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Игра про вас">
-<meta property="og:title" content="Игра про вас">
-<meta property="og:description" content="Викторина, где все вопросы про вашу компанию. Вопросы на экране, ответы с телефонов.">
+<meta property="og:title" content="Своя игра про именинника и вашу компанию — Игра про вас">
+<meta property="og:description" content="Викторина в формате «Своей игры», где все вопросы про именинника и гостей. Табло на телевизоре, ответы с телефонов. От 1 490 ₽, готово за 2 дня.">
 <meta property="og:url" content="https://igra-pro-vas.ru/">
 <meta property="og:image" content="https://igra-pro-vas.ru/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="description" content="Викторина, где все вопросы про вашу компанию. Вопросы на экране, ответы с телефонов.">
-<title>Свои люди — игра про вашу компанию</title>
+<meta name="description" content="Викторина в формате «Своей игры», где все вопросы про именинника и гостей. Табло на телевизоре, ответы с телефонов. От 1 490 ₽, готово за 2 дня.">
+<link rel="canonical" href="https://igra-pro-vas.ru/">
+<title>Своя игра про именинника и вашу компанию на заказ — Игра про вас</title>
 <link rel="stylesheet" href="game.css">
+<link rel="stylesheet" href="landing.css">
 <script src="qrcode.js"></script>
 </head>
 <body>
 
+<!-- ── ЛЕНДИНГ (главная без ссылки на игру) ────────────── -->
+<div id="landingScreen" class="screen">
+  <header class="ln-head">
+    <a class="ln-logo" href="./">ИГРА ПРО ВАС</a>
+    <a class="ln-code" href="#play" data-join>У меня есть код игры</a>
+  </header>
+
+  <section class="ln-hero">
+    <div class="ln-hero-text">
+      <h1 class="ln-h1">Своя игра про вашего <span>именинника</span></h1>
+      <p class="ln-lead">Все вопросы про героя праздника и ваших гостей. Табло на телевизоре, каждый отвечает со своего телефона. Готово за 2&nbsp;дня, от 1&nbsp;490&nbsp;₽.</p>
+      <div class="ln-ctas">
+        <a class="btn btn-gold ln-btn" href="demo">Сыграть демо бесплатно</a>
+        <a class="btn btn-ghost ln-btn" href="https://www.avito.ru/moskva/sport_i_otdyh/svoya_igra_pro_vashu_kompaniyu_na_prazdnik_8379413152" target="_blank" rel="noopener">Заказать на Авито</a>
+      </div>
+      <a class="ln-small" href="#play" data-join>У меня есть код игры</a>
+    </div>
+    <img class="ln-host host" src="pixel/host.svg" alt="Пиксельный ведущий игры" width="144" height="144">
+  </section>
+
+  <section class="ln-sec">
+    <h2 class="ln-h2">Как это работает</h2>
+    <ol class="ln-steps">
+      <li><b>1</b><p>Рассказываете про героя: истории, прозвища, любимые фразы. Можно голосовыми. Друзья могут тайно добавить свои истории.</p></li>
+      <li><b>2</b><p>Через 2 дня получаете игру на проверку. Правки бесплатно.</p></li>
+      <li><b>3</b><p>На празднике открываете игру на телевизоре или ноутбуке. Гости сканируют QR-код и играют со своих телефонов.</p></li>
+    </ol>
+  </section>
+
+  <section class="ln-sec">
+    <h2 class="ln-h2">Что внутри</h2>
+    <ul class="ln-list">
+      <li>30 или 60 вопросов про героя, гостей и ваши общие истории</li>
+      <li>Раунды «Кто это сказал», «Правда или врёт», прозвища и шутки</li>
+      <li>До 10 игроков, каждый сам за себя</li>
+      <li>Модификаторы: забрать очки, отдать, удвоить, ва-банк</li>
+      <li>Музыка, звуки и экран победителя</li>
+      <li>Ничего не нужно скачивать</li>
+    </ul>
+  </section>
+
+  <section class="ln-sec">
+    <h2 class="ln-h2">Примеры вопросов</h2>
+    <p class="ln-note">Из демо-игры про вымышленного Серёгу.</p>
+    <div class="ln-qs">
+      <div class="ln-q"><span class="ln-q-cat">Профессор · 200</span><p>За что Серёгу прозвали Профессором?</p></div>
+      <div class="ln-q"><span class="ln-q-cat">Дача-2019 · 300</span><p>Что лежало у него в шортах, когда он поплыл через озеро?</p></div>
+      <div class="ln-q"><span class="ln-q-cat">Правда или врёт · 300</span><p>Серёга боится гусей.</p></div>
+    </div>
+    <p class="ln-note">В вашей игре будут ваши истории.</p>
+  </section>
+
+  <section class="ln-sec">
+    <h2 class="ln-h2">Цены</h2>
+    <div class="ln-prices">
+      <div class="ln-price">
+        <div class="ln-price-name">1 раунд</div>
+        <div class="ln-price-q">30 вопросов</div>
+        <div class="ln-price-rub">1 490 ₽</div>
+      </div>
+      <div class="ln-price ln-price-big">
+        <span class="ln-tag">Для большого вечера</span>
+        <div class="ln-price-name">2 раунда</div>
+        <div class="ln-price-q">60 вопросов</div>
+        <div class="ln-price-rub">2 690 ₽</div>
+      </div>
+    </div>
+    <p class="ln-note">Срочно, за 1 день: плюс 500 ₽. Демо-раунд бесплатно.</p>
+  </section>
+
+  <section class="ln-sec">
+    <h2 class="ln-h2">Для какого праздника</h2>
+    <ul class="ln-chips">
+      <li>День рождения</li><li>Юбилей</li><li>Девичник и мальчишник</li><li>Встреча друзей</li><li>Корпоратив</li><li>Новый год</li>
+    </ul>
+  </section>
+
+  <section class="ln-sec">
+    <h2 class="ln-h2">Вопросы и ответы</h2>
+    <div class="ln-faq">
+      <details><summary>Что нужно для игры?</summary><p>Телевизор или ноутбук с интернетом и телефоны гостей.</p></details>
+      <details><summary>Нужен ведущий?</summary><p>Нет. Игра сама показывает вопросы, считает очки и объявляет победителя. Нажимать кнопки на экране может любой гость.</p></details>
+      <details><summary>Сколько человек может играть?</summary><p>До 10 игроков, каждый со своего телефона.</p></details>
+      <details><summary>Можно подарить?</summary><p>Да. Закажите игру заранее, именинник узнает о ней только на празднике.</p></details>
+      <details><summary>А если вопросы не понравятся?</summary><p>Перед праздником пришлём игру на проверку. Правки входят в стоимость.</p></details>
+      <details><summary>Нужны фамилии или личные данные?</summary><p>Нет, только имена и истории. О чём шутить нельзя, решаете вы.</p></details>
+      <details><summary>Как заказать и оплатить?</summary><p>Через Авито: напишите нам, пришлём демо и анкету.</p></details>
+    </div>
+  </section>
+
+  <section class="ln-end">
+    <a class="btn btn-gold ln-btn" href="https://www.avito.ru/moskva/sport_i_otdyh/svoya_igra_pro_vashu_kompaniyu_na_prazdnik_8379413152" target="_blank" rel="noopener">Заказать на Авито</a>
+    <a class="ln-small" href="demo">или сначала сыграть демо</a>
+  </section>
+</div>
+
 <!-- ── START ───────────────────────────────────────────── -->
 <div id="startScreen" class="screen active">
-  <header class="site-head"><span>СВОИ ЛЮДИ</span></header>
+  <header class="site-head"><a href="./" class="site-home">ИГРА ПРО ВАС</a></header>
   <main class="hero">
     <div class="hero-main">
       <h1 class="hero-title">ИГРА<br>ПРО <span>ВАС</span></h1>
@@ -51,9 +149,24 @@
       <div class="err" id="startErr"></div>
     </div>
   </main>
-+
-
 </div>
+<script>
+// без ссылки на комнату или пак главная показывает лендинг; решаем до отрисовки, чтобы не мигало
+if(!/[?&](room|pack)=/i.test(location.search)){
+  document.getElementById('startScreen').classList.remove('active');
+  document.getElementById('landingScreen').classList.add('active');
+}
+// «У меня есть код игры» работает сразу, не дожидаясь загрузки модуля игры
+document.querySelectorAll('[data-join]').forEach(function(a){
+  a.addEventListener('click', function(e){
+    e.preventDefault();
+    document.getElementById('landingScreen').classList.remove('active');
+    document.getElementById('startScreen').classList.add('active');
+    window.scrollTo(0,0);
+    document.getElementById('joinName').focus();
+  });
+});
+</script>
 
 <!-- ── LOBBY ───────────────────────────────────────────── -->
 <div id="lobbyScreen" class="screen">
@@ -88,7 +201,7 @@
 <!-- ── GAME ────────────────────────────────────────────── -->
 <div id="gameScreen" class="screen">
   <div class="topbar">
-    <div class="title">СВОИ ЛЮДИ</div>
+    <div class="title">ИГРА ПРО ВАС</div>
     <div class="topbar-actions">
       <button class="restart-btn" id="btnSound" style="display:none">Звук: вкл</button>
       <button class="restart-btn" id="btnLeaveGame" style="display:none">Покинуть</button>
@@ -378,7 +491,7 @@ async function createRoom(){
     const data = {
       createdAt: t,
       finishedAt: null,
-      settings: { title:'Свои люди', maxPlayers:MAX_PLAYERS },
+      settings: { title:'Игра про вас', maxPlayers:MAX_PLAYERS },
       currentRound: 0,
       currentTurn: pid,
       board: null,
@@ -1246,11 +1359,12 @@ $('btnSound').addEventListener('click', ()=>{ sound.toggleMute(); soundLabel(); 
   if(urlRoom){ $('joinCode').value = urlRoom.toUpperCase(); $('startScreen').classList.add('has-room'); }
   currentPack = params.get('pack');
   if(currentPack){ $('startScreen').classList.add('has-pack'); $('heroText').textContent='Введите имя и создайте комнату. Гости войдут по QR-коду с экрана.'; }
+  const firstScreen = (urlRoom || currentPack) ? 'startScreen' : 'landingScreen';
 
   try{
     await ensureAuth();
   }catch(e){
-    showScreen('startScreen');
+    if(firstScreen==='startScreen') showScreen('startScreen');
     startError(authErrorText(e), true);
     return;
   }
@@ -1276,7 +1390,8 @@ $('btnSound').addEventListener('click', ()=>{ sound.toggleMute(); soundLabel(); 
       }catch(e){ clearSession(); }
     }
   }
-  showScreen('startScreen');
+  // если гость уже открыл вход по коду, пока шла авторизация, не возвращаем его на лендинг
+  if(!$('startScreen').classList.contains('active')) showScreen(firstScreen);
 })();
 </script>
 </body>

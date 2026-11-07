@@ -17,7 +17,7 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="description" content="Сыграйте демо-раунд прямо сейчас, без регистрации.">
-<title>Демо — Свои люди</title>
+<title>Демо-раунд — Игра про вас</title>
 <link rel="stylesheet" href="site.css">
 <style>
 .scores{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
@@ -32,13 +32,19 @@
 .q{ font-size:30px; font-weight:600; line-height:1.2; margin:14px 0; }
 .a{ font-size:26px; font-weight:700; color:#ff6b3d; margin-bottom:14px; }
 .actions{ display:flex; gap:10px; flex-wrap:wrap; }
+.dossier-sub{ margin-bottom:14px; }
+.dossier{ list-style:none; padding:0; margin:0 0 18px; display:grid; gap:8px; }
+.dossier li{ background:#0f3b40; padding:10px 14px; line-height:1.35; border-left:4px solid #ff6b3d; }
+.pitch{ margin-top:18px; padding-top:18px; border-top:4px dashed #ff6b3d; }
+.pitch h2{ margin-bottom:8px; font-size:clamp(30px,8vw,44px); line-height:1.05; }
+.pitch p{ margin-bottom:14px; }
 @media (max-width:560px){ .board{ gap:5px; } .cell{ padding:7px 0; font-size:26px; } .cat{ font-size:11px; overflow-wrap:normal; hyphens:auto; } }
 </style>
 </head>
 <body>
 <main class="wrap">
   <h1>Демо-раунд</h1>
-  <p class="lead">Один раунд на одном устройстве, без регистрации. В настоящей игре каждый играет со своего телефона, а вопросы про вашу компанию.</p>
+  <p class="lead">Один раунд на одном устройстве, без регистрации. Половина вопросов про вымышленного Серёгу, в вашей игре они будут про вашего героя.</p>
 
   <section class="card" id="setup">
     <h2>Кто играет</h2>
@@ -46,7 +52,22 @@
       <input id="names" value="Игрок 1, Игрок 2" maxlength="200">
     </label>
     <div class="err" id="err" role="alert"></div>
-    <button class="btn block" id="start" type="button">Начать</button>
+    <button class="btn block" id="start" type="button">Дальше</button>
+  </section>
+
+  <section class="card" id="hero" hidden>
+    <h2>Знакомьтесь, это Серёга</h2>
+    <p class="dossier-sub">В вашей игре вместо Серёги будет ваш именинник. А пока прочитайте досье: вопросы будут по нему.</p>
+    <ul class="dossier">
+      <li>Серёге 34 года. Друзья зовут его Профессор: в 9 классе он единственный решил олимпиаду по физике. Правда, списал у отличницы.</li>
+      <li>Работает логистом, но всем говорит, что «в IT».</li>
+      <li>Любимая фраза: «Да я в теме».</li>
+      <li>Болеет за «Спартак», но ни разу не был на стадионе.</li>
+      <li>Боится гусей.</li>
+      <li>Коронное блюдо: пельмени «по-авторски», то есть обычные, но с кетчупом.</li>
+      <li>Летом 2019 года на даче поспорил, что переплывёт озеро. Доплыл до середины, в шортах утонули ключи от машины и телефон. Обратно его везли на лодке, а шашлык за это время сгорел.</li>
+    </ul>
+    <button class="btn block" id="play" type="button">Начать игру</button>
   </section>
 
   <section id="game" hidden>
@@ -58,7 +79,11 @@
   <section class="card" id="finish" hidden>
     <h2>Раунд окончен</h2>
     <p id="result" style="margin-bottom:14px"></p>
-    <a class="btn block" href="order">Заказать игру под свою вечеринку</a>
+    <div class="pitch">
+      <h2>Теперь представьте, что это про вашего именинника</h2>
+      <p>Соберём такую же игру про вашего героя и ваших гостей. В настоящей игре каждый отвечает со своего телефона. 30 вопросов за 1&nbsp;490&nbsp;₽, готово за 2&nbsp;дня.</p>
+      <a class="btn block" href="https://www.avito.ru/moskva/sport_i_otdyh/svoya_igra_pro_vashu_kompaniyu_na_prazdnik_8379413152" target="_blank" rel="noopener">Заказать на Авито</a>
+    </div>
   </section>
   <div class="foot"><a href="./">На главную</a></div>
 </main>
@@ -135,8 +160,13 @@ $('start').addEventListener('click',async()=>{
   }catch(e){ $('err').textContent='Не удалось загрузить вопросы. Обновите страницу.'; return; }
   players=names.map(name=>({name,score:0}));
   turn=0; left=pack.categories.length*5;
-  $('setup').hidden=true; $('game').hidden=false;
+  $('setup').hidden=true; $('hero').hidden=false;
+  window.scrollTo(0,0);
+});
+$('play').addEventListener('click',()=>{
+  $('hero').hidden=true; $('game').hidden=false;
   renderScores(); renderBoard();
+  window.scrollTo(0,0);
 });
 </script>
 </body>
