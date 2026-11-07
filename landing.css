@@ -22,7 +22,8 @@
 .ln-sec{ padding:40px 0 8px; }
 .ln-h2{ font-family:var(--pixel); font-weight:700; font-size:clamp(44px,5vw,64px); line-height:1; text-transform:uppercase; margin-bottom:20px; }
 .ln-note{ color:var(--muted); font-size:17px; margin-top:14px; }
-.ln-sec > .ln-note:first-of-type{ margin:-8px 0 16px; }
+.ln-h2 + .ln-note{ margin:-8px 0 16px; }
+.ln-prices + .ln-note{ margin-top:20px; }
 
 .ln-steps{ list-style:none; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
 .ln-steps li{ background:var(--deep); padding:22px; }
