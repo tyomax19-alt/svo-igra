@@ -95,8 +95,12 @@
     <h2>Какой повод</h2>
     <div class="occ" id="occ"></div>
     <label class="f"><span id="heroLabel">Кто герой игры?</span><input id="hero" maxlength="80" autocomplete="off" required></label>
-    <div class="row">
-      <label class="f">Сколько будет игроков
+    <h2 style="margin-top:6px">Размер игры</h2>
+    <div class="occ" id="roundsBox">
+      <label><input type="radio" name="rounds" value="1" checked>1 раунд · 30 вопросов</label>
+      <label><input type="radio" name="rounds" value="2">2 раунда · 60 вопросов</label>
+    </div>
+
         <select id="players"></select>
       </label>
       <label class="f">Ваше имя на Авито <input id="avito" maxlength="80" autocomplete="off" placeholder="Чтобы я понял, чья анкета"></label>
@@ -347,11 +351,13 @@ function renderStep1(){
   if(meta){
     const r = document.querySelector(`input[name=occ][value="${meta.occasion}"]`); if(r) r.checked = true;
     $('hero').value = meta.hero; $('avito').value = meta.avito || '';
+    const rr = document.querySelector(`input[name=rounds][value="${meta.rounds || 1}"]`); if(rr) rr.checked = true;
   }
   $('next1').disabled = false;
   syncHeroLabel();
   show('step1');
 }
+function roundsValue(){ return Number((document.querySelector('input[name=rounds]:checked') || {}).value || 1); }
 function occValue(){ return (document.querySelector('input[name=occ]:checked') || {}).value || 'other'; }
 function syncHeroLabel(){ $('heroLabel').textContent = HERO_LABEL[setOf(occValue())]; }
 
@@ -361,13 +367,13 @@ $('step1').addEventListener('submit', async e => {
   if(!hero){ $('err1').textContent = 'Напишите, про кого игра.'; return; }
   $('next1').disabled = true; $('err1').textContent = '';
   if(formId && meta){   // вернулись назад: правим повод и героя в той же анкете
-    const upd = { occasion: occValue(), hero, players: Number($('players').value), avito: $('avito').value.trim() };
+    const upd = { occasion: occValue(), hero, players: Number($('players').value), rounds: roundsValue(), avito: $('avito').value.trim() };
     try{ await update(ref(db, `forms/${formId}/meta`), upd); Object.assign(meta, upd); page = 0; renderStep2(); }
     catch(err){ $('err1').textContent = 'Не получилось сохранить. Проверьте интернет и попробуйте ещё раз.'; $('next1').disabled = false; }
     return;
   }
   const id = newId();
-  const m = { occasion: occValue(), hero, players: Number($('players').value), avito: $('avito').value.trim(), uid: auth.currentUser.uid, createdAt: serverTimestamp() };
+  const m = { occasion: occValue(), hero, players: Number($('players').value), rounds: roundsValue(), avito: $('avito').value.trim(), uid: auth.currentUser.uid, createdAt: serverTimestamp() };
   try{
     await set(ref(db, `forms/${id}/meta`), m);
     formId = id; meta = m; answers = {};
@@ -454,6 +460,7 @@ $('back2').addEventListener('click', async () => {
 });
 
 function showDone(){
+  update(ref(db, `forms/${formId}/buyer`), { done: '1', updatedAt: serverTimestamp() }).catch(() => {});
   $('code').textContent = formId;
   $('guestLink').value = linkFor(formId, true);
   show('done');

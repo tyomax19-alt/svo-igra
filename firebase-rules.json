@@ -44,6 +44,7 @@
           "occasion": { ".validate": "newData.isString() && newData.val().length <= 20" },
           "hero": { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 80" },
           "players": { ".validate": "newData.isNumber() && newData.val() >= 2 && newData.val() <= 11" },
+          "rounds": { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 3" },
           "avito": { ".validate": "newData.isString() && newData.val().length <= 80" },
           "uid": { ".validate": "newData.val() == auth.uid" },
           "createdAt": { ".validate": "newData.val() == now || newData.val() == data.val()" },
