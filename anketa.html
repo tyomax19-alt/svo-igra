@@ -526,10 +526,18 @@ $('guest').addEventListener('submit', async e => {
   $('gfields').querySelectorAll('textarea').forEach(ta => { data[ta.dataset.key] = ta.value.trim(); });
   if(!Object.entries(data).some(([k, v]) => k !== 'name' && v)){ $('errg').textContent = 'Напишите хотя бы одну историю. Если уже отправили голосовые, этого достаточно.'; return; }
   $('gsend').disabled = true; $('errg').textContent = '';
+  // если вход сорвался (например, вкладка долго висела в фоне), входим заново перед отправкой
+  try{ if(!auth.currentUser) await signInAnonymously(auth); }catch(e){}
+  const send = () => push(ref(db, `forms/${formId}/guests`), { ...data, createdAt: serverTimestamp() });
   try{
-    await push(ref(db, `forms/${formId}/guests`), { ...data, createdAt: serverTimestamp() });
+    try{ await send(); }
+    catch(first){ await new Promise(r => setTimeout(r, 1500)); await send(); }   // одна повторная попытка
     show('gdone');
-  }catch(err){ $('errg').textContent = 'Не отправилось. Проверьте интернет и попробуйте ещё раз.'; }
+  }catch(err){
+    const code = String((err && (err.code || err.message)) || 'unknown').replace(/^.*?(PERMISSION_DENIED|permission[_-]denied|network|offline|timeout).*$/i, '$1');
+    $('errg').textContent = `Не отправилось (${code}). Попробуйте ещё раз. Если не выходит, пришлите этот текст организатору.`;
+    console.error('guest submit failed', err);
+  }
   $('gsend').disabled = false;
 });
 $('gmore').addEventListener('click', () => { $('gfields').querySelectorAll('textarea').forEach(t => t.value = ''); show('guest'); });
