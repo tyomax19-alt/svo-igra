@@ -26,6 +26,17 @@
 .linkrow input{ margin-top:0; }
 .linkrow .btn{ flex:none; }
 .note{ color:var(--dim2); font-size:15px; margin-top:22px; }
+.voice{ background:var(--s2); padding:14px 16px; margin-bottom:24px; clip-path:polygon(0 6px,6px 6px,6px 0,calc(100% - 6px) 0,calc(100% - 6px) 6px,100% 6px,100% calc(100% - 6px),calc(100% - 6px) calc(100% - 6px),calc(100% - 6px) 100%,6px 100%,6px calc(100% - 6px),0 calc(100% - 6px)); }
+.voice b{ display:block; font-size:19px; line-height:1.2; }
+.voice small{ display:block; color:var(--dim2); font-size:15px; line-height:1.25; margin:3px 0 12px; }
+.voice .btn{ background:var(--bg); color:var(--text); }
+.voice .btn.rec{ background:var(--red); color:var(--ink); }
+.vstatus{ color:var(--dim2); font-size:15px; margin-top:8px; }
+.vstatus:empty{ display:none; }
+.vlist{ list-style:none; display:flex; flex-direction:column; gap:10px; margin-top:10px; }
+.vlist:empty{ display:none; }
+.vlist li{ display:flex; flex-direction:column; gap:4px; font-size:15px; color:var(--dim2); }
+.vlist audio{ width:100%; height:38px; }
 @media (max-width:560px){ .host-s{ width:84px; } .linkrow{ flex-direction:column; } }
 </style>
 </head>
@@ -55,6 +66,7 @@
     <div class="steps" id="steps2">Шаг 2 из 3</div>
     <h2 id="h2">Истории</h2>
     <p class="muted" style="margin-bottom:16px">Всё необязательно, но чем больше подробностей, тем смешнее вопросы. Фамилии не нужны, имена можно поменять.</p>
+    <div id="voiceBuyer"></div>
     <div id="fields"></div>
     <div class="saved" id="saved" role="status"></div>
     <div class="err" id="err2" role="alert"></div>
@@ -78,6 +90,7 @@
   <!-- гость -->
   <form class="card" id="guest" hidden>
     <label class="f">Ваше имя <input id="gname" maxlength="80" autocomplete="off" placeholder="Можно не писать"></label>
+    <div id="voiceGuest"></div>
     <div id="gfields"></div>
     <div class="err" id="errg" role="alert"></div>
     <button class="btn block" type="submit" id="gsend">Отправить</button>
@@ -132,7 +145,68 @@ function field(id, label, hint, value){
   return wrap;
 }
 
-/* ── шаг 1 ── */
+/* ── голосовые ── */
+const MAX_SEC = 180;
+function pickMime(){
+  return ['audio/webm;codecs=opus', 'audio/mp4', 'audio/ogg;codecs=opus', 'audio/webm'].find(t => MediaRecorder.isTypeSupported(t)) || '';
+}
+function blobToB64(blob){
+  return new Promise((ok, bad) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(',')[1] || ''); r.onerror = bad; r.readAsDataURL(blob); });
+}
+function voiceBlock(by, getName){
+  const box = document.createElement('div'); box.className = 'voice';
+  box.append(Object.assign(document.createElement('b'), { textContent: 'Удобнее голосом?' }),
+             Object.assign(document.createElement('small'), { textContent: 'Запишите голосовое, сколько хотите. Одна запись до трёх минут, отправляется сразу.' }));
+  if(!window.MediaRecorder || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    box.append(Object.assign(document.createElement('div'), { className: 'vstatus', textContent: 'Этот браузер не умеет записывать звук. Напишите текстом или откройте анкету в другом браузере.' }));
+    return box;
+  }
+  const btn = Object.assign(document.createElement('button'), { type: 'button', className: 'btn ghost', textContent: 'Записать голосовое' });
+  const status = Object.assign(document.createElement('div'), { className: 'vstatus' });
+  const list = Object.assign(document.createElement('ul'), { className: 'vlist' });
+  box.append(btn, status, list);
+  let rec = null, stream = null, chunks = [], t0 = 0, tick = null;
+  btn.addEventListener('click', async () => {
+    if(rec){ rec.stop(); return; }
+    try{ stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+    catch(e){ status.textContent = 'Нет доступа к микрофону. Разрешите его в настройках браузера.'; return; }
+    const mime = pickMime();
+    rec = new MediaRecorder(stream, mime ? { mimeType: mime, audioBitsPerSecond: 32000 } : { audioBitsPerSecond: 32000 });
+    chunks = [];
+    rec.ondataavailable = e => { if(e.data && e.data.size) chunks.push(e.data); };
+    rec.onstop = () => {
+      clearInterval(tick); stream.getTracks().forEach(t => t.stop());
+      const sec = Math.max(1, Math.round((Date.now() - t0) / 1000));
+      const blob = new Blob(chunks, { type: (rec.mimeType || mime || 'audio/webm').split(';')[0] });
+      rec = null; btn.textContent = 'Записать ещё'; btn.classList.remove('rec'); status.textContent = '';
+      sendVoice(blob, sec, by, getName(), list);
+    };
+    rec.start(1000); t0 = Date.now();
+    btn.textContent = 'Остановить и отправить'; btn.classList.add('rec');
+    tick = setInterval(() => {
+      const s = Math.floor((Date.now() - t0) / 1000);
+      status.textContent = `Идёт запись ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')} из 3:00`;
+      if(s >= MAX_SEC && rec) rec.stop();
+    }, 250);
+  });
+  return box;
+}
+async function sendVoice(blob, sec, by, name, list){
+  const li = document.createElement('li');
+  const audio = Object.assign(document.createElement('audio'), { controls: true, src: URL.createObjectURL(blob) });
+  const st = Object.assign(document.createElement('span'), { textContent: 'Отправляется...' });
+  li.append(audio, st); list.append(li);
+  try{
+    const data = await blobToB64(blob);
+    if(data.length > 3000000){ st.textContent = 'Слишком большая запись, разбейте на две покороче.'; return; }
+    const vid = push(ref(db, `voices/${formId}`)).key;
+    await update(ref(db), {
+      [`voices/${formId}/${vid}`]: { data, mime: blob.type.slice(0, 60) || 'audio/webm' },
+      [`forms/${formId}/vlist/${vid}`]: { by, name: (name || '').slice(0, 80), sec, createdAt: serverTimestamp() },
+    });
+    st.textContent = `Отправлено, ${sec} с`;
+  }catch(err){ st.textContent = 'Не отправилось. Проверьте интернет и запишите ещё раз.'; }
+}
 function renderStep1(){
   $('occ').replaceChildren(...Object.entries(OCCASIONS).map(([k, o], i) => {
     const l = document.createElement('label');
@@ -189,6 +263,8 @@ function renderStep2(){
   $('steps2').textContent = page === 0 ? 'Шаг 2 из 3' : 'Шаг 3 из 3';
   $('h2').textContent = page === 0 ? 'Истории' : 'Последнее';
   $('next2').textContent = page === 0 ? 'Дальше' : 'Готово';
+  if(!$('voiceBuyer').firstChild) $('voiceBuyer').append(voiceBlock('buyer', () => ''));
+  $('voiceBuyer').hidden = page !== 0;
   const box = $('fields'); box.replaceChildren();
   if(page === 0){
     BUYER[set_].forEach(([id, l, h]) => box.append(field(id, l, h, answers[id])));
@@ -275,6 +351,7 @@ function renderGuest(){
   $('lead').textContent = set_ === 'person'
     ? `Друзья готовят игру-викторину. Герой: ${meta.hero}. Расскажите что-нибудь: герой увидит это только в игре.`
     : 'Друзья готовят игру-викторину про вашу компанию. Расскажите что-нибудь, остальные увидят это только в игре.';
+  if(!$('voiceGuest').firstChild) $('voiceGuest').append(voiceBlock('guest', () => $('gname').value.trim()));
   $('gfields').replaceChildren(...GUEST[set_].map(([id, l, h]) => field(id, l, h, '')));
   show('guest');
 }
@@ -282,7 +359,7 @@ $('guest').addEventListener('submit', async e => {
   e.preventDefault();
   const data = { name: $('gname').value.trim() };
   $('gfields').querySelectorAll('textarea').forEach(ta => { data[ta.dataset.key] = ta.value.trim(); });
-  if(!Object.entries(data).some(([k, v]) => k !== 'name' && v)){ $('errg').textContent = 'Напишите хотя бы одну историю.'; return; }
+  if(!Object.entries(data).some(([k, v]) => k !== 'name' && v)){ $('errg').textContent = 'Напишите хотя бы одну историю. Если уже отправили голосовое, этого достаточно.'; return; }
   $('gsend').disabled = true; $('errg').textContent = '';
   try{
     await push(ref(db, `forms/${formId}/guests`), { ...data, createdAt: serverTimestamp() });

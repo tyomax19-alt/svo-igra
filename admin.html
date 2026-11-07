@@ -112,7 +112,7 @@ details summary{ cursor:pointer; font-weight:600; padding:4px 0; }
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, onValue, set, update, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, onValue, get, set, update, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { OCCASIONS, BUYER, BUYER_END, GUEST, setOf } from "./anketa-schema.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { validateBoard, normalizeBoard, VALID_MODIFIERS } from "./pack-validator.js";
@@ -355,9 +355,10 @@ function renderForms(){
     const f=forms[id], m=f.meta||{};
     const filled=Object.keys(f.buyer||{}).filter(k=>k!=='updatedAt'&&f.buyer[k]).length;
     const guests=Object.keys(f.guests||{}).length;
+    const voices=Object.keys(f.vlist||{}).length;
     const btn=el('button',{type:'button',className:'order-btn'+(id===selectedForm?' sel':'')},
       el('span',{textContent:`${new Date(m.createdAt||0).toLocaleDateString('ru-RU')} · ${m.avito||'без имени'} · ${formTitle(f)}`}),
-      el('span',{className:'status',textContent:`${id} · ответов ${filled} · гостей ${guests}`}));
+      el('span',{className:'status',textContent:`${id} · ответов ${filled} · гостей ${guests} · голосовых ${voices}`}));
     btn.addEventListener('click',()=>{ selectedForm=id; renderForms(); renderFormDetail(); });
     list.append(btn);
   }
@@ -373,7 +374,32 @@ function formText(id){
     for(const [k,label] of GUEST[s]||[]) if(g[k]) lines.push(`${label}: ${g[k]}`);
     lines.push('');
   });
+  const vc=Object.keys(f.vlist||{}).length;
+  if(vc) lines.push(`Голосовых: ${vc}, слушать в панели.`);
   return lines.join('\n').trim();
+}
+// голосовые хранятся отдельно и грузятся только по кнопке, чтобы список анкет оставался лёгким
+function voiceList(id){
+  const items=Object.entries(forms[id].vlist||{}).sort((a,b)=>(a[1].createdAt||0)-(b[1].createdAt||0));
+  if(!items.length) return null;
+  const box=el('div',{style:'margin:14px 0'},el('h2',{textContent:'Голосовые'}));
+  for(const [vid,v] of items){
+    const who=v.by==='buyer'?'Покупатель':`Гость${v.name?` (${v.name})`:''}`;
+    const row=el('div',{style:'display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)'},
+      el('span',{textContent:`${who} · ${v.sec||'?'} с · ${new Date(v.createdAt||0).toLocaleString('ru-RU')}`,style:'flex:1;min-width:220px'}));
+    const play=el('button',{type:'button',className:'btn ghost',textContent:'Слушать'});
+    play.addEventListener('click',async()=>{
+      play.disabled=true; play.textContent='Загружаю...';
+      try{
+        const s=(await get(ref(db,`voices/${id}/${vid}`))).val();
+        if(!s){ play.textContent='Запись не найдена'; return; }
+        const audio=el('audio',{controls:true,src:`data:${s.mime||'audio/webm'};base64,${s.data}`,style:'width:100%;max-width:420px'});
+        play.replaceWith(audio); audio.play().catch(()=>{});
+      }catch(e){ play.disabled=false; play.textContent='Не загрузилось, ещё раз'; }
+    });
+    row.append(play); box.append(row);
+  }
+  return box;
 }
 function renderFormDetail(){
   const box=$('formDetail'); const f=forms[selectedForm];
@@ -395,10 +421,13 @@ function renderFormDetail(){
   const del=el('button',{type:'button',className:'btn ghost',textContent:'Удалить анкету'});
   del.addEventListener('click',async()=>{
     if(!confirm('Удалить анкету со всеми ответами? Вернуть её будет нельзя.')) return;
-    try{ await remove(ref(db,`forms/${selectedForm}`)); selectedForm=null; renderFormDetail(); }
+    try{ await update(ref(db),{[`forms/${selectedForm}`]:null,[`voices/${selectedForm}`]:null}); selectedForm=null; renderFormDetail(); }
     catch(e){ alert('Не удалось удалить: '+e.message); }
   });
-  box.replaceChildren(el('h2',{textContent:formTitle(f)}),pre,el('div',{className:'actions'},copy,toPack,copyGuest,del));
+  // не перерисовываем открытую анкету, пока в ней играет голосовое
+  if(box.dataset.form===selectedForm && box.dataset.sig===JSON.stringify(f) && box.querySelector('audio')) return;
+  box.dataset.form=selectedForm; box.dataset.sig=JSON.stringify(f);
+  box.replaceChildren(el('h2',{textContent:formTitle(f)}),pre,voiceList(selectedForm)||'',el('div',{className:'actions'},copy,toPack,copyGuest,del));
 }
 
 $('check').addEventListener('click',validateDraft);

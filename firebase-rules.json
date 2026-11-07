@@ -20,6 +20,19 @@
         ".write": "auth != null && auth.uid == 'HFjjKgS6l6ZMWHhYLApzPkl2qbi2'"
       }
     },
+    "voices": {
+      ".read": "auth != null && auth.uid == 'HFjjKgS6l6ZMWHhYLApzPkl2qbi2'",
+      "$formId": {
+        ".write": "auth != null && auth.uid == 'HFjjKgS6l6ZMWHhYLApzPkl2qbi2'",
+        "$voiceId": {
+          ".write": "auth != null && !data.exists() && root.child('forms/' + $formId + '/meta').exists()",
+          ".validate": "newData.hasChildren(['data', 'mime'])",
+          "data": { ".validate": "newData.isString() && newData.val().length <= 3000000" },
+          "mime": { ".validate": "newData.isString() && newData.val().length <= 60" },
+          "$other": { ".validate": false }
+        }
+      }
+    },
     "forms": {
       ".read": "auth != null && auth.uid == 'HFjjKgS6l6ZMWHhYLApzPkl2qbi2'",
       "$formId": {
@@ -41,6 +54,17 @@
           ".write": "auth != null && root.child('forms/' + $formId + '/meta/uid').val() == auth.uid",
           "updatedAt": { ".validate": "newData.val() == now" },
           "$field": { ".validate": "$field.matches(/^[a-z0-9]{1,12}$/) && newData.isString() && newData.val().length <= 2500" }
+        },
+        "vlist": {
+          "$voiceId": {
+            ".write": "auth != null && !data.exists() && root.child('forms/' + $formId + '/meta').exists()",
+            ".validate": "newData.hasChildren(['by', 'sec', 'createdAt'])",
+            "by": { ".validate": "newData.val() == 'buyer' || newData.val() == 'guest'" },
+            "name": { ".validate": "newData.isString() && newData.val().length <= 80" },
+            "sec": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 600" },
+            "createdAt": { ".validate": "newData.val() == now" },
+            "$other": { ".validate": false }
+          }
         },
         "guests": {
           "$guestId": {
