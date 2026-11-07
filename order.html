@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="/favicon.ico?v=2" sizes="any">
+<link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
+<meta name="theme-color" content="#0f3b40">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Игра про вас">
+<meta property="og:title" content="Заказать игру — Игра про вас">
+<meta property="og:description" content="Игра-викторина с вопросами про вашу компанию.">
+<meta property="og:url" content="https://igra-pro-vas.ru/order">
+<meta property="og:image" content="https://igra-pro-vas.ru/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="description" content="Игра-викторина с вопросами про вашу компанию.">
+<meta name="robots" content="noindex">
+<title>Заказать игру — Игра про вас</title>
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<main class="wrap">
+  <h1>Игра про вашу компанию</h1>
+  <p class="lead">Вы рассказываете про свою компанию, мы собираем вопросы, проверяем их и присылаем ссылку на игру.</p>
+
+  <div class="card" id="closedCard" hidden>
+    <h2>Как заказать</h2>
+    <p>Пока заказы принимаем на Авито. Сначала можно попробовать <a href="demo" style="color:inherit">демо-раунд</a>.</p>
+    <p style="margin-top:16px" id="avitoWrap" hidden><a class="btn" id="avitoLink" rel="noopener">Написать на Авито</a></p>
+  </div>
+
+  <form id="form" novalidate hidden>
+    <div class="card">
+      <h2>Тариф</h2>
+      <div class="tiers" id="tiers"></div>
+      <p class="muted" id="priceNotes"></p>
+    </div>
+
+    <div class="card">
+      <h2>О вечеринке</h2>
+      <label class="f">Тема вечеринки
+        <textarea id="theme" rows="3" maxlength="500" placeholder="Например: 30 лет Ане, любимые сериалы и путешествия"></textarea>
+      </label>
+      <div class="row">
+        <label class="f">Число игроков
+          <input id="players" type="number" min="2" max="10" value="6">
+        </label>
+        <label class="f">Дата вечеринки
+          <input id="partyDate" type="date">
+        </label>
+      </div>
+      <div class="row">
+        <label class="f">Возрастная группа <select id="ageGroup"></select></label>
+        <label class="f">Сложность <select id="difficulty"></select></label>
+        <label class="f">Язык <select id="language"></select></label>
+      </div>
+      <label class="check"><input type="checkbox" id="adult18"><span>Режим 18+: допускаются взрослые темы, например алкоголь и флирт. Мат и непристойности не используются. Только для компании взрослых.</span></label>
+    </div>
+
+    <div class="card" id="photoCard" hidden>
+      <h2>Фото</h2>
+      <p class="muted" id="photoHint"></p>
+      <p style="margin:12px 0"><input type="file" id="photoInput" accept="image/*" multiple aria-label="Выбрать фото"></p>
+      <div id="photoList"></div>
+    </div>
+
+    <div class="card">
+      <h2>Контакты</h2>
+      <div class="row">
+        <label class="f">Ник на Авито <input id="contact" maxlength="80" autocomplete="off"></label>
+        <label class="f">Email для чека <input id="email" type="email" maxlength="120" autocomplete="email"></label>
+      </div>
+      <input class="hp" id="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <details>
+        <summary>Политика обработки персональных данных</summary>
+        <div id="policy"></div>
+      </details>
+      <label class="check"><input type="checkbox" id="consent"><span>Я даю согласие на обработку персональных данных на условиях политики. Если я загружаю фото других людей, я получил их согласие.</span></label>
+    </div>
+
+    <div class="err" id="err" role="alert"></div>
+    <div class="ok" id="progress" role="status"></div>
+    <button class="btn block" id="submit" type="submit">Перейти к оплате</button>
+  </form>
+  <div class="foot"><a href="./">На главную</a></div>
+</main>
+
+<script type="module">
+import { SITE, PRICES, PRICE_NOTES, PHOTO_LIMITS } from './config.js';
+import { validateOrder, AGE_GROUPS, DIFFICULTIES, LANGUAGES } from './order-schema.js';
+
+const $ = id => document.getElementById(id);
+const api = name => `/.netlify/functions/${name}`;
+const photos = [];   // { blob, url, caption }
+
+function fillSelect(el, options){
+  for(const [value,label] of Object.entries(options)){
+    const o=document.createElement('option'); o.value=value; o.textContent=label; el.append(o);
+  }
+}
+function renderTiers(){
+  for(const t of Object.values(PRICES)){
+    const label=document.createElement('label'); label.className='tier';
+    const input=document.createElement('input'); input.type='radio'; input.name='tier'; input.value=t.id;
+    input.checked = t.id==='base';
+    input.addEventListener('change', syncTier);
+    const name=document.createElement('b'); name.textContent=t.name;
+    const price=document.createElement('div'); price.className='price'; price.textContent=`${t.rub.toLocaleString('ru-RU')} ₽`;
+    const desc=document.createElement('div'); desc.className='muted'; desc.textContent=t.desc;
+    label.append(input,name,price,desc);
+    $('tiers').append(label);
+  }
+  $('priceNotes').textContent = PRICE_NOTES.join('. ') + '.';
+}
+const currentTier = () => document.querySelector('input[name=tier]:checked').value;
+function syncTier(){ $('photoCard').hidden = currentTier()!=='photo'; }
+
+function renderPolicy(){
+  const o=SITE.operator;
+  const box=$('policy');
+  const items=[
+    `Оператор: ${o.name}, ИНН ${o.inn}, ОГРНИП ${o.ogrnip}. Обращения: ${o.email}.`,
+    'Какие данные: ник на Авито, email, тема и дата вечеринки, загруженные фото и подписи к ним.',
+    'Зачем: выполнить заказ, подготовить игру, отправить чек и связаться с вами.',
+    `Фото хранятся ${PHOTO_LIMITS.retentionDays} дней с момента загрузки, затем удаляются автоматически. Фото видят те, у кого есть ссылка на игру.`,
+    'Текст брифа передаётся сервису генерации черновиков вопросов. Данные хранятся на серверах за пределами России: Google Firebase, Netlify, Anthropic.',
+    'Согласие можно отозвать письмом оператору. Тогда мы удалим ваши данные, если закон не требует их хранить.'
+  ];
+  for(const text of items){ const p=document.createElement('p'); p.textContent=text; box.append(p); }
+}
+
+// сжимаем на клиенте: JPEG до 1600 пикселей по большей стороне
+async function toJpeg(file){
+  const bmp=await createImageBitmap(file);
+  const scale=Math.min(1,1600/Math.max(bmp.width,bmp.height));
+  const canvas=document.createElement('canvas');
+  canvas.width=Math.round(bmp.width*scale); canvas.height=Math.round(bmp.height*scale);
+  canvas.getContext('2d').drawImage(bmp,0,0,canvas.width,canvas.height);
+  bmp.close();
+  return new Promise((ok,fail)=>canvas.toBlob(b=>b?ok(b):fail(new Error('jpeg')),'image/jpeg',0.85));
+}
+function renderPhotos(){
+  const list=$('photoList'); list.replaceChildren();
+  photos.forEach((p,i)=>{
+    const row=document.createElement('div'); row.className='photo-row';
+    const img=document.createElement('img'); img.src=p.url; img.alt='';
+    const cap=document.createElement('input'); cap.placeholder='Подпись: кто на фото, что происходит';
+    cap.maxLength=PHOTO_LIMITS.maxCaption; cap.value=p.caption; cap.setAttribute('aria-label',`Подпись к фото ${i+1}`);
+    cap.addEventListener('input',()=>{ p.caption=cap.value; });
+    const del=document.createElement('button'); del.type='button'; del.className='btn ghost'; del.textContent='Убрать';
+    del.addEventListener('click',()=>{ URL.revokeObjectURL(p.url); photos.splice(i,1); renderPhotos(); });
+    row.append(img,cap,del); list.append(row);
+  });
+  $('photoHint').textContent=`Загружено ${photos.length} из ${PHOTO_LIMITS.maxCount}. Подпишите фото: подписи помогут сделать вопросы.`;
+}
+async function addPhotos(files){
+  $('err').textContent='';
+  for(const f of files){
+    if(photos.length>=PHOTO_LIMITS.maxCount){ $('err').textContent=`Можно не больше ${PHOTO_LIMITS.maxCount} фото.`; break; }
+    try{
+      const blob=await toJpeg(f);
+      if(blob.size>PHOTO_LIMITS.maxBytes) throw new Error('size');
+      photos.push({ blob, url:URL.createObjectURL(blob), caption:'' });
+    }catch(e){ $('err').textContent=`Не удалось обработать файл ${f.name}.`; }
+  }
+  renderPhotos();
+}
+
+function collect(){
+  return {
+    contact:$('contact').value, email:$('email').value, theme:$('theme').value,
+    players:$('players').value, ageGroup:$('ageGroup').value, difficulty:$('difficulty').value,
+    language:$('language').value, partyDate:$('partyDate').value, tier:currentTier(),
+    adult18:$('adult18').checked, consent:$('consent').checked, website:$('website').value
+  };
+}
+async function postJson(name, body){
+  const res=await fetch(api(name),{ method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify(body) });
+  const data=await res.json().catch(()=>({}));
+  if(!res.ok) throw new Error(data.error || 'Сервер недоступен. Попробуйте позже.');
+  return data;
+}
+async function submit(e){
+  e.preventDefault();
+  const data=collect();
+  const errors=validateOrder(data).errors;
+  if(data.tier==='photo' && photos.length===0) errors.push('Добавьте хотя бы одно фото или выберите базовый пак.');
+  $('err').textContent=errors.join('\n');
+  if(errors.length) return;
+
+  const btn=$('submit'); btn.disabled=true;
+  try{
+    $('progress').textContent='Сохраняем заказ...';
+    const { orderId, token }=await postJson('create-order',data);
+    if(data.tier==='photo'){
+      for(let i=0;i<photos.length;i++){
+        $('progress').textContent=`Загружаем фото ${i+1} из ${photos.length}...`;
+        const res=await fetch(api('upload-photo'),{ method:'POST', body:photos[i].blob, headers:{
+          'content-type':'image/jpeg', 'x-order-id':orderId, 'x-order-token':token,
+          'x-caption':encodeURIComponent(photos[i].caption)
+        }});
+        if(!res.ok){ const d=await res.json().catch(()=>({})); throw new Error(d.error||'Не удалось загрузить фото.'); }
+      }
+    }
+    $('progress').textContent='Создаём платёж...';
+    const { url }=await postJson('create-payment',{ orderId, token });
+    location.href=url;
+  }catch(err){
+    $('progress').textContent='';
+    $('err').textContent=err.message;
+    btn.disabled=false;
+  }
+}
+
+fillSelect($('ageGroup'),AGE_GROUPS); $('ageGroup').value='adults';
+fillSelect($('difficulty'),DIFFICULTIES); $('difficulty').value='medium';
+fillSelect($('language'),LANGUAGES);
+if(SITE.ordersOpen){
+  $('form').hidden=false;
+  renderTiers(); renderPolicy(); renderPhotos(); syncTier();
+  $('photoInput').addEventListener('change',e=>{ addPhotos([...e.target.files]); e.target.value=''; });
+  $('form').addEventListener('submit',submit);
+} else {
+  $('closedCard').hidden=false;
+  if(SITE.avitoUrl){ $('avitoLink').href=SITE.avitoUrl; $('avitoWrap').hidden=false; }
+}
+</script>
+</body>
+</html>

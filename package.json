@@ -1,0 +1,9 @@
+{
+  "name": "svoya-igra",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@anthropic-ai/sdk": "1.4.0",
+    "@netlify/blobs": "11.1.7"
+  }
+}

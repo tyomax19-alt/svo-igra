@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="/favicon.ico?v=2" sizes="any">
+<link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
+<meta name="theme-color" content="#eef0f3">
+<meta name="robots" content="noindex">
+<title>Панель — Игра про вас</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Handjet:wght@700&family=Golos+Text:wght@600;700&display=swap" rel="stylesheet">
+<style>
+/* Рабочая панель: спокойный современный интерфейс, без игрового стиля */
+:root{
+  --bg:#eef0f3; --card:#fff; --line:#e6e8ec; --text:#14161a; --dim:#6b7280; --soft:#f4f5f7;
+  --lilac:#cdbdf7; --lilac-soft:#efe9ff; --lime:#d8f5a2; --lime-soft:#eefbd6; --ink:#121316;
+  --red:#d83b3b; --green:#3f7d12; --amber:#9a6200; --amber-soft:#fff2d6; --r:20px;
+}
+*{ box-sizing:border-box; margin:0; padding:0; }
+[hidden]{ display:none !important; }
+body{ background:var(--bg); color:var(--text); font:15px/1.45 'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif; font-weight:500; }
+button{ font:inherit; }
+a{ color:inherit; }
+
+/* вход */
+.login{ min-height:100vh; display:grid; place-items:center; padding:16px; }
+.login form{ width:100%; max-width:380px; background:var(--card); border-radius:var(--r); padding:28px; display:flex; flex-direction:column; gap:12px; }
+.login h1{ font-size:24px; font-weight:800; }
+
+/* каркас */
+.app{ display:grid; grid-template-columns:240px minmax(0,1fr); min-height:100vh; }
+.side{ position:sticky; top:0; height:100vh; display:flex; flex-direction:column; gap:6px; padding:22px 16px; }
+.brand{ display:flex; align-items:center; gap:10px; font-weight:800; font-size:17px; padding:0 8px 18px; }
+.brand img{ width:32px; height:32px; border-radius:9px; image-rendering:pixelated; }
+.nav{ display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%; border:none; background:none; text-align:left; padding:10px 12px; border-radius:12px; color:var(--dim); font-weight:600; cursor:pointer; text-decoration:none; }
+.nav:hover{ background:#fff8; color:var(--text); }
+.nav.on{ background:var(--card); color:var(--text); box-shadow:0 1px 2px #0000000d; }
+.nav .cnt{ background:var(--lilac); color:var(--ink); border-radius:999px; font-size:12px; font-weight:700; padding:1px 8px; }
+.side .sep{ height:1px; background:#d9dce2; margin:10px 8px; }
+.side .bottom{ margin-top:auto; background:var(--card); border-radius:16px; padding:14px; display:flex; flex-direction:column; gap:10px; font-size:13px; color:var(--dim); overflow-wrap:anywhere; }
+.main{ padding:22px 26px 48px; min-width:0; }
+
+/* общие элементы */
+.top{ display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:18px; }
+.top h1{ font-size:26px; font-weight:800; letter-spacing:-.01em; }
+.sub{ color:var(--dim); font-size:14px; }
+.card{ background:var(--card); border-radius:var(--r); padding:20px; min-width:0; }
+.card h2{ font-size:17px; font-weight:800; margin-bottom:12px; }
+.btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; border:none; border-radius:999px; padding:10px 18px; background:var(--ink); color:#fff; font-weight:700; cursor:pointer; text-decoration:none; white-space:nowrap; }
+.btn:hover:not(:disabled){ filter:brightness(1.25); }
+.btn.ghost{ background:var(--card); color:var(--text); box-shadow:inset 0 0 0 1px var(--line); }
+.btn.ghost:hover:not(:disabled){ background:var(--soft); filter:none; }
+.btn.lilac{ background:var(--lilac); color:var(--ink); }
+.btn.danger{ background:none; color:var(--red); box-shadow:inset 0 0 0 1px #f2caca; }
+.btn.sm{ padding:7px 13px; font-size:13px; }
+.btn:disabled{ opacity:.45; cursor:not-allowed; }
+input,textarea,select{ width:100%; border:1px solid var(--line); background:var(--soft); border-radius:12px; padding:10px 12px; font:inherit; color:var(--text); }
+input:focus,textarea:focus,select:focus{ outline:2px solid var(--lilac); outline-offset:0; background:#fff; }
+textarea.code{ font-family:ui-monospace,Consolas,monospace; font-size:13px; min-height:160px; resize:vertical; }
+.search{ max-width:280px; border-radius:999px; background:var(--card); }
+.err{ color:var(--red); white-space:pre-line; font-size:14px; }
+.ok{ color:var(--green); font-size:14px; }
+.err:empty,.ok:empty{ display:none; }
+.muted{ color:var(--dim); }
+.row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+.pill{ display:inline-flex; align-items:center; gap:6px; border-radius:999px; padding:3px 10px; font-size:12px; font-weight:700; white-space:nowrap; }
+.pill::before{ content:''; width:6px; height:6px; border-radius:50%; background:currentColor; }
+.p-empty{ background:var(--soft); color:var(--dim); }
+.p-new{ background:var(--lilac-soft); color:#5b3fc4; }
+.p-draft{ background:var(--amber-soft); color:var(--amber); }
+.p-published{ background:var(--lime-soft); color:var(--green); }
+.p-sent{ background:var(--ink); color:#fff; }
+
+/* сводка */
+.stats{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin-bottom:18px; }
+.stat{ border-radius:var(--r); padding:18px; background:var(--card); display:flex; flex-direction:column; gap:6px; min-height:116px; }
+.stat b{ font-size:34px; font-weight:800; line-height:1; letter-spacing:-.02em; margin-top:auto; }
+.stat span{ font-size:13px; font-weight:600; color:var(--dim); }
+.stat.lilac{ background:var(--lilac); } .stat.lime{ background:var(--lime); } .stat.ink{ background:var(--ink); color:#fff; }
+.stat.lilac span,.stat.lime span{ color:#14161ab3; } .stat.ink span{ color:#ffffffa6; }
+
+/* таблица */
+.table{ width:100%; border-collapse:collapse; }
+.table th{ text-align:left; font-size:12px; font-weight:700; color:var(--dim); padding:8px 10px; border-bottom:1px solid var(--line); }
+.table td{ padding:12px 10px; border-bottom:1px solid var(--line); vertical-align:middle; }
+.table tbody tr{ cursor:pointer; }
+.table tbody tr:hover td{ background:var(--soft); }
+.who{ display:flex; align-items:center; gap:10px; min-width:0; }
+.ava{ width:34px; height:34px; border-radius:50%; display:grid; place-items:center; font-weight:800; font-size:13px; flex:none; background:var(--lilac-soft); color:#5b3fc4; }
+.who small{ display:block; color:var(--dim); font-size:12px; }
+.num{ font-weight:700; }
+.empty{ padding:40px 10px; text-align:center; color:var(--dim); }
+
+/* карточка анкеты */
+.back{ border:none; background:none; color:var(--dim); font-weight:700; cursor:pointer; padding:0; }
+.profile{ display:grid; grid-template-columns:1.6fr 1fr 1fr; gap:14px; margin-bottom:14px; }
+.hero{ background:var(--lilac); border-radius:var(--r); padding:22px; display:flex; flex-direction:column; gap:10px; }
+.hero .tag{ align-self:flex-start; background:var(--ink); color:#fff; border-radius:999px; padding:4px 12px; font-size:12px; font-weight:700; }
+.hero h2{ font-size:38px; font-weight:800; line-height:1.05; letter-spacing:-.02em; overflow-wrap:anywhere; }
+.hero .meta{ display:flex; gap:8px 16px; flex-wrap:wrap; font-size:14px; font-weight:600; color:#14161ab3; }
+.mini{ border-radius:var(--r); padding:18px; background:var(--card); display:flex; flex-direction:column; gap:4px; }
+.mini.lime{ background:var(--lime); } .mini.ink{ background:var(--ink); color:#fff; }
+.mini span{ font-size:13px; font-weight:600; color:var(--dim); } .mini.lime span{ color:#14161ab3; } .mini.ink span{ color:#ffffffa6; }
+.mini b{ font-size:28px; font-weight:800; line-height:1.1; }
+.mini .two{ display:flex; gap:22px; margin-top:auto; }
+.mini .two > div{ display:flex; flex-direction:column; }
+.steps{ display:flex; align-items:center; gap:0; margin-bottom:14px; overflow-x:auto; }
+.step{ display:flex; align-items:center; gap:8px; flex:none; font-size:13px; font-weight:700; color:var(--dim); }
+.step i{ width:26px; height:26px; border-radius:50%; display:grid; place-items:center; font-style:normal; font-size:12px; background:var(--card); box-shadow:inset 0 0 0 2px var(--line); }
+.step.done{ color:var(--text); } .step.done i{ background:var(--lime); box-shadow:none; }
+.step.now i{ background:var(--ink); color:#fff; box-shadow:none; }
+.line{ flex:1 0 28px; height:2px; background:var(--line); margin:0 10px; min-width:28px; }
+.line.done{ background:#9fd45a; }
+.cols{ display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:14px; align-items:start; }
+.stack{ display:flex; flex-direction:column; gap:14px; min-width:0; }
+.answers{ white-space:pre-wrap; background:var(--soft); border-radius:14px; padding:14px; max-height:620px; overflow:auto; font-size:14px; }
+.voice{ display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; padding:10px 0; border-top:1px solid var(--line); }
+.voice:first-of-type{ border-top:none; }
+.voice .vt{ flex:1; min-width:200px; font-size:14px; }
+.voice .vt small{ display:block; color:var(--dim); }
+.voice audio{ width:100%; max-width:360px; height:36px; }
+.linkbox{ display:flex; gap:8px; align-items:center; background:var(--lime-soft); border-radius:14px; padding:10px 12px; font-size:14px; font-weight:600; overflow-wrap:anywhere; }
+.linkbox a{ flex:1; min-width:0; }
+
+/* редактор пака */
+.rounds details{ border-top:1px solid var(--line); padding:8px 0; }
+.rounds summary{ cursor:pointer; font-weight:800; padding:6px 0; }
+.cat{ margin:12px 0 6px; }
+.cat input{ font-weight:700; }
+.qrow{ display:grid; grid-template-columns:44px minmax(0,2fr) minmax(0,1.2fr); gap:6px; margin-bottom:6px; align-items:center; }
+.qrow .val{ font-weight:800; color:var(--dim); font-size:13px; }
+.qrow .ext{ grid-column:2 / -1; display:grid; grid-template-columns:150px minmax(0,1fr); gap:6px; }
+.qrow input,.qrow select{ padding:7px 10px; font-size:14px; border-radius:10px; }
+
+/* сроки, заметки, шаблоны */
+.p-hot{ background:#ffe1e1; color:var(--red); }
+.p-soon{ background:var(--amber-soft); color:var(--amber); }
+.stat.hot b{ color:var(--red); }
+tr.hot td:first-child{ box-shadow:inset 3px 0 0 var(--red); }
+.sortsel{ width:auto; border-radius:999px; background:var(--card); padding:8px 12px; }
+.field{ display:flex; flex-direction:column; gap:4px; font-size:13px; font-weight:700; color:var(--dim); }
+.grid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.check{ display:flex; align-items:center; gap:8px; font-weight:700; cursor:pointer; }
+.check input{ width:18px; height:18px; accent-color:var(--ink); }
+.tpl{ display:flex; flex-direction:column; gap:8px; padding:14px 0; border-top:1px solid var(--line); }
+.tpl:first-of-type{ border-top:none; padding-top:0; }
+.tpl textarea{ min-height:96px; resize:vertical; }
+.tplbtns{ display:flex; flex-wrap:wrap; gap:8px; }
+.paid{ background:var(--lime-soft); color:var(--green); }
+
+/* предпросмотр пака в стиле игры */
+.pv{ position:fixed; inset:0; z-index:50; background:#0b2f33ee; display:flex; align-items:center; justify-content:center; padding:16px; }
+.pvbox{ width:100%; max-width:1100px; max-height:100%; overflow:auto; background:#0f3b40; color:#f3e7cf; border-radius:16px; padding:20px; font-family:'Golos Text',sans-serif; }
+.pvtop{ display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+.pvtop b{ font-family:'Handjet',monospace; font-size:36px; line-height:1; }
+.pvtabs{ display:flex; gap:6px; }
+.pvtabs button{ border:none; border-radius:999px; padding:6px 12px; background:#1b5157; color:#f3e7cf; font-weight:700; cursor:pointer; }
+.pvtabs button.on{ background:#f3e7cf; color:#0f3b40; }
+.pvgrid{ display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:8px; }
+.pvcat{ font-size:13px; font-weight:700; text-align:center; min-height:38px; display:flex; align-items:center; justify-content:center; overflow-wrap:anywhere; }
+.pvcell{ border:none; background:#f3e7cf; color:#0f3b40; font-family:'Handjet',monospace; font-size:34px; font-weight:700; padding:8px 0; cursor:pointer; box-shadow:0 4px 0 #08222a; position:relative; }
+.pvcell:hover{ background:#ff6b3d; color:#f3e7cf; }
+.pvcell.sel{ background:#ff6b3d; color:#f3e7cf; }
+.pvcell i{ position:absolute; top:3px; right:5px; width:8px; height:8px; background:#ff6b3d; border-radius:50%; }
+.pvcell.sel i,.pvcell:hover i{ background:#0f3b40; }
+.pvq{ margin-top:16px; background:#f3e7cf; color:#0f3b40; border-radius:10px; padding:16px 18px; min-height:96px; }
+.pvq small{ font-weight:700; color:#55706d; }
+.pvq p{ font-size:22px; font-weight:700; line-height:1.25; margin:6px 0; }
+.pvq .a{ color:#d94a1f; font-size:18px; }
+.close{ border:none; background:#f3e7cf; color:#0f3b40; border-radius:999px; padding:8px 14px; font-weight:800; cursor:pointer; }
+
+@media (max-width:1100px){ .profile{ grid-template-columns:1fr 1fr; } .hero{ grid-column:1 / -1; } .cols{ grid-template-columns:1fr; } }
+@media (max-width:860px){
+  .app{ grid-template-columns:1fr; }
+  .side{ position:static; height:auto; flex-direction:row; flex-wrap:wrap; align-items:center; padding:12px; gap:4px; }
+  .brand{ padding:0 8px 0 0; width:100%; } .side .sep{ display:none; }
+  .side .nav{ width:auto; padding:8px 10px; font-size:14px; }
+  .side .bottom{ margin:0 0 0 auto; flex-direction:row; align-items:center; background:none; padding:0; }
+  .side .bottom .email{ display:none; }
+  .main{ padding:12px 12px 40px; }
+  .stats{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .table thead{ display:none; }
+  .table tr{ display:grid; grid-template-columns:1fr auto; gap:4px 10px; padding:12px 0; border-bottom:1px solid var(--line); }
+  .table td{ border:none; padding:0; } .table td.hide-m{ display:none; }
+  .qrow{ grid-template-columns:36px 1fr; } .qrow .ans{ grid-column:2; } .qrow .ext{ grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="login" id="loginView" hidden>
+  <form id="loginForm">
+    <h1>Вход в панель</h1>
+    <p class="muted">Для владельца сайта.</p>
+    <input id="email" type="email" autocomplete="username" placeholder="Email">
+    <input id="password" type="password" autocomplete="current-password" placeholder="Пароль">
+    <div class="err" id="loginErr" role="alert"></div>
+    <button class="btn" type="submit">Войти</button>
+  </form>
+</div>
+
+<div class="app" id="appView" hidden>
+  <aside class="side">
+    <div class="brand"><img src="/favicon.svg?v=2" alt="">Игра про вас</div>
+    <button class="nav on" type="button" data-view="forms">Анкеты <span class="cnt" id="cntNew" hidden></span></button>
+    <button class="nav" type="button" data-view="packs">Все паки</button>
+    <button class="nav" type="button" data-view="templates">Шаблоны для Авито</button>
+    <div class="sep"></div>
+    <a class="nav" href="anketa" target="_blank" rel="noopener">Открыть анкету</a>
+    <a class="nav" href="./" target="_blank" rel="noopener">Открыть игру</a>
+    <div class="bottom"><span class="email" id="who"></span><button class="btn ghost sm" id="notifyBtn" type="button">Уведомления</button><button class="btn ghost sm" id="logout" type="button">Выйти</button></div>
+  </aside>
+  <main class="main" id="main"></main>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, get, set, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { OCCASIONS, BUYER, BUYER_END, GUEST, setOf } from "./anketa-schema.js";
+import { validateBoard, normalizeBoard, VALID_MODIFIERS } from "./pack-validator.js";
+import { CHAT_PROMPT } from "./pack-prompt.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyD2BJ0Stblry4i3wD_ml0d7WqVsPDwW8RM",
+  authDomain: "svoua-igra.firebaseapp.com",
+  databaseURL: "https://svoua-igra-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "svoua-igra"
+});
+const db = getDatabase(app);
+const auth = getAuth(app);
+const $ = id => document.getElementById(id);
+const MOD_LABELS = { double:'Удвоение', flip_sign:'Смена знака', give_points:'Отдать очки', take_points:'Забрать очки', all_in:'Ва-банк' };
+const STEP_NAMES = ['Анкета', 'Пак собран', 'Опубликован', 'Ссылка отправлена'];
+const STATUS = {
+  empty:     ['Заполняется', 'p-empty'],
+  new:       ['Новая', 'p-new'],
+  draft:     ['Пак в работе', 'p-draft'],
+  published: ['Опубликован', 'p-published'],
+  sent:      ['Ссылка отправлена', 'p-sent'],
+};
+
+let forms = {}, orders = {}, templates = {};
+let sortMode = 'new';        // new | soon
+let knownDone = null;        // какие анкеты уже были готовы: для уведомлений о новых
+let view = 'forms';          // forms | form | packs | order | templates
+let current = null;          // id анкеты или заказа на экране
+let draft = null, dirty = false, draftFor = null;
+let query = '';
+let stops = [];
+
+function el(tag, props = {}, ...children){
+  const node = Object.assign(document.createElement(tag), props);
+  node.append(...children.flat().filter(c => c !== null && c !== undefined && c !== false));
+  return node;
+}
+const randomId = n => [...crypto.getRandomValues(new Uint8Array(n))].map(b => 'abcdefghijkmnopqrstuvwxyz23456789'[b % 33]).join('');
+const date = t => t ? new Date(t).toLocaleDateString('ru-RU', { day:'numeric', month:'short' }) : '—';
+const dateTime = t => t ? new Date(t).toLocaleString('ru-RU', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : '—';
+const plural = (n, a, b, c) => { const m = n % 10, h = n % 100; return m === 1 && h !== 11 ? a : m >= 2 && m <= 4 && (h < 10 || h >= 20) ? b : c; };
+async function copy(text, btn, done = 'Скопировано'){
+  try{ await navigator.clipboard.writeText(text); }catch(e){ prompt('Скопируйте вручную:', text); return; }
+  if(btn){ const t = btn.textContent; btn.textContent = done; setTimeout(() => btn.textContent = t, 1600); }
+}
+
+/* ── данные анкеты ── */
+const metaOf = f => f.meta || {};
+const occLabel = m => (OCCASIONS[m.occasion] || {}).label || 'Анкета';
+const roundsOf = m => m.rounds || 1;
+function counts(f){
+  const b = f.buyer || {};
+  return {
+    answers: Object.keys(b).filter(k => !['updatedAt', 'done'].includes(k) && b[k]).length,
+    guests: Object.keys(f.guests || {}).length,
+    voices: Object.keys(f.vlist || {}).length,
+  };
+}
+function statusOf(f){
+  const o = f.orderId && orders[f.orderId];
+  if(o) return o.sentAt ? 'sent' : o.packId ? 'published' : 'draft';
+  return (f.buyer || {}).done ? 'new' : 'empty';
+}
+const stepOf = s => ({ empty:0, new:1, draft:1, published:2, sent:3 }[s]);
+
+/* ── сроки ── */
+const gameDateOf = f => (f.admin || {}).gameDate || metaOf(f).gameDate || '';
+function daysLeft(d){
+  if(!d) return null;
+  const t = new Date(); t.setHours(0, 0, 0, 0);
+  return Math.round((new Date(d + 'T00:00:00') - t) / 86400000);
+}
+// горящая: игра в ближайшие 3 дня, а ссылка ещё не отправлена
+const isHot = f => { const d = daysLeft(gameDateOf(f)); return d !== null && d >= 0 && d <= 3 && statusOf(f) !== 'sent'; };
+function datePill(f){
+  const d = daysLeft(gameDateOf(f));
+  if(d === null) return el('span', { className: 'muted', textContent: '—' });
+  const when = new Date(gameDateOf(f) + 'T00:00:00').toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+  if(d < 0) return el('span', { className: 'muted', textContent: when });
+  const txt = d === 0 ? 'сегодня' : d === 1 ? 'завтра' : `через ${d} ${plural(d, 'день', 'дня', 'дней')}`;
+  const cls = isHot(f) ? 'p-hot' : d <= 7 ? 'p-soon' : 'p-empty';
+  return el('span', { className: 'pill ' + cls, textContent: `${when}, ${txt}` });
+}
+
+/* ── шаблоны ответов для Авито ── */
+const DEFAULT_TEMPLATES = [
+  ['first', 'Первое сообщение', 'Привет! Вот демо, можно сыграть прямо сейчас: {demo}\nВ настоящей игре вопросы будут про вашу компанию, а каждый гость играет со своего телефона.\nЕсли готовы, заполните анкету, это минут десять: {anketa}\nВ конце будет код, пришлите его сюда.'],
+  ['remind', 'Напомнить про анкету', 'Напоминаю про анкету для игры: {anketa}\nНа любой вопрос можно ответить голосовым прямо в анкете.'],
+  ['got', 'Анкета получена', 'Анкету получил, спасибо! Соберу игру про {hero} и пришлю ссылку.\nДрузья могут тайно добавить свои истории по этой ссылке: {guests}'],
+  ['ready', 'Игра готова', 'Игра про {hero} готова: {link}\nОткройте ссылку на телевизоре или ноутбуке и нажмите «Создать комнату». Гости заходят по QR-коду со своих телефонов. Хорошей игры!'],
+  ['review', 'Попросить отзыв', 'Как прошла игра? Буду рад отзыву на Авито, это очень помогает.'],
+];
+const tplText = key => (templates[key] ?? (DEFAULT_TEMPLATES.find(t => t[0] === key) || [])[2] ?? '');
+function fillTemplate(text, formId){
+  const f = formId && forms[formId], m = f ? metaOf(f) : {};
+  const o = f && f.orderId && orders[f.orderId];
+  const vars = {
+    demo: new URL('demo', location.href).href,
+    anketa: new URL('anketa', location.href).href,
+    hero: m.hero || '{hero}',
+    guests: formId ? new URL(`anketa?z=${formId}&g=1`, location.href).href : '{guests}',
+    link: o && o.packId ? new URL(`./?pack=${o.packId}`, location.href).href : '{link}',
+  };
+  return text.replace(/\{(\w+)\}/g, (s, k) => vars[k] ?? s);
+}
+const pill = s => el('span', { className: 'pill ' + STATUS[s][1], textContent: STATUS[s][0] });
+const initials = s => (s || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase() || '?';
+
+function labelFor(f, by, key){
+  const s = setOf(metaOf(f).occasion);
+  const list = by === 'guest' ? (GUEST[s] || []) : [...(BUYER[s] || []), ...BUYER_END, ['topics', 'Общие темы'], ['othertopics', 'Другие темы']];
+  return (list.find(x => x[0] === key) || [])[1] || key;
+}
+function formText(id){
+  const f = forms[id], m = metaOf(f), s = setOf(m.occasion), b = f.buyer || {};
+  const r = roundsOf(m);
+  const lines = [`Анкета ${id}`, `Повод: ${occLabel(m)}`, `Герой: ${m.hero}`, `Игроков: ${m.players > 10 ? 'больше 10' : m.players}`,
+    `Раундов: ${r} (${r * 30} вопросов)`, `Ник на Авито: ${m.avito || '-'}`, ''];
+  for(const [k, label] of [...(BUYER[s] || []), ...BUYER_END, ['topics', 'Общие темы'], ['othertopics', 'Другие темы']]) if(b[k]) lines.push(`${label}:\n${b[k]}`, '');
+  Object.values(f.guests || {}).forEach((g, i) => {
+    lines.push(`Гость ${i + 1}${g.name ? ` (${g.name})` : ''}:`);
+    for(const [k, label] of GUEST[s] || []) if(g[k]) lines.push(`${label}: ${g[k]}`);
+    lines.push('');
+  });
+  const vc = Object.keys(f.vlist || {}).length;
+  if(vc) lines.push(`Голосовых: ${vc}, их нужно прослушать в панели.`);
+  return lines.join('\n').trim();
+}
+// промпт под число раундов из анкеты, с самой анкетой вместо брифа
+function promptFor(id){
+  const r = roundsOf(metaOf(forms[id]));
+  const word = plural(r, 'раунд', 'раунда', 'раундов');
+  return CHAT_PROMPT
+    .replace('Ровно 3 раунда', `Ровно ${r} ${word}`)
+    .replace(/Если заказчик просит короткую игру[^\n]*\n\n/, '')
+    .replace(/<brief>[\s\S]*<\/brief>/, `<brief>\n${formText(id)}\n</brief>`);
+}
+
+/* ── экраны ── */
+function show(v, id = null){
+  if(dirty && !confirm('Несохранённые правки пака будут потеряны. Уйти?')) return;
+  dirty = false; draft = null; draftFor = null;
+  view = v; current = id;
+  document.querySelectorAll('.nav[data-view]').forEach(b => b.classList.toggle('on', b.dataset.view === (v === 'form' ? 'forms' : v === 'order' ? 'packs' : v)));
+  closePreview();
+  render(true);
+  window.scrollTo({ top: 0 });
+}
+function render(force){
+  const newCount = Object.values(forms).filter(f => statusOf(f) === 'new').length;
+  $('cntNew').textContent = newCount; $('cntNew').hidden = !newCount;
+  document.title = (newCount ? `(${newCount}) ` : '') + 'Панель — Игра про вас';
+  // пока оператор правит пак или заметки, экран не перерисовываем из базы
+  if(!force && (dirty || editingNote)) return;
+  const main = $('main');
+  if(view === 'forms') main.replaceChildren(...formsView());
+  else if(view === 'form') main.replaceChildren(...(forms[current] ? formView(current) : [missing('Анкета удалена.')]));
+  else if(view === 'packs') main.replaceChildren(...packsView());
+  else if(view === 'order') main.replaceChildren(...(orders[current] ? orderView(current) : [missing('Пак не найден.')]));
+  else if(view === 'templates') main.replaceChildren(...templatesView());
+}
+let editingNote = false;
+const missing = text => el('div', { className: 'card empty' }, text, el('div', { style: 'margin-top:12px' }, backBtn()));
+const backBtn = () => { const b = el('button', { type: 'button', className: 'back', textContent: '← Назад к анкетам' }); b.onclick = () => show('forms'); return b; };
+
+function formsView(){
+  const all = Object.entries(forms).sort((a, b) => (metaOf(b[1]).createdAt || 0) - (metaOf(a[1]).createdAt || 0));
+  const by = s => all.filter(([, f]) => statusOf(f) === s).length;
+  const voices = all.reduce((n, [, f]) => n + counts(f).voices, 0);
+  const search = el('input', { className: 'search', placeholder: 'Поиск по имени или нику', value: query });
+  search.oninput = () => { query = search.value; const t = $('formsTable'); if(t) t.replaceWith(formsTable(all)); };
+  const anketaUrl = new URL('anketa', location.href).href;
+  const copyBtn = el('button', { type: 'button', className: 'btn sm', textContent: 'Скопировать ссылку на анкету' });
+  copyBtn.onclick = () => copy(anketaUrl, copyBtn);
+  return [
+    el('div', { className: 'top' }, el('div', {}, el('h1', { textContent: 'Анкеты' }), el('div', { className: 'sub', textContent: 'Покупатели заполняют анкету сами, пак собирается из неё.' })), copyBtn),
+    el('div', { className: 'stats' },
+      el('div', { className: 'stat lilac' }, el('span', { textContent: 'Новые, ждут пак' }), el('b', { textContent: by('new') })),
+      el('div', { className: 'stat lime' }, el('span', { textContent: 'Пак в работе' }), el('b', { textContent: by('draft') })),
+      el('div', { className: 'stat hot' }, el('span', { textContent: 'Горящие: игра через 3 дня или раньше' }), el('b', { textContent: all.filter(([, f]) => isHot(f)).length })),
+      el('div', { className: 'stat ink' }, el('span', { textContent: 'Опубликовано' }), el('b', { textContent: by('published') + by('sent') }))),
+    el('div', { className: 'card' }, el('div', { className: 'top', style: 'margin-bottom:6px' }, el('h2', { textContent: `Все анкеты · ${all.length}`, style: 'margin:0' }),
+      el('div', { className: 'row' }, sortSelect(all), search)), formsTable(all),
+      el('div', { className: 'sub', style: 'margin-top:10px', textContent: `Заполняются сейчас: ${by('empty')} · голосовых всего: ${voices}` })),
+  ];
+}
+function sortSelect(all){
+  const s = el('select', { className: 'sortsel', 'aria-label': 'Сортировка' },
+    el('option', { value: 'new', textContent: 'Сначала новые' }), el('option', { value: 'soon', textContent: 'Скоро игра' }));
+  s.value = sortMode;
+  s.onchange = () => { sortMode = s.value; const t = $('formsTable'); if(t) t.replaceWith(formsTable(all)); };
+  return s;
+}
+function sorted(all){
+  if(sortMode !== 'soon') return all;
+  // ближайшие игры сверху, прошедшие и без даты в конце
+  const key = ([, f]) => { const d = daysLeft(gameDateOf(f)); return d === null ? 1e6 : d < 0 ? 1e5 - d : d; };
+  return [...all].sort((a, b) => key(a) - key(b));
+}
+function formsTable(all){
+  const q = query.trim().toLowerCase();
+  const rows = sorted(all).filter(([id, f]) => !q || [metaOf(f).hero, metaOf(f).avito, id].join(' ').toLowerCase().includes(q));
+  if(!rows.length) return el('div', { id: 'formsTable', className: 'empty', textContent: all.length ? 'Ничего не нашлось.' : 'Анкет пока нет. Отправьте покупателю ссылку на анкету.' });
+  const tbody = el('tbody');
+  for(const [id, f] of rows){
+    const m = metaOf(f), c = counts(f);
+    const tr = el('tr', { className: isHot(f) ? 'hot' : '' },
+      el('td', {}, el('div', { className: 'who' }, el('span', { className: 'ava', textContent: initials(m.hero) }),
+        el('div', {}, el('b', { textContent: m.hero || 'Без имени' }), el('small', { textContent: `${occLabel(m)} · ${m.avito || 'ник не указан'}` })))),
+      el('td', {}, pill(statusOf(f))),
+      el('td', {}, datePill(f)),
+      el('td', { className: 'hide-m num', textContent: `${roundsOf(m)} × 30` }),
+      el('td', { className: 'hide-m', textContent: `${c.answers} отв · ${c.guests} гост · ${c.voices} гс` }),
+      el('td', { className: 'hide-m muted', textContent: date(m.createdAt) }));
+    tr.onclick = () => show('form', id);
+    tbody.append(tr);
+  }
+  return el('table', { id: 'formsTable', className: 'table' },
+    el('thead', {}, el('tr', {}, ...['Герой и покупатель', 'Статус', 'Игра', 'Раунды', 'Материалы', 'Создана'].map(t => el('th', { textContent: t })))), tbody);
+}
+
+function formView(id){
+  const f = forms[id], m = metaOf(f), c = counts(f), st = statusOf(f), step = stepOf(st);
+  const o = f.orderId && orders[f.orderId];
+  // шкала этапов
+  const steps = el('div', { className: 'steps' });
+  STEP_NAMES.forEach((name, i) => {
+    if(i) steps.append(el('span', { className: 'line' + (i <= step ? ' done' : '') }));
+    const cls = i < step || (i === step && st === 'sent') ? 'done' : i === step ? 'now' : '';
+    steps.append(el('span', { className: 'step ' + cls }, el('i', { textContent: i < step || st === 'sent' && i === 3 ? '✓' : i + 1 }), name));
+  });
+  const guestLink = new URL(`anketa?z=${id}&g=1`, location.href).href;
+  const gBtn = el('button', { type: 'button', className: 'btn ghost sm', textContent: 'Ссылка для гостей' }); gBtn.onclick = () => copy(guestLink, gBtn);
+  const textBtn = el('button', { type: 'button', className: 'btn sm', textContent: 'Копировать анкету' }); textBtn.onclick = () => copy(formText(id), textBtn);
+  const del = el('button', { type: 'button', className: 'btn danger sm', textContent: 'Удалить анкету' });
+  del.onclick = async () => {
+    if(!confirm('Удалить анкету со всеми ответами и голосовыми? Вернуть её будет нельзя. Опубликованный пак продолжит работать.')) return;
+    try{ await update(ref(db), { [`forms/${id}`]: null, [`voices/${id}`]: null }); show('forms'); }
+    catch(e){ alert('Не удалось удалить: ' + e.message); }
+  };
+  return [
+    el('div', { className: 'top' }, backBtn(), el('div', { className: 'row' }, gBtn, del)),
+    el('div', { className: 'profile' },
+      el('div', { className: 'hero' }, el('span', { className: 'tag', textContent: occLabel(m) }), el('h2', { textContent: m.hero || 'Без имени' }),
+        el('div', { className: 'meta' }, el('span', { textContent: `Авито: ${m.avito || 'не указан'}` }), el('span', { textContent: `Создана ${dateTime(m.createdAt)}` }), el('span', { textContent: `Код ${id}` }))),
+      el('div', { className: 'mini lime' }, el('span', { textContent: 'Размер игры' }), el('b', { textContent: `${roundsOf(m)} ${plural(roundsOf(m), 'раунд', 'раунда', 'раундов')}` }),
+        el('span', { textContent: `${roundsOf(m) * 30} вопросов · игроков ${m.players > 10 ? '10+' : m.players || '?'}` })),
+      el('div', { className: 'mini ink' }, el('span', { textContent: 'Материалы' }),
+        el('div', { className: 'two' }, el('div', {}, el('b', { textContent: c.answers }), el('span', { textContent: 'ответов' })),
+          el('div', {}, el('b', { textContent: c.guests }), el('span', { textContent: 'гостей' })), el('div', {}, el('b', { textContent: c.voices }), el('span', { textContent: 'гс' }))))),
+    steps,
+    el('div', { className: 'cols' },
+      el('div', { className: 'stack' },
+        el('div', { className: 'card' }, el('div', { className: 'top', style: 'margin-bottom:10px' }, el('h2', { textContent: 'Ответы', style: 'margin:0' }), textBtn),
+          el('div', { className: 'answers', textContent: formText(id) })),
+        voicesCard(id)),
+      el('div', { className: 'stack' }, dealCard(id), templatesCard(id), packCard(id, o))),
+  ];
+}
+
+// заметки, цена, оплата и дата игры: видит только оператор
+function dealCard(id){
+  const f = forms[id], a = f.admin || {};
+  const date = el('input', { type: 'date', value: gameDateOf(f) });
+  const price = el('input', { type: 'number', min: 0, step: 10, placeholder: '0', value: a.price ?? '' });
+  const paid = el('input', { type: 'checkbox', checked: !!a.paid });
+  const notes = el('textarea', { placeholder: 'Договорённости, пожелания, что обещал', value: a.notes || '' });
+  notes.style.minHeight = '90px';
+  const ok = el('span', { className: 'ok' });
+  const save = el('button', { type: 'button', className: 'btn sm', textContent: 'Сохранить' });
+  [date, price, paid, notes].forEach(i => { i.addEventListener('input', () => { editingNote = true; ok.textContent = ''; }); i.addEventListener('change', () => { editingNote = true; }); });
+  save.onclick = async () => {
+    try{
+      await update(ref(db, `forms/${id}/admin`), { gameDate: date.value || null, price: price.value === '' ? null : Number(price.value), paid: paid.checked, notes: notes.value.trim() || null });
+      editingNote = false; ok.textContent = 'Сохранено';
+    }catch(e){ ok.textContent = ''; alert('Не сохранилось: ' + e.message); }
+  };
+  const head = el('div', { className: 'top', style: 'margin-bottom:12px' }, el('h2', { textContent: 'Заказ', style: 'margin:0' }),
+    a.paid ? el('span', { className: 'pill paid', textContent: a.price ? `Оплачено ${a.price} ₽` : 'Оплачено' }) : datePill(f));
+  return el('div', { className: 'card' }, head,
+    el('div', { className: 'grid2', style: 'margin-bottom:10px' },
+      el('label', { className: 'field' }, 'Дата игры', date), el('label', { className: 'field' }, 'Цена, ₽', price)),
+    el('label', { className: 'check', style: 'margin-bottom:10px' }, paid, 'Оплачено'),
+    el('label', { className: 'field' }, 'Заметки', notes),
+    el('div', { className: 'row', style: 'margin-top:10px' }, save, ok));
+}
+
+// готовые ответы покупателю с подставленными ссылками
+function templatesCard(id){
+  const card = el('div', { className: 'card' }, el('h2', { textContent: 'Ответить на Авито' }),
+    el('p', { className: 'muted', style: 'margin:-6px 0 10px; font-size:13px', textContent: 'Текст копируется с подставленными именем и ссылками.' }));
+  const row = el('div', { className: 'tplbtns' });
+  for(const [key, title] of DEFAULT_TEMPLATES){
+    const b = el('button', { type: 'button', className: 'btn ghost sm', textContent: title });
+    b.onclick = () => copy(fillTemplate(tplText(key), id), b);
+    row.append(b);
+  }
+  card.append(row);
+  return card;
+}
+
+function templatesView(){
+  const list = el('div', { className: 'card' });
+  for(const [key, title] of DEFAULT_TEMPLATES){
+    const ta = el('textarea', { value: tplText(key) });
+    const ok = el('span', { className: 'ok' });
+    const save = el('button', { type: 'button', className: 'btn sm', textContent: 'Сохранить' });
+    const reset = el('button', { type: 'button', className: 'btn ghost sm', textContent: 'Вернуть исходный' });
+    const cp = el('button', { type: 'button', className: 'btn ghost sm', textContent: 'Копировать' });
+    ta.oninput = () => { editingNote = true; ok.textContent = ''; };
+    save.onclick = async () => { try{ await set(ref(db, `settings/templates/${key}`), ta.value); editingNote = false; ok.textContent = 'Сохранено'; }catch(e){ alert('Не сохранилось: ' + e.message); } };
+    reset.onclick = async () => { ta.value = DEFAULT_TEMPLATES.find(t => t[0] === key)[2]; try{ await set(ref(db, `settings/templates/${key}`), null); editingNote = false; ok.textContent = 'Вернул'; }catch(e){ alert(e.message); } };
+    cp.onclick = () => copy(fillTemplate(ta.value), cp);
+    list.append(el('div', { className: 'tpl' }, el('b', { textContent: title }), ta, el('div', { className: 'tplbtns' }, save, cp, reset, ok)));
+  }
+  return [
+    el('div', { className: 'top' }, el('div', {}, el('h1', { textContent: 'Шаблоны для Авито' }),
+      el('div', { className: 'sub', textContent: 'Подстановки: {hero} имя героя, {anketa} ссылка на анкету, {demo} демо, {guests} ссылка для гостей, {link} ссылка на игру. В карточке анкеты они заполняются сами.' }))),
+    list,
+  ];
+}
+
+/* ── предпросмотр пака в стиле игры ── */
+function closePreview(){ const p = document.querySelector('.pv'); if(p) p.remove(); }
+function openPreview(board){
+  closePreview();
+  let ri = 0;
+  const grid = el('div', { className: 'pvgrid' });
+  const q = el('div', { className: 'pvq' }, el('small', { textContent: 'Нажмите на клетку, чтобы увидеть вопрос и ответ.' }));
+  const tabs = el('div', { className: 'pvtabs' });
+  const draw = () => {
+    const r = board.rounds[ri];
+    tabs.replaceChildren(...board.rounds.map((x, i) => { const b = el('button', { type: 'button', className: i === ri ? 'on' : '', textContent: x.name || `Раунд ${i + 1}` }); b.onclick = () => { ri = i; draw(); }; return b; }));
+    grid.replaceChildren(...r.categories.map(c => el('div', { className: 'pvcat', textContent: c.name })));
+    for(let row = 0; row < 5; row++){
+      for(const c of r.categories){
+        const qq = c.questions[row];
+        if(!qq){ grid.append(el('div')); continue; }
+        const cell = el('button', { type: 'button', className: 'pvcell', textContent: qq.value }, qq.modifier ? el('i', { title: MOD_LABELS[qq.modifier] }) : null);
+        cell.onclick = () => {
+          grid.querySelectorAll('.pvcell').forEach(x => x.classList.remove('sel')); cell.classList.add('sel');
+          q.replaceChildren(el('small', { textContent: `${c.name} · ${qq.value}${qq.modifier ? ' · ' + (MOD_LABELS[qq.modifier] || qq.modifier) : ''}` }),
+            el('p', { textContent: qq.question || '(пусто)' }), el('div', { className: 'a', textContent: 'Ответ: ' + (qq.answer || '(пусто)') }));
+        };
+        grid.append(cell);
+      }
+    }
+  };
+  const close = el('button', { type: 'button', className: 'close', textContent: 'Закрыть' }); close.onclick = closePreview;
+  const box = el('div', { className: 'pvbox' }, el('div', { className: 'pvtop' }, el('b', { textContent: board.title || 'Пак' }), tabs, close), grid, q);
+  const pv = el('div', { className: 'pv' }, box);
+  pv.onclick = e => { if(e.target === pv) closePreview(); };
+  document.body.append(pv);
+  draw();
+}
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closePreview(); });
+
+function voicesCard(id){
+  const f = forms[id];
+  const items = Object.entries(f.vlist || {}).sort((a, b) => (a[1].createdAt || 0) - (b[1].createdAt || 0));
+  const card = el('div', { className: 'card' }, el('h2', { textContent: `Голосовые · ${items.length}` }));
+  if(!items.length){ card.append(el('div', { className: 'muted', textContent: 'Голосовых нет.' })); return card; }
+  for(const [vid, v] of items){
+    const who = v.by === 'buyer' ? 'Покупатель' : `Гость${v.name ? ` ${v.name}` : ''}`;
+    const play = el('button', { type: 'button', className: 'btn ghost sm', textContent: `Слушать · ${v.sec || '?'} с` });
+    play.onclick = async () => {
+      play.disabled = true; play.textContent = 'Загружаю...';
+      try{
+        const s = (await get(ref(db, `voices/${id}/${vid}`))).val();
+        if(!s){ play.textContent = 'Запись не найдена'; return; }
+        const audio = el('audio', { controls: true, src: `data:${s.mime || 'audio/webm'};base64,${s.data}` });
+        play.replaceWith(audio); audio.play().catch(() => {});
+      }catch(e){ play.disabled = false; play.textContent = 'Не загрузилось, ещё раз'; }
+    };
+    card.append(el('div', { className: 'voice' }, el('div', { className: 'vt' }, el('b', { textContent: who }),
+      el('small', { textContent: `${v.field ? labelFor(f, v.by, v.field) + ' · ' : ''}${dateTime(v.createdAt)}` })), play));
+  }
+  return card;
+}
+
+/* ── пак ── */
+function packCard(formId, o){
+  const card = el('div', { className: 'card' });
+  if(!o){
+    const ta = el('textarea', { className: 'code', placeholder: 'Вставьте сюда JSON с вопросами' });
+    const err = el('div', { className: 'err', role: 'alert' });
+    const pBtn = el('button', { type: 'button', className: 'btn lilac sm', textContent: 'Скопировать промпт с анкетой' });
+    pBtn.onclick = () => copy(promptFor(formId), pBtn);
+    const create = el('button', { type: 'button', className: 'btn', textContent: 'Создать пак' });
+    create.onclick = async () => {
+      err.textContent = '';
+      let board;
+      try{ board = JSON.parse(ta.value.replace(/^\s*```(?:json)?|```\s*$/g, '')); }
+      catch(e){ err.textContent = 'Не получилось прочитать JSON: ' + e.message; return; }
+      const errors = validateBoard(board);
+      if(errors.length){ err.textContent = errors.slice(0, 15).join('\n'); return; }
+      const m = metaOf(forms[formId]), oid = randomId(12), now = Date.now();
+      create.disabled = true;
+      try{
+        await update(ref(db), {
+          [`orders/${oid}`]: { manual: true, formId, contact: m.avito || '', theme: `${occLabel(m)}: ${m.hero}`, status: 'draft_ready', createdAt: now, paidAt: now, draft: normalizeBoard(board) },
+          [`forms/${formId}/orderId`]: oid,
+        });
+      }catch(e){ err.textContent = 'Не удалось сохранить: ' + e.message; create.disabled = false; }
+    };
+    card.append(el('h2', { textContent: 'Собрать пак' }),
+      el('p', { className: 'muted', style: 'margin-bottom:12px', textContent: `1. Скопируйте промпт: в нём уже анкета и ${roundsOf(metaOf(forms[formId]))} × 30 вопросов. 2. Вставьте в чат с нейросетью. 3. Ответ вставьте сюда. Голосовые прослушайте сами и допишите важное в бриф.` }),
+      el('div', { className: 'row', style: 'margin-bottom:12px' }, pBtn), ta, err, el('div', { className: 'row', style: 'margin-top:12px' }, create));
+    return card;
+  }
+  return editorCard(f_orderId(formId), card);
+}
+const f_orderId = formId => forms[formId].orderId;
+
+function editorCard(oid, card = el('div', { className: 'card' })){
+  const o = orders[oid];
+  if(draftFor !== oid){ draft = structuredClone(o.draft || { title: '', rounds: [] }); draftFor = oid; dirty = false; }
+  const err = el('div', { className: 'err', role: 'alert' }), ok = el('div', { className: 'ok', role: 'status' });
+  const head = el('div', { className: 'top', style: 'margin-bottom:12px' }, el('h2', { textContent: 'Пак', style: 'margin:0' }),
+    pill(o.sentAt ? 'sent' : o.packId ? 'published' : 'draft'));
+  card.append(head);
+  if(o.packId){
+    const link = new URL(`./?pack=${o.packId}`, location.href).href;
+    const c = el('button', { type: 'button', className: 'btn sm', textContent: 'Копировать' }); c.onclick = () => copy(link, c);
+    const sent = el('button', { type: 'button', className: 'btn ghost sm', textContent: o.sentAt ? `Отправлена ${date(o.sentAt)}` : 'Я отправил ссылку' });
+    sent.disabled = !!o.sentAt;
+    sent.onclick = () => update(ref(db, `orders/${oid}`), { sentAt: Date.now() });
+    card.append(el('div', { className: 'linkbox' }, el('a', { href: link, target: '_blank', rel: 'noopener', textContent: link }), c),
+      el('div', { className: 'row', style: 'margin:10px 0 14px' }, sent));
+  }
+  const title = el('input', { placeholder: 'Название пака' });
+  bind(title, draft, 'title');
+  const rounds = el('div', { className: 'rounds' });
+  draft.rounds.forEach((r, ri) => {
+    const d = el('details', { open: ri === 0 }, el('summary', { textContent: `${r.name || `Раунд ${ri + 1}`} · ${r.categories.length} категорий` }));
+    for(const cat of r.categories){
+      d.append(el('div', { className: 'cat' }, bind(el('input', { 'aria-label': 'Категория' }), cat, 'name')));
+      for(const q of cat.questions){
+        d.append(el('div', { className: 'qrow' }, el('span', { className: 'val', textContent: q.value }),
+          bind(el('input', { placeholder: 'Вопрос', 'aria-label': 'Вопрос' }), q, 'question'),
+          el('div', { className: 'ans' }, bind(el('input', { placeholder: 'Ответ', 'aria-label': 'Ответ' }), q, 'answer')),
+          el('div', { className: 'ext' }, modifierSelect(q), imageInput(q))));
+      }
+    }
+    rounds.append(d);
+  });
+  const prev = el('button', { type: 'button', className: 'btn lilac sm', textContent: 'Предпросмотр как в игре' });
+  prev.onclick = () => openPreview(draft);
+  const check = el('button', { type: 'button', className: 'btn ghost sm', textContent: 'Проверить' });
+  const save = el('button', { type: 'button', className: 'btn ghost sm', textContent: 'Сохранить' });
+  const pub = el('button', { type: 'button', className: 'btn', textContent: o.packId ? 'Обновить опубликованный пак' : 'Опубликовать' });
+  const validate = () => { const e = validateBoard(draft); err.textContent = e.slice(0, 30).join('\n'); ok.textContent = e.length ? '' : 'Пак прошёл проверку.'; return !e.length; };
+  check.onclick = validate;
+  save.onclick = async () => { try{ await update(ref(db, `orders/${oid}`), { draft }); dirty = false; ok.textContent = 'Сохранено.'; err.textContent = ''; }catch(e){ err.textContent = 'Ошибка: ' + e.message; } };
+  pub.onclick = async () => {
+    if(!validate()) return;
+    if(!confirm(o.packId ? 'Обновить пак? Новые вопросы увидят те, кто откроет ссылку после этого.' : 'Опубликовать пак? Он станет доступен по ссылке.')) return;
+    try{
+      const packId = o.packId || randomId(20);
+      await set(ref(db, `packs/${packId}`), { board: normalizeBoard(draft), publishedAt: Date.now() });
+      dirty = false;
+      await update(ref(db, `orders/${oid}`), { status: 'published', packId, draft });
+    }catch(e){ err.textContent = 'Ошибка: ' + e.message; }
+  };
+  card.append(el('div', { style: 'margin-bottom:10px' }, title), rounds, err, ok, el('div', { className: 'row', style: 'margin-top:12px' }, prev, check, save, pub));
+  return card;
+}
+function bind(input, obj, key){
+  input.value = obj[key] ?? '';
+  input.oninput = () => { obj[key] = input.value; dirty = true; };
+  return input;
+}
+function imageInput(q){
+  const input = el('input', { placeholder: 'Картинка: адрес', 'aria-label': 'Адрес картинки' });
+  input.value = [].concat(q.image || []).join(' ');
+  input.oninput = () => { const v = input.value.trim(); if(v) q.image = v.split(/\s+/); else delete q.image; dirty = true; };
+  return input;
+}
+function modifierSelect(q){
+  const sel = el('select', { 'aria-label': 'Модификатор' }, el('option', { value: '', textContent: 'Без модификатора' }),
+    ...VALID_MODIFIERS.map(m => el('option', { value: m, textContent: MOD_LABELS[m] || m })));
+  sel.value = q.modifier || '';
+  sel.onchange = () => { q.modifier = sel.value || null; dirty = true; };
+  return sel;
+}
+
+function packsView(){
+  const all = Object.entries(orders).sort((a, b) => (b[1].createdAt || 0) - (a[1].createdAt || 0));
+  const tbody = el('tbody');
+  for(const [oid, o] of all){
+    const s = o.sentAt ? 'sent' : o.packId ? 'published' : 'draft';
+    const tr = el('tr', {},
+      el('td', {}, el('div', { className: 'who' }, el('span', { className: 'ava', textContent: initials(o.theme) }),
+        el('div', {}, el('b', { textContent: o.theme || 'Без названия' }), el('small', { textContent: o.contact || 'ник не указан' })))),
+      el('td', {}, pill(s)),
+      el('td', { className: 'hide-m', textContent: o.formId ? (forms[o.formId] ? 'из анкеты' : 'анкета удалена') : 'старый заказ' }),
+      el('td', { className: 'hide-m muted', textContent: date(o.createdAt) }));
+    tr.onclick = () => o.formId && forms[o.formId] ? show('form', o.formId) : show('order', oid);
+    tbody.append(tr);
+  }
+  return [
+    el('div', { className: 'top' }, el('div', {}, el('h1', { textContent: 'Все паки' }), el('div', { className: 'sub', textContent: 'Включая старые заказы без анкеты.' }))),
+    el('div', { className: 'card' }, all.length ? el('table', { className: 'table' },
+      el('thead', {}, el('tr', {}, ...['Пак', 'Статус', 'Откуда', 'Создан'].map(t => el('th', { textContent: t })))), tbody)
+      : el('div', { className: 'empty', textContent: 'Паков пока нет.' })),
+  ];
+}
+function orderView(oid){
+  const o = orders[oid];
+  const back = el('button', { type: 'button', className: 'back', textContent: '← Назад к пакам' }); back.onclick = () => show('packs');
+  return [el('div', { className: 'top' }, back), el('div', { className: 'card', style: 'margin-bottom:14px' },
+    el('h2', { textContent: o.theme || 'Пак' }), el('div', { className: 'muted', textContent: `Авито: ${o.contact || '—'} · создан ${dateTime(o.createdAt)}` })), editorCard(oid)];
+}
+
+/* ── уведомления в браузере, пока панель открыта ── */
+function notifyLabel(){
+  const p = window.Notification ? Notification.permission : 'denied';
+  $('notifyBtn').textContent = p === 'granted' ? 'Уведомления включены' : p === 'denied' ? 'Уведомления запрещены' : 'Включить уведомления';
+  $('notifyBtn').disabled = p !== 'default';
+}
+$('notifyBtn').onclick = async () => { if(window.Notification){ await Notification.requestPermission(); notifyLabel(); } };
+function notifyNewForms(){
+  const done = new Set(Object.entries(forms).filter(([, f]) => (f.buyer || {}).done).map(([id]) => id));
+  if(knownDone){
+    for(const id of done){
+      if(knownDone.has(id)) continue;
+      const m = metaOf(forms[id]);
+      if(window.Notification && Notification.permission === 'granted'){
+        const n = new Notification('Новая анкета', { body: `${m.hero || 'Без имени'} · ${occLabel(m)} · ${m.avito || 'ник не указан'}`, icon: '/favicon.png' });
+        n.onclick = () => { window.focus(); show('form', id); n.close(); };
+      }
+    }
+  }
+  knownDone = done;
+}
+notifyLabel();
+
+/* ── вход и подписки ── */
+document.querySelectorAll('.nav[data-view]').forEach(b => b.onclick = () => show(b.dataset.view));
+$('logout').onclick = () => signOut(auth);
+$('loginForm').onsubmit = async e => {
+  e.preventDefault(); $('loginErr').textContent = '';
+  try{ await signInWithEmailAndPassword(auth, $('email').value.trim(), $('password').value); }
+  catch(err){ $('loginErr').textContent = 'Не удалось войти. Проверьте email и пароль.'; }
+};
+window.addEventListener('beforeunload', e => { if(dirty) e.preventDefault(); });
+
+onAuthStateChanged(auth, user => {
+  stops.forEach(s => s()); stops = [];
+  const signedIn = !!user && !user.isAnonymous;   // анонимный вход из игры панель не открывает
+  $('loginView').hidden = signedIn; $('appView').hidden = !signedIn;
+  if(!signedIn){ forms = {}; orders = {}; return; }
+  $('who').textContent = user.email || '';
+  const fail = what => () => { $('main').replaceChildren(el('div', { className: 'card err', textContent: `Нет доступа к ${what}. Проверьте правила базы.` })); };
+  stops.push(onValue(ref(db, 'forms'), s => { forms = s.val() || {}; notifyNewForms(); render(); }, fail('анкетам')));
+  stops.push(onValue(ref(db, 'settings/templates'), s => { templates = s.val() || {}; }, () => {}));
+  stops.push(onValue(ref(db, 'orders'), s => { orders = s.val() || {}; render(); }, fail('заказам')));
+  render(true);
+});
+</script>
+</body>
+</html>

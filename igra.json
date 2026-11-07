@@ -1,0 +1,465 @@
+{
+ "title": "Новая игра",
+ "rounds": [
+  {
+   "name": "Раунд 1",
+   "categories": [
+    {
+     "name": "ПРОДОЛЖИ ПОСЛОВИЦУ",
+     "questions": [
+      {
+       "value": 100,
+       "question": "Дай дураку стеклянный хуй...",
+       "answer": "не разобьет, так потеряет",
+       "modifier": null
+      },
+      {
+       "value": 200,
+       "question": "За неимением горничной...",
+       "answer": "ебут дворника",
+       "modifier": null
+      },
+      {
+       "value": 300,
+       "question": "Книжки в сумке...",
+       "answer": "хуй на думке",
+       "modifier": "flip_sign"
+      },
+      {
+       "value": 400,
+       "question": "Кошка бросила котят...",
+       "answer": "пусть ебутся, как хотят",
+       "modifier": null
+      },
+      {
+       "value": 500,
+       "question": "К чужому-то берегу всё корабли да барки, а к нашему...",
+       "answer": "всё хуи да палки",
+       "modifier": null
+      }
+     ]
+    },
+    {
+     "name": "СКОЛЬКО БЛЯ",
+     "questions": [
+      {
+       "value": 100,
+       "question": "Сколько раз упоминалось слово «бля»?",
+       "answer": "2317",
+       "modifier": null
+      },
+      {
+       "value": 200,
+       "question": "Сколько раз упоминалось слово «пиздец»?",
+       "answer": "1213",
+       "modifier": null
+      },
+      {
+       "value": 300,
+       "question": "Сколько раз упоминалось слово «Лиза»?",
+       "answer": "652",
+       "modifier": null
+      },
+      {
+       "value": 400,
+       "question": "Сколько раз упоминалось слово «сука»?",
+       "answer": "481",
+       "modifier": null
+      },
+      {
+       "value": 500,
+       "question": "Сколько раз упоминалось слово «ахуеть»?",
+       "answer": "193",
+       "modifier": "take_points"
+      }
+     ]
+    },
+    {
+     "name": "СЛОВАРНЫЕ СЛОВА",
+     "questions": [
+      {
+       "value": 100,
+       "question": "Назови 3 матерных слова на букву П",
+       "answer": "решает зал",
+       "modifier": null
+      },
+      {
+       "value": 200,
+       "question": "Назови 3 матерных слова на букву А",
+       "answer": "решает зал",
+       "modifier": null
+      },
+      {
+       "value": 300,
+       "question": "Назови 3 матерных слова на букву Х",
+       "answer": "решает зал",
+       "modifier": null
+      },
+      {
+       "value": 400,
+       "question": "Назови 3 матерных слова на букву У",
+       "answer": "решает зал",
+       "modifier": "give_points"
+      },
+      {
+       "value": 500,
+       "question": "Назови 3 матерных слова на букву О",
+       "answer": "решает зал",
+       "modifier": null
+      }
+     ]
+    },
+    {
+     "name": "ГОВОРЯЩИЕ ГОЛОВЫ",
+     "questions": [
+      {
+       "value": 100,
+       "question": "Кто это сказал? «Мне сначала бывшую супругу замуж надо выдать, а потом я уж о себе подумаю». Фраза прозвучала в ответ на вопрос о том, когда страна увидит новую первую леди. А) Сергей Лавров Б) Владимир Путин В) Владимир Жириновский Г) Дмитрий Медведев",
+       "answer": "Б — Владимир Путин",
+       "modifier": "double"
+      },
+      {
+       "value": 200,
+       "question": "Закончи цитату Владимира Жириновского: «Не надо заставлять детей учить английский. Пускай лучше изучают…» А) историю России Б) русский язык В) военное дело Г) автомат Калашникова",
+       "answer": "Г — автомат Калашникова (полная цитата: «И тогда скоро весь мир заговорит по-русски»)",
+       "modifier": null
+      },
+      {
+       "value": 300,
+       "question": "Вставь пропущенное слово. Цитата Сергея Лаврова: «Наши западные партнёры забывают, что при наличии умения из большого свинства можно получить хорошую ______». А) колбасу Б) ветчину В) отбивную Г) закуску",
+       "answer": "Б — ветчину",
+       "modifier": null
+      },
+      {
+       "value": 400,
+       "question": "Кто это сказал? «Диктатура — это запор, демократия — понос. Выбирайте, что вам больше нравится». А) Сергей Лавров Б) Владимир Путин В) Владимир Жириновский Г) Виктор Черномырдин",
+       "answer": "В — Жириновский",
+       "modifier": null
+      },
+      {
+       "value": 500,
+       "question": "Кто это сказал? «Изоляция — это термин, придуманный нашими западными партнёрами». А) Владимир Путин Б) Владимир Жириновский В) Сергей Лавров Г) Геннадий Зюганов",
+       "answer": "В — Лавров",
+       "modifier": null
+      }
+     ]
+    },
+    {
+     "name": "МУЗЫКА",
+     "questions": [
+      {
+       "value": 100,
+       "question": "В каком году вышел трек Sexy Bitch Дэвида Гетты при участии Akon? А) 2007 Б) 2008 В) 2009 Г) 2011",
+       "answer": "В — 2009",
+       "modifier": null
+      },
+      {
+       "value": 200,
+       "question": "Кто написал музыку и слова песни «Боже, какой пустяк», ставшей известной в исполнении Александра Иванова? А) Александр Иванов Б) Сергей Трофимов В) Игорь Николаев Г) Владимир Пресняков",
+       "answer": "Б — Сергей Трофимов (написана в 1989 году, в исполнении Иванова вошла в альбом 1997 года)",
+       "modifier": "give_points"
+      },
+      {
+       "value": 300,
+       "question": "Что, согласно объяснению Михаила Шуфутинского, означает слово «Марджанджа»? А) «Моя любовь» Б) «Танцуй, девушка!» В) «Южная ночь» Г) «Вернись ко мне»",
+       "answer": "Б — «Танцуй, девушка!» (с цыганского)",
+       "modifier": null
+      },
+      {
+       "value": 400,
+       "question": "Кто участвовал в международной версии Welcome to St. Tropez, выпущенной в 2011 году? А) David Guetta, Тимати и Rihanna Б) DJ Smash, Тимати и Akon В) DJ Antoine, Тимати и Kalenna Г) Calvin Harris, Тимати и Blue Marine",
+       "answer": "В — DJ Antoine, Тимати и Kalenna",
+       "modifier": null
+      },
+      {
+       "value": 500,
+       "question": "Какой коллектив сопровождал Анну Герман при исполнении песни «Реченька туманная»? А) ВИА «Самоцветы» Б) ансамбль «Песняры» В) инструментальный ансамбль «Мелодия» Г) оркестр Олега Лундстрема",
+       "answer": "В — инструментальный ансамбль «Мелодия»",
+       "modifier": null
+      }
+     ]
+    },
+    {
+     "name": "ПДД",
+     "questions": [
+      {
+       "value": 100,
+       "question": "Выбери правильный вариант",
+       "image": "images/photo1.jpg",
+       "answer": "2",
+       "modifier": null
+      },
+      {
+       "value": 200,
+       "question": "Выбери правильный вариант",
+       "image": "images/photo2.jpg",
+       "answer": "1",
+       "modifier": null
+      },
+      {
+       "value": 300,
+       "question": "Выбери правильный вариант",
+       "image": "images/photo3.jpg",
+       "answer": "3",
+       "modifier": null
+      },
+      {
+       "value": 400,
+       "question": "Выбери правильный вариант",
+       "image": "images/photo4.jpg",
+       "answer": "2",
+       "modifier": null
+      },
+      {
+       "value": 500,
+       "question": "Выбери правильный вариант",
+       "image": "images/photo5.jpg",
+       "answer": "1",
+       "modifier": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Раунд 2",
+   "categories": [
+    {
+     "name": "УГАДАЙ ЦВЕТОК",
+     "questions": [
+      {
+       "value": 200,
+       "question": "Какой цветок на фото?",
+       "image": "images/photo6.jpg",
+       "answer": "Вереск",
+       "modifier": null
+      },
+      {
+       "value": 400,
+       "question": "Какой цветок на фото?",
+       "image": "images/photo7.jpg",
+       "answer": "Лох серебристый",
+       "modifier": null
+      },
+      {
+       "value": 600,
+       "question": "Какой цветок на фото?",
+       "image": "images/photo8.jpg",
+       "answer": "Кровохлебка тупая",
+       "modifier": "flip_sign"
+      },
+      {
+       "value": 800,
+       "question": "Какой цветок на фото?",
+       "image": "images/photo9.jpg",
+       "answer": "Трахелиум",
+       "modifier": null
+      },
+      {
+       "value": 1000,
+       "question": "Какой цветок на фото?",
+       "image": "images/photo10.jpg",
+       "answer": "Каллы",
+       "modifier": "double"
+      }
+     ]
+    },
+    {
+     "name": "СТАРЫЕ МЕМЫ",
+     "questions": [
+      {
+       "value": 200,
+       "question": "Назови мем",
+       "image": "images/photo11.jpg",
+       "answer": "Смотря какие фабрикс, какие дитейлс",
+       "modifier": null
+      },
+      {
+       "value": 400,
+       "question": "Назови мем",
+       "image": "images/photo12.jpg",
+       "answer": "Рекламное лицо мази календула",
+       "modifier": "give_points"
+      },
+      {
+       "value": 600,
+       "question": "Назови мем",
+       "image": "images/photo13.jpg",
+       "answer": "Мне к 13:30, время 13:40",
+       "modifier": null
+      },
+      {
+       "value": 800,
+       "question": "Назови мем",
+       "image": "images/photo14.jpg",
+       "answer": "Майнкрафт больше не работает, я не местный",
+       "modifier": null
+      },
+      {
+       "value": 1000,
+       "question": "Назови мем",
+       "image": "images/photo15.jpg",
+       "answer": "Борщик с капусткой, но не красный",
+       "modifier": null
+      }
+     ]
+    },
+    {
+     "name": "РЕГИОНАЛЬНЫЕ НАЗВАНИЯ",
+     "questions": [
+      {
+       "value": 200,
+       "question": "Что означает слово «синенькие»?",
+       "answer": "Баклажаны",
+       "modifier": null
+      },
+      {
+       "value": 400,
+       "question": "Что означает слово «хабарик»?",
+       "answer": "Окурок",
+       "modifier": null
+      },
+      {
+       "value": 600,
+       "question": "Что означает слово «путяга»?",
+       "answer": "ПТУ",
+       "modifier": null
+      },
+      {
+       "value": 800,
+       "question": "Что означает слово «гаманок»?",
+       "answer": "Кошелек",
+       "modifier": null
+      },
+      {
+       "value": 1000,
+       "question": "Что означает слово «бабайка»?",
+       "answer": "Контейнер",
+       "modifier": null
+      }
+     ]
+    },
+    {
+     "name": "ВЕРХНЯЯ ОДЕЖДА",
+     "questions": [
+      {
+       "value": 200,
+       "question": "Какая это верхняя одежда?",
+       "image": "images/photo16.jpg",
+       "answer": "Пальто",
+       "modifier": null
+      },
+      {
+       "value": 400,
+       "question": "Какая это верхняя одежда?",
+       "image": "images/photo17.jpg",
+       "answer": "Дубленка",
+       "modifier": null
+      },
+      {
+       "value": 600,
+       "question": "Какая это верхняя одежда?",
+       "image": "images/photo18.jpg",
+       "answer": "Бомбер",
+       "modifier": "take_points"
+      },
+      {
+       "value": 800,
+       "question": "Какая это верхняя одежда?",
+       "image": "images/photo19.jpg",
+       "answer": "Анорак",
+       "modifier": null
+      },
+      {
+       "value": 1000,
+       "question": "Какая это верхняя одежда?",
+       "image": "images/photo20.jpg",
+       "answer": "Пончо",
+       "modifier": null
+      }
+     ]
+    },
+    {
+     "name": "СТРАННЫЕ ШТУКИ",
+     "questions": [
+      {
+       "value": 200,
+       "question": "Что изображено на фото?",
+       "image": "images/photo21.jpg",
+       "answer": "Трельяж",
+       "modifier": null
+      },
+      {
+       "value": 400,
+       "question": "Что изображено на фото?",
+       "image": "images/photo22.jpg",
+       "answer": "Саше",
+       "modifier": null
+      },
+      {
+       "value": 600,
+       "question": "Что изображено на фото?",
+       "image": "images/photo23.jpg",
+       "answer": "Варган",
+       "modifier": null
+      },
+      {
+       "value": 800,
+       "question": "Что изображено на фото?",
+       "image": "images/photo24.jpg",
+       "answer": "Виадук",
+       "modifier": null
+      },
+      {
+       "value": 1000,
+       "question": "Что изображено на фото?",
+       "image": "images/photo25.jpg",
+       "answer": "Чаша Генуя",
+       "modifier": null
+      }
+     ]
+    },
+    {
+     "name": "ТРАНСГЕНДЕРЫ",
+     "questions": [
+      {
+       "value": 200,
+       "question": "Какая актриса изображена на фото?",
+       "image": "images/photo26.jpg",
+       "answer": "Скарлетт Йоханссон",
+       "modifier": null
+      },
+      {
+       "value": 400,
+       "question": "Какая актриса изображена на фото?",
+       "image": "images/photo27.jpg",
+       "answer": "Анджелина Джоли",
+       "modifier": null
+      },
+      {
+       "value": 600,
+       "question": "Какая актриса изображена на фото?",
+       "image": "images/photo28.jpg",
+       "answer": "Зендея",
+       "modifier": null
+      },
+      {
+       "value": 800,
+       "question": "Какая актриса изображена на фото?",
+       "image": "images/photo29.jpg",
+       "answer": "Энн Хэтэуэй",
+       "modifier": "double"
+      },
+      {
+       "value": 1000,
+       "question": "Какая актриса изображена на фото?",
+       "image": "images/photo30.jpg",
+       "answer": "Кира Найтли",
+       "modifier": null
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

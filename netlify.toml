@@ -1,0 +1,26 @@
+# Netlify configuration for "Своя Игра"
+# Игра и страницы статические. Серверная часть: заказ, фото, генерация, оплата.
+
+[build]
+  # Корень репозитория публикуется как есть
+  publish = "."
+  # Команда сборки отсутствует: зависимости функций Netlify ставит сам из package.json
+  command = ""
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# SPA-подобный фолбэк: любой путь (включая ?room=КОД) отдаёт index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Базовые заголовки безопасности
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

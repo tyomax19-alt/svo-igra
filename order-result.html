@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="/favicon.ico?v=2" sizes="any">
+<link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
+<meta name="theme-color" content="#0f3b40">
+<meta name="robots" content="noindex">
+<title>Заказ — Игра про вас</title>
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<main class="wrap">
+  <h1 id="title">Спасибо за заказ</h1>
+  <p class="lead" id="text">Когда платёж подтвердится, мы подготовим вопросы, проверим их и пришлём ссылку на игру в сообщении на Авито.</p>
+  <div class="foot"><a href="./">На главную</a></div>
+</main>
+<script>
+if(new URLSearchParams(location.search).get('status')==='fail'){
+  document.getElementById('title').textContent='Оплата не прошла';
+  document.getElementById('text').textContent='Деньги не списаны. Напишите нам на Авито, и мы поможем оформить заказ.';
+}
+</script>
+</body>
+</html>
