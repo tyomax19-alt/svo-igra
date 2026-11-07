@@ -340,7 +340,7 @@ $('copyPrompt').addEventListener('click',async()=>{
 let forms = {};
 let selectedForm = null;
 let stopForms = null;
-const anketaUrl = new URL('anketa.html', location.href).href;
+const anketaUrl = new URL('anketa', location.href).href;
 $('anketaLink').textContent = anketaUrl; $('anketaLink').href = anketaUrl;
 
 function formTitle(f){
@@ -415,7 +415,7 @@ function renderFormDetail(){
     $('npContact').value=m.avito||''; $('npTheme').value=formTitle(f);
     $('newPack').scrollIntoView({behavior:'smooth'});
   });
-  const guestLink=new URL(`anketa.html?z=${selectedForm}&g=1`,location.href).href;
+  const guestLink=new URL(`anketa?z=${selectedForm}&g=1`,location.href).href;
   const copyGuest=el('button',{type:'button',className:'btn ghost',textContent:'Ссылка для гостей'});
   copyGuest.addEventListener('click',async()=>{ await navigator.clipboard.writeText(guestLink); copyGuest.textContent='Скопирована'; });
   const del=el('button',{type:'button',className:'btn ghost',textContent:'Удалить анкету'});

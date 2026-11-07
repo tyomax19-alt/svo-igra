@@ -133,7 +133,7 @@ function newId(){
   return [...crypto.getRandomValues(new Uint8Array(12))].map(b => chars[b % chars.length]).join('');
 }
 function linkFor(id, guest){
-  return new URL(`anketa.html?z=${id}${guest ? '&g=1' : ''}`, location.href).href;
+  return new URL(`anketa?z=${id}${guest ? '&g=1' : ''}`, location.href).href;
 }
 function field(id, label, hint, value){
   const ta = Object.assign(document.createElement('textarea'), { id: 'f_' + id, maxLength: 2500, value: value || '' });
