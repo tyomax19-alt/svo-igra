@@ -601,7 +601,7 @@ async function start(user){
   if(params.get('g') === '1' || meta.uid !== user.uid){ renderGuest(); return; }
   try{ localStorage.setItem('anketa-last', formId); }catch(e){}
   try{ answers = (await get(ref(db, `forms/${formId}/buyer`))).val() || {}; }catch(err){ answers = {}; }
-  try{ const vl = (await get(ref(db, `forms/${formId}/vlist`))).val() || {}; sentVoices = Object.entries(vl).filter(([, v]) => v.uid === user.uid).map(([id, v]) => ({ id, field: v.field, sec: v.sec })); }catch(err){ sentVoices = []; }
+  try{ const vl = (await get(ref(db, `forms/${formId}/vlist`))).val() || {}; sentVoices = Object.entries(vl).filter(([, v]) => v.uid === user.uid && v.by !== 'guest').map(([id, v]) => ({ id, field: v.field, sec: v.sec, by: v.by })); }catch(err){ sentVoices = []; }
   page = 0; renderStep2();
 }
 // уже вошедшего (например, владельца) не выбиваем анонимным входом
