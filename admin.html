@@ -57,6 +57,13 @@
       </div>
     </form>
     <section class="card">
+      <h2>Анкеты</h2>
+      <p class="muted" style="margin-bottom:10px">Ссылка для покупателей: <a id="anketaLink" style="color:inherit"></a></p>
+      <div class="err" id="formsErr" role="alert"></div>
+      <div class="orders" id="forms"></div>
+    </section>
+    <section class="card" id="formDetail" hidden></section>
+    <section class="card">
       <h2>Заказы</h2>
       <div class="err" id="listErr" role="alert"></div>
       <div class="orders" id="orders"></div>
@@ -79,7 +86,8 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, onValue, set, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, onValue, set, update, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { OCCASIONS, BUYER, BUYER_END, GUEST, setOf } from "./anketa-schema.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { validateBoard, normalizeBoard, VALID_MODIFIERS } from "./pack-validator.js";
 import { AGE_GROUPS, DIFFICULTIES, LANGUAGES } from "./order-schema.js";
@@ -302,6 +310,71 @@ $('copyPrompt').addEventListener('click',async()=>{
   $('npOk').textContent='Промпт скопирован. Допишите бриф и вставьте в чат с нейросетью.';
 });
 
+/* ── анкеты ── */
+let forms = {};
+let selectedForm = null;
+let stopForms = null;
+const anketaUrl = new URL('anketa.html', location.href).href;
+$('anketaLink').textContent = anketaUrl; $('anketaLink').href = anketaUrl;
+
+function formTitle(f){
+  const m = f.meta || {};
+  return `${(OCCASIONS[m.occasion]||{}).label||'Анкета'}: ${m.hero||''}`;
+}
+function renderForms(){
+  const list=$('forms'); list.replaceChildren();
+  const ids=Object.keys(forms).sort((a,b)=>((forms[b].meta||{}).createdAt||0)-((forms[a].meta||{}).createdAt||0));
+  if(!ids.length){ list.append(el('p',{className:'muted',textContent:'Анкет пока нет.'})); return; }
+  for(const id of ids){
+    const f=forms[id], m=f.meta||{};
+    const filled=Object.keys(f.buyer||{}).filter(k=>k!=='updatedAt'&&f.buyer[k]).length;
+    const guests=Object.keys(f.guests||{}).length;
+    const btn=el('button',{type:'button',className:'order-btn'+(id===selectedForm?' sel':'')},
+      el('span',{textContent:`${new Date(m.createdAt||0).toLocaleDateString('ru-RU')} · ${m.avito||'без имени'} · ${formTitle(f)}`}),
+      el('span',{className:'status',textContent:`${id} · ответов ${filled} · гостей ${guests}`}));
+    btn.addEventListener('click',()=>{ selectedForm=id; renderForms(); renderFormDetail(); });
+    list.append(btn);
+  }
+}
+// весь текст анкеты одним куском: удобно отдать тому, кто собирает пак
+function formText(id){
+  const f=forms[id], m=f.meta||{}, s=setOf(m.occasion), b=f.buyer||{};
+  const lines=[`Анкета ${id}`,`Повод: ${(OCCASIONS[m.occasion]||{}).label||m.occasion}`,`Герой: ${m.hero}`,`Игроков: ${m.players>10?'больше 10':m.players}`,`Ник на Авито: ${m.avito||'-'}`,''];
+  for(const [k,label] of [...(BUYER[s]||[]),...BUYER_END,['topics','Общие темы']]) if(b[k]) lines.push(`${label}:\n${b[k]}`,'');
+  const gs=Object.values(f.guests||{});
+  gs.forEach((g,i)=>{
+    lines.push(`Гость ${i+1}${g.name?` (${g.name})`:''}:`);
+    for(const [k,label] of GUEST[s]||[]) if(g[k]) lines.push(`${label}: ${g[k]}`);
+    lines.push('');
+  });
+  return lines.join('\n').trim();
+}
+function renderFormDetail(){
+  const box=$('formDetail'); const f=forms[selectedForm];
+  if(!f){ box.hidden=true; return; }
+  box.hidden=false;
+  const text=formText(selectedForm);
+  const pre=el('pre',{textContent:text,style:'white-space:pre-wrap;font:inherit;font-size:17px;background:var(--s2);padding:14px;margin:10px 0;max-height:520px;overflow:auto'});
+  const copy=el('button',{type:'button',className:'btn',textContent:'Копировать всё'});
+  copy.addEventListener('click',async()=>{ await navigator.clipboard.writeText(text); copy.textContent='Скопировано'; });
+  const toPack=el('button',{type:'button',className:'btn ghost',textContent:'Заполнить «Новый пак»'});
+  toPack.addEventListener('click',()=>{
+    const m=f.meta||{};
+    $('npContact').value=m.avito||''; $('npTheme').value=formTitle(f);
+    $('newPack').scrollIntoView({behavior:'smooth'});
+  });
+  const guestLink=new URL(`anketa.html?z=${selectedForm}&g=1`,location.href).href;
+  const copyGuest=el('button',{type:'button',className:'btn ghost',textContent:'Ссылка для гостей'});
+  copyGuest.addEventListener('click',async()=>{ await navigator.clipboard.writeText(guestLink); copyGuest.textContent='Скопирована'; });
+  const del=el('button',{type:'button',className:'btn ghost',textContent:'Удалить анкету'});
+  del.addEventListener('click',async()=>{
+    if(!confirm('Удалить анкету со всеми ответами? Вернуть её будет нельзя.')) return;
+    try{ await remove(ref(db,`forms/${selectedForm}`)); selectedForm=null; renderFormDetail(); }
+    catch(e){ alert('Не удалось удалить: '+e.message); }
+  });
+  box.replaceChildren(el('h2',{textContent:formTitle(f)}),pre,el('div',{className:'actions'},copy,toPack,copyGuest,del));
+}
+
 $('check').addEventListener('click',validateDraft);
 $('save').addEventListener('click',guarded(saveDraft));
 $('publish').addEventListener('click',guarded(publish));
@@ -315,10 +388,17 @@ window.addEventListener('beforeunload',e=>{ if(dirty) e.preventDefault(); });
 
 onAuthStateChanged(auth,user=>{
   if(stopOrders){ stopOrders(); stopOrders=null; }
+  if(stopForms){ stopForms(); stopForms=null; }
   // в этом браузере мог остаться анонимный вход из игры: он панель не открывает
   const signedIn = !!user && !user.isAnonymous;
   $('loginCard').hidden=signedIn; $('panel').hidden=!signedIn;
-  if(!signedIn){ orders={}; selectedId=null; draft=null; dirty=false; return; }
+  if(!signedIn){ orders={}; selectedId=null; draft=null; dirty=false; forms={}; selectedForm=null; return; }
+  stopForms=onValue(ref(db,'forms'),snap=>{
+    $('formsErr').textContent='';
+    forms=snap.val()||{};
+    renderForms();
+    if(selectedForm) renderFormDetail();
+  },()=>{ $('formsErr').textContent='Нет доступа к анкетам. Опубликуйте новые правила базы.'; });
   stopOrders=onValue(ref(db,'orders'),snap=>{
     $('listErr').textContent='';
     orders=snap.val()||{};

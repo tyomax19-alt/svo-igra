@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Анкета — Игра про вас</title>
+<link rel="stylesheet" href="site.css">
+<style>
+.top{ display:flex; align-items:flex-end; justify-content:space-between; gap:16px; }
+.top img{ width:96px; height:96px; flex:none; image-rendering:pixelated; }
+.steps{ font-weight:600; color:var(--dim2); margin-bottom:8px; }
+.occ{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; margin:8px 0 18px; }
+.occ label{ display:flex; align-items:center; background:var(--s2); padding:14px; font-weight:600; cursor:pointer; clip-path:polygon(0 6px,6px 6px,6px 0,calc(100% - 6px) 0,calc(100% - 6px) 6px,100% 6px,100% calc(100% - 6px),calc(100% - 6px) calc(100% - 6px),calc(100% - 6px) 100%,6px 100%,6px calc(100% - 6px),0 calc(100% - 6px)); }
+.occ label:has(input:checked){ background:var(--red); color:var(--ink); }
+.occ input{ position:absolute; opacity:0; pointer-events:none; }
+.q{ margin-bottom:18px; }
+.q b{ display:block; font-size:19px; }
+.q small{ display:block; color:var(--dim2); font-size:15px; margin-top:2px; }
+.q textarea{ min-height:96px; resize:vertical; }
+.topics{ display:flex; flex-wrap:wrap; gap:8px 18px; margin-top:8px; }
+.topics label{ display:flex; align-items:center; font-size:17px; }
+.saved{ color:var(--dim2); font-size:15px; min-height:20px; }
+.code{ font-family:var(--pixel); font-weight:700; font-size:clamp(40px,12vw,64px); line-height:1; color:var(--red); letter-spacing:.04em; margin:6px 0 14px; overflow-wrap:anywhere; }
+.linkrow{ display:flex; gap:8px; }
+.linkrow input{ margin-top:0; }
+.linkrow .btn{ flex:none; }
+.note{ color:var(--dim2); font-size:15px; margin-top:22px; }
+@media (max-width:560px){ .top img{ width:72px; height:72px; } .linkrow{ flex-direction:column; } }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="top"><h1 id="title">Анкета</h1><img src="pixel/host.svg" alt="" width="96" height="96"></div>
+  <p class="lead" id="lead">Расскажите про своих, а я соберу из этого игру. Займёт минут десять, писать можно коротко.</p>
+
+  <!-- шаг 1: повод и герой -->
+  <form class="card" id="step1" hidden>
+    <div class="steps">Шаг 1 из 3</div>
+    <h2>Какой повод</h2>
+    <div class="occ" id="occ"></div>
+    <label class="f"><span id="heroLabel">Кто герой игры?</span><input id="hero" maxlength="80" autocomplete="off" required></label>
+    <div class="row">
+      <label class="f">Сколько будет игроков
+        <select id="players"></select>
+      </label>
+      <label class="f">Ваше имя на Авито <input id="avito" maxlength="80" autocomplete="off" placeholder="Чтобы я понял, чья анкета"></label>
+    </div>
+    <div class="err" id="err1" role="alert"></div>
+    <button class="btn block" type="submit" id="next1">Дальше</button>
+  </form>
+
+  <!-- шаг 2 и 3: вопросы -->
+  <form class="card" id="step2" hidden>
+    <div class="steps" id="steps2">Шаг 2 из 3</div>
+    <h2 id="h2">Истории</h2>
+    <p class="muted" style="margin-bottom:16px">Всё необязательно, но чем больше подробностей, тем смешнее вопросы. Фамилии не нужны, имена можно поменять.</p>
+    <div id="fields"></div>
+    <div class="saved" id="saved" role="status"></div>
+    <div class="err" id="err2" role="alert"></div>
+    <div class="row" style="gap:10px">
+      <button class="btn ghost" type="button" id="back2" hidden>Назад</button>
+      <button class="btn" type="submit" id="next2">Дальше</button>
+    </div>
+  </form>
+
+  <!-- готово -->
+  <section class="card" id="done" hidden>
+    <h2>Готово</h2>
+    <p>Напишите этот код в чат на Авито:</p>
+    <div class="code" id="code"></div>
+    <p style="margin-bottom:8px"><b>Ссылка для гостей.</b> Отправьте её друзьям: каждый тайно добавит свою историю. Герою её не показывайте.</p>
+    <div class="linkrow"><input id="guestLink" readonly><button class="btn" type="button" id="copyGuest">Скопировать</button></div>
+    <p class="note">Дописать анкету можно позже: откройте эту страницу снова на этом же телефоне.</p>
+    <button class="btn ghost" type="button" id="edit" style="margin-top:12px">Дописать ответы</button>
+  </section>
+
+  <!-- гость -->
+  <form class="card" id="guest" hidden>
+    <label class="f">Ваше имя <input id="gname" maxlength="80" autocomplete="off" placeholder="Можно не писать"></label>
+    <div id="gfields"></div>
+    <div class="err" id="errg" role="alert"></div>
+    <button class="btn block" type="submit" id="gsend">Отправить</button>
+  </form>
+  <section class="card" id="gdone" hidden>
+    <h2>Спасибо</h2>
+    <p>История уже у организатора. Если вспомнили ещё одну, отправьте и её.</p>
+    <button class="btn ghost" type="button" id="gmore" style="margin-top:12px">Добавить ещё</button>
+  </section>
+
+  <div class="err" id="fatal" role="alert"></div>
+  <p class="note">Ответы видит только тот, кто делает игру. Анкету удалим после игры или по вашей просьбе.</p>
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, get, set, update, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { OCCASIONS, HERO_LABEL, TOPICS, BUYER, BUYER_END, GUEST, setOf } from "./anketa-schema.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyD2BJ0Stblry4i3wD_ml0d7WqVsPDwW8RM",
+  authDomain: "svoua-igra.firebaseapp.com",
+  databaseURL: "https://svoua-igra-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "svoua-igra"
+});
+const db = getDatabase(app);
+const auth = getAuth(app);
+const $ = id => document.getElementById(id);
+const show = (...ids) => ['step1','step2','done','guest','gdone'].forEach(s => $(s).hidden = !ids.includes(s));
+
+const params = new URLSearchParams(location.search);
+let formId = /^[a-z0-9]{12}$/.test(params.get('z') || '') ? params.get('z') : null;
+let meta = null;
+let answers = {};
+let page = 0;           // 0: истории, 1: границы
+
+function newId(){
+  const chars = 'abcdefghijkmnpqrstuvwxyz23456789';
+  return [...crypto.getRandomValues(new Uint8Array(12))].map(b => chars[b % chars.length]).join('');
+}
+function linkFor(id, guest){
+  return new URL(`anketa.html?z=${id}${guest ? '&g=1' : ''}`, location.href).href;
+}
+function field(id, label, hint, value){
+  const ta = Object.assign(document.createElement('textarea'), { id: 'f_' + id, maxLength: 2500, value: value || '' });
+  ta.dataset.key = id;
+  const wrap = document.createElement('label');
+  wrap.className = 'q';
+  wrap.append(Object.assign(document.createElement('b'), { textContent: label }),
+              Object.assign(document.createElement('small'), { textContent: hint }), ta);
+  return wrap;
+}
+
+/* ── шаг 1 ── */
+function renderStep1(){
+  $('occ').replaceChildren(...Object.entries(OCCASIONS).map(([k, o], i) => {
+    const l = document.createElement('label');
+    const r = Object.assign(document.createElement('input'), { type: 'radio', name: 'occ', value: k, checked: i === 0 });
+    r.addEventListener('change', syncHeroLabel);
+    l.append(r, o.label);
+    return l;
+  }));
+  const sel = $('players');
+  for(let n = 2; n <= 10; n++) sel.append(new Option(String(n), n));
+  sel.append(new Option('Больше 10', 11));
+  sel.value = '6';
+  syncHeroLabel();
+  show('step1');
+}
+function occValue(){ return (document.querySelector('input[name=occ]:checked') || {}).value || 'other'; }
+function syncHeroLabel(){ $('heroLabel').textContent = HERO_LABEL[setOf(occValue())]; }
+
+$('step1').addEventListener('submit', async e => {
+  e.preventDefault();
+  const hero = $('hero').value.trim();
+  if(!hero){ $('err1').textContent = 'Напишите, про кого игра.'; return; }
+  $('next1').disabled = true; $('err1').textContent = '';
+  const id = newId();
+  const m = { occasion: occValue(), hero, players: Number($('players').value), avito: $('avito').value.trim(), uid: auth.currentUser.uid, createdAt: serverTimestamp() };
+  try{
+    await set(ref(db, `forms/${id}/meta`), m);
+    formId = id; meta = m; answers = {};
+    history.replaceState(null, '', `?z=${id}`);
+    try{ localStorage.setItem('anketa-last', id); }catch(err){}
+    page = 0; renderStep2();
+  }catch(err){
+    $('err1').textContent = 'Не получилось сохранить. Проверьте интернет и попробуйте ещё раз.';
+    $('next1').disabled = false;
+  }
+});
+
+/* ── шаг 2 и 3 ── */
+function renderStep2(){
+  const set_ = setOf(meta.occasion);
+  $('title').textContent = meta.hero;
+  $('lead').textContent = `${OCCASIONS[meta.occasion]?.label || 'Игра'}. Ответы сохраняются сами, можно закрыть и вернуться.`;
+  $('steps2').textContent = page === 0 ? 'Шаг 2 из 3' : 'Шаг 3 из 3';
+  $('h2').textContent = page === 0 ? 'Истории' : 'Последнее';
+  $('back2').hidden = page === 0;
+  $('next2').textContent = page === 0 ? 'Дальше' : 'Готово';
+  const box = $('fields'); box.replaceChildren();
+  if(page === 0){
+    BUYER[set_].forEach(([id, l, h]) => box.append(field(id, l, h, answers[id])));
+    const t = document.createElement('div'); t.className = 'q';
+    t.append(Object.assign(document.createElement('b'), { textContent: 'Общие темы для передышки' }),
+             Object.assign(document.createElement('small'), { textContent: 'Пара простых вопросов не про вас, чтобы все отдохнули' }));
+    const wrap = document.createElement('div'); wrap.className = 'topics';
+    const chosen = (answers.topics || '').split(', ').filter(Boolean);
+    TOPICS.forEach(tp => {
+      const l = document.createElement('label');
+      const c = Object.assign(document.createElement('input'), { type: 'checkbox', value: tp, checked: chosen.includes(tp) });
+      c.addEventListener('change', () => queueSave());
+      l.append(c, tp); wrap.append(l);
+    });
+    t.append(wrap); box.append(t);
+  } else {
+    BUYER_END.forEach(([id, l, h]) => box.append(field(id, l, h, answers[id])));
+  }
+  box.querySelectorAll('textarea').forEach(ta => ta.addEventListener('input', () => queueSave()));
+  show('step2');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function collect(){
+  const out = {};
+  $('fields').querySelectorAll('textarea').forEach(ta => { out[ta.dataset.key] = ta.value.trim(); });
+  const boxes = $('fields').querySelectorAll('.topics input');
+  if(boxes.length) out.topics = [...boxes].filter(b => b.checked).map(b => b.value).join(', ');
+  return out;
+}
+let saveTimer = null;
+function queueSave(){
+  $('saved').textContent = '';
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveNow, 900);
+}
+async function saveNow(){
+  clearTimeout(saveTimer);
+  const data = collect();
+  Object.assign(answers, data);
+  try{
+    await update(ref(db, `forms/${formId}/buyer`), { ...data, updatedAt: serverTimestamp() });
+    $('saved').textContent = 'Сохранено'; $('err2').textContent = '';
+    return true;
+  }catch(err){
+    $('err2').textContent = 'Не сохранилось. Проверьте интернет.';
+    return false;
+  }
+}
+$('step2').addEventListener('submit', async e => {
+  e.preventDefault();
+  $('next2').disabled = true;
+  const ok = await saveNow();
+  $('next2').disabled = false;
+  if(!ok) return;
+  if(page === 0){ page = 1; renderStep2(); }
+  else showDone();
+});
+$('back2').addEventListener('click', async () => { await saveNow(); page = 0; renderStep2(); });
+
+function showDone(){
+  $('code').textContent = formId;
+  $('guestLink').value = linkFor(formId, true);
+  show('done');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+$('copyGuest').addEventListener('click', async () => {
+  const link = $('guestLink').value;
+  if(navigator.share){ try{ await navigator.share({ title: 'Анкета для игры', url: link }); return; }catch(e){ if(e.name === 'AbortError') return; } }
+  try{ await navigator.clipboard.writeText(link); $('copyGuest').textContent = 'Скопировано'; }
+  catch(e){ $('guestLink').select(); }
+});
+$('edit').addEventListener('click', () => { page = 0; renderStep2(); });
+
+/* ── гость ── */
+function renderGuest(){
+  const set_ = setOf(meta.occasion);
+  $('title').textContent = meta.hero;
+  $('lead').textContent = set_ === 'person'
+    ? `Друзья готовят игру-викторину. Герой: ${meta.hero}. Расскажите что-нибудь: герой увидит это только в игре.`
+    : 'Друзья готовят игру-викторину про вашу компанию. Расскажите что-нибудь, остальные увидят это только в игре.';
+  $('gfields').replaceChildren(...GUEST[set_].map(([id, l, h]) => field(id, l, h, '')));
+  show('guest');
+}
+$('guest').addEventListener('submit', async e => {
+  e.preventDefault();
+  const data = { name: $('gname').value.trim() };
+  $('gfields').querySelectorAll('textarea').forEach(ta => { data[ta.dataset.key] = ta.value.trim(); });
+  if(!Object.entries(data).some(([k, v]) => k !== 'name' && v)){ $('errg').textContent = 'Напишите хотя бы одну историю.'; return; }
+  $('gsend').disabled = true; $('errg').textContent = '';
+  try{
+    await push(ref(db, `forms/${formId}/guests`), { ...data, createdAt: serverTimestamp() });
+    show('gdone');
+  }catch(err){ $('errg').textContent = 'Не отправилось. Проверьте интернет и попробуйте ещё раз.'; }
+  $('gsend').disabled = false;
+});
+$('gmore').addEventListener('click', () => { $('gfields').querySelectorAll('textarea').forEach(t => t.value = ''); show('guest'); });
+
+/* ── старт ── */
+async function start(user){
+  if(!formId){ renderStep1(); return; }
+  try{
+    const ms = await get(ref(db, `forms/${formId}/meta`));
+    if(!ms.exists()){ $('fatal').textContent = 'Анкета не найдена. Проверьте ссылку.'; return; }
+    meta = ms.val();
+  }catch(err){ $('fatal').textContent = 'Не удалось открыть анкету. Проверьте интернет.'; return; }
+  if(params.get('g') === '1' || meta.uid !== user.uid){ renderGuest(); return; }
+  try{ answers = (await get(ref(db, `forms/${formId}/buyer`))).val() || {}; }catch(err){ answers = {}; }
+  page = 0; renderStep2();
+}
+let started = false;
+onAuthStateChanged(auth, user => {
+  if(user && !started){ started = true; start(user); }
+});
+signInAnonymously(auth).catch(() => { $('fatal').textContent = 'Не удалось подключиться. Проверьте интернет и обновите страницу.'; });
+</script>
+</body>
+</html>

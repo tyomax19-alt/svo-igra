@@ -19,6 +19,38 @@
       "$orderId": {
         ".write": "auth != null && auth.uid == 'HFjjKgS6l6ZMWHhYLApzPkl2qbi2'"
       }
+    },
+    "forms": {
+      ".read": "auth != null && auth.uid == 'HFjjKgS6l6ZMWHhYLApzPkl2qbi2'",
+      "$formId": {
+        ".write": "auth != null && auth.uid == 'HFjjKgS6l6ZMWHhYLApzPkl2qbi2'",
+        "meta": {
+          ".read": "auth != null",
+          ".write": "auth != null && !data.exists() && $formId.matches(/^[a-z0-9]{12}$/)",
+          ".validate": "newData.hasChildren(['occasion', 'hero', 'players', 'uid', 'createdAt'])",
+          "occasion": { ".validate": "newData.isString() && newData.val().length <= 20" },
+          "hero": { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 80" },
+          "players": { ".validate": "newData.isNumber() && newData.val() >= 2 && newData.val() <= 11" },
+          "avito": { ".validate": "newData.isString() && newData.val().length <= 80" },
+          "uid": { ".validate": "newData.val() == auth.uid" },
+          "createdAt": { ".validate": "newData.val() == now" },
+          "$other": { ".validate": false }
+        },
+        "buyer": {
+          ".read": "auth != null && root.child('forms/' + $formId + '/meta/uid').val() == auth.uid",
+          ".write": "auth != null && root.child('forms/' + $formId + '/meta/uid').val() == auth.uid",
+          "updatedAt": { ".validate": "newData.val() == now" },
+          "$field": { ".validate": "$field.matches(/^[a-z0-9]{1,12}$/) && newData.isString() && newData.val().length <= 2500" }
+        },
+        "guests": {
+          "$guestId": {
+            ".write": "auth != null && !data.exists() && root.child('forms/' + $formId + '/meta').exists()",
+            ".validate": "newData.hasChildren(['createdAt'])",
+            "createdAt": { ".validate": "newData.val() == now" },
+            "$field": { ".validate": "$field.matches(/^[a-z0-9]{1,12}$/) && newData.isString() && newData.val().length <= 2500" }
+          }
+        }
+      }
     }
   }
 }
