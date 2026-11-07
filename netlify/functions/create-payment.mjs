@@ -20,7 +20,7 @@ export default async (req) => {
     const payment = await createPayment({
       orderId,
       amount: PRICES[order.tier].rub,   // сумма только с сервера
-      description: `Свои люди: ${PRICES[order.tier].name}, заказ ${orderId}`,
+      description: `Игра про вас:${PRICES[order.tier].name}, заказ ${orderId}`,
       email: order.email,
       returnUrl: `${site}/order-result.html?status=ok`,
       failedUrl: `${site}/order-result.html?status=fail`
