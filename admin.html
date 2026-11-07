@@ -10,7 +10,7 @@
 <meta name="robots" content="noindex">
 <title>Панель — Игра про вас</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Handjet:wght@700&family=Golos+Text:wght@600;700&display=swap" rel="stylesheet">
 <style>
 /* Рабочая панель: спокойный современный интерфейс, без игрового стиля */
 :root{
@@ -134,6 +134,43 @@ textarea.code{ font-family:ui-monospace,Consolas,monospace; font-size:13px; min-
 .qrow .ext{ grid-column:2 / -1; display:grid; grid-template-columns:150px minmax(0,1fr); gap:6px; }
 .qrow input,.qrow select{ padding:7px 10px; font-size:14px; border-radius:10px; }
 
+/* сроки, заметки, шаблоны */
+.p-hot{ background:#ffe1e1; color:var(--red); }
+.p-soon{ background:var(--amber-soft); color:var(--amber); }
+.stat.hot b{ color:var(--red); }
+tr.hot td:first-child{ box-shadow:inset 3px 0 0 var(--red); }
+.sortsel{ width:auto; border-radius:999px; background:var(--card); padding:8px 12px; }
+.field{ display:flex; flex-direction:column; gap:4px; font-size:13px; font-weight:700; color:var(--dim); }
+.grid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.check{ display:flex; align-items:center; gap:8px; font-weight:700; cursor:pointer; }
+.check input{ width:18px; height:18px; accent-color:var(--ink); }
+.tpl{ display:flex; flex-direction:column; gap:8px; padding:14px 0; border-top:1px solid var(--line); }
+.tpl:first-of-type{ border-top:none; padding-top:0; }
+.tpl textarea{ min-height:96px; resize:vertical; }
+.tplbtns{ display:flex; flex-wrap:wrap; gap:8px; }
+.paid{ background:var(--lime-soft); color:var(--green); }
+
+/* предпросмотр пака в стиле игры */
+.pv{ position:fixed; inset:0; z-index:50; background:#0b2f33ee; display:flex; align-items:center; justify-content:center; padding:16px; }
+.pvbox{ width:100%; max-width:1100px; max-height:100%; overflow:auto; background:#0f3b40; color:#f3e7cf; border-radius:16px; padding:20px; font-family:'Golos Text',sans-serif; }
+.pvtop{ display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+.pvtop b{ font-family:'Handjet',monospace; font-size:36px; line-height:1; }
+.pvtabs{ display:flex; gap:6px; }
+.pvtabs button{ border:none; border-radius:999px; padding:6px 12px; background:#1b5157; color:#f3e7cf; font-weight:700; cursor:pointer; }
+.pvtabs button.on{ background:#f3e7cf; color:#0f3b40; }
+.pvgrid{ display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:8px; }
+.pvcat{ font-size:13px; font-weight:700; text-align:center; min-height:38px; display:flex; align-items:center; justify-content:center; overflow-wrap:anywhere; }
+.pvcell{ border:none; background:#f3e7cf; color:#0f3b40; font-family:'Handjet',monospace; font-size:34px; font-weight:700; padding:8px 0; cursor:pointer; box-shadow:0 4px 0 #08222a; position:relative; }
+.pvcell:hover{ background:#ff6b3d; color:#f3e7cf; }
+.pvcell.sel{ background:#ff6b3d; color:#f3e7cf; }
+.pvcell i{ position:absolute; top:3px; right:5px; width:8px; height:8px; background:#ff6b3d; border-radius:50%; }
+.pvcell.sel i,.pvcell:hover i{ background:#0f3b40; }
+.pvq{ margin-top:16px; background:#f3e7cf; color:#0f3b40; border-radius:10px; padding:16px 18px; min-height:96px; }
+.pvq small{ font-weight:700; color:#55706d; }
+.pvq p{ font-size:22px; font-weight:700; line-height:1.25; margin:6px 0; }
+.pvq .a{ color:#d94a1f; font-size:18px; }
+.close{ border:none; background:#f3e7cf; color:#0f3b40; border-radius:999px; padding:8px 14px; font-weight:800; cursor:pointer; }
+
 @media (max-width:1100px){ .profile{ grid-template-columns:1fr 1fr; } .hero{ grid-column:1 / -1; } .cols{ grid-template-columns:1fr; } }
 @media (max-width:860px){
   .app{ grid-template-columns:1fr; }
@@ -169,10 +206,11 @@ textarea.code{ font-family:ui-monospace,Consolas,monospace; font-size:13px; min-
     <div class="brand"><img src="/favicon.svg?v=2" alt="">Игра про вас</div>
     <button class="nav on" type="button" data-view="forms">Анкеты <span class="cnt" id="cntNew" hidden></span></button>
     <button class="nav" type="button" data-view="packs">Все паки</button>
+    <button class="nav" type="button" data-view="templates">Шаблоны для Авито</button>
     <div class="sep"></div>
     <a class="nav" href="anketa" target="_blank" rel="noopener">Открыть анкету</a>
     <a class="nav" href="./" target="_blank" rel="noopener">Открыть игру</a>
-    <div class="bottom"><span class="email" id="who"></span><button class="btn ghost sm" id="logout" type="button">Выйти</button></div>
+    <div class="bottom"><span class="email" id="who"></span><button class="btn ghost sm" id="notifyBtn" type="button">Уведомления</button><button class="btn ghost sm" id="logout" type="button">Выйти</button></div>
   </aside>
   <main class="main" id="main"></main>
 </div>
@@ -204,8 +242,10 @@ const STATUS = {
   sent:      ['Ссылка отправлена', 'p-sent'],
 };
 
-let forms = {}, orders = {};
-let view = 'forms';          // forms | form | packs | order
+let forms = {}, orders = {}, templates = {};
+let sortMode = 'new';        // new | soon
+let knownDone = null;        // какие анкеты уже были готовы: для уведомлений о новых
+let view = 'forms';          // forms | form | packs | order | templates
 let current = null;          // id анкеты или заказа на экране
 let draft = null, dirty = false, draftFor = null;
 let query = '';
@@ -243,6 +283,47 @@ function statusOf(f){
   return (f.buyer || {}).done ? 'new' : 'empty';
 }
 const stepOf = s => ({ empty:0, new:1, draft:1, published:2, sent:3 }[s]);
+
+/* ── сроки ── */
+const gameDateOf = f => (f.admin || {}).gameDate || metaOf(f).gameDate || '';
+function daysLeft(d){
+  if(!d) return null;
+  const t = new Date(); t.setHours(0, 0, 0, 0);
+  return Math.round((new Date(d + 'T00:00:00') - t) / 86400000);
+}
+// горящая: игра в ближайшие 3 дня, а ссылка ещё не отправлена
+const isHot = f => { const d = daysLeft(gameDateOf(f)); return d !== null && d >= 0 && d <= 3 && statusOf(f) !== 'sent'; };
+function datePill(f){
+  const d = daysLeft(gameDateOf(f));
+  if(d === null) return el('span', { className: 'muted', textContent: '—' });
+  const when = new Date(gameDateOf(f) + 'T00:00:00').toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+  if(d < 0) return el('span', { className: 'muted', textContent: when });
+  const txt = d === 0 ? 'сегодня' : d === 1 ? 'завтра' : `через ${d} ${plural(d, 'день', 'дня', 'дней')}`;
+  const cls = isHot(f) ? 'p-hot' : d <= 7 ? 'p-soon' : 'p-empty';
+  return el('span', { className: 'pill ' + cls, textContent: `${when}, ${txt}` });
+}
+
+/* ── шаблоны ответов для Авито ── */
+const DEFAULT_TEMPLATES = [
+  ['first', 'Первое сообщение', 'Привет! Вот демо, можно сыграть прямо сейчас: {demo}\nВ настоящей игре вопросы будут про вашу компанию, а каждый гость играет со своего телефона.\nЕсли готовы, заполните анкету, это минут десять: {anketa}\nВ конце будет код, пришлите его сюда.'],
+  ['remind', 'Напомнить про анкету', 'Напоминаю про анкету для игры: {anketa}\nНа любой вопрос можно ответить голосовым прямо в анкете.'],
+  ['got', 'Анкета получена', 'Анкету получил, спасибо! Соберу игру про {hero} и пришлю ссылку.\nДрузья могут тайно добавить свои истории по этой ссылке: {guests}'],
+  ['ready', 'Игра готова', 'Игра про {hero} готова: {link}\nОткройте ссылку на телевизоре или ноутбуке и нажмите «Создать комнату». Гости заходят по QR-коду со своих телефонов. Хорошей игры!'],
+  ['review', 'Попросить отзыв', 'Как прошла игра? Буду рад отзыву на Авито, это очень помогает.'],
+];
+const tplText = key => (templates[key] ?? (DEFAULT_TEMPLATES.find(t => t[0] === key) || [])[2] ?? '');
+function fillTemplate(text, formId){
+  const f = formId && forms[formId], m = f ? metaOf(f) : {};
+  const o = f && f.orderId && orders[f.orderId];
+  const vars = {
+    demo: new URL('demo', location.href).href,
+    anketa: new URL('anketa', location.href).href,
+    hero: m.hero || '{hero}',
+    guests: formId ? new URL(`anketa?z=${formId}&g=1`, location.href).href : '{guests}',
+    link: o && o.packId ? new URL(`./?pack=${o.packId}`, location.href).href : '{link}',
+  };
+  return text.replace(/\{(\w+)\}/g, (s, k) => vars[k] ?? s);
+}
 const pill = s => el('span', { className: 'pill ' + STATUS[s][1], textContent: STATUS[s][0] });
 const initials = s => (s || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase() || '?';
 
@@ -282,20 +363,24 @@ function show(v, id = null){
   dirty = false; draft = null; draftFor = null;
   view = v; current = id;
   document.querySelectorAll('.nav[data-view]').forEach(b => b.classList.toggle('on', b.dataset.view === (v === 'form' ? 'forms' : v === 'order' ? 'packs' : v)));
+  closePreview();
   render(true);
   window.scrollTo({ top: 0 });
 }
 function render(force){
   const newCount = Object.values(forms).filter(f => statusOf(f) === 'new').length;
   $('cntNew').textContent = newCount; $('cntNew').hidden = !newCount;
-  // пока оператор правит пак, экран не перерисовываем из базы
-  if(!force && dirty) return;
+  document.title = (newCount ? `(${newCount}) ` : '') + 'Панель — Игра про вас';
+  // пока оператор правит пак или заметки, экран не перерисовываем из базы
+  if(!force && (dirty || editingNote)) return;
   const main = $('main');
   if(view === 'forms') main.replaceChildren(...formsView());
   else if(view === 'form') main.replaceChildren(...(forms[current] ? formView(current) : [missing('Анкета удалена.')]));
   else if(view === 'packs') main.replaceChildren(...packsView());
   else if(view === 'order') main.replaceChildren(...(orders[current] ? orderView(current) : [missing('Пак не найден.')]));
+  else if(view === 'templates') main.replaceChildren(...templatesView());
 }
+let editingNote = false;
 const missing = text => el('div', { className: 'card empty' }, text, el('div', { style: 'margin-top:12px' }, backBtn()));
 const backBtn = () => { const b = el('button', { type: 'button', className: 'back', textContent: '← Назад к анкетам' }); b.onclick = () => show('forms'); return b; };
 
@@ -313,23 +398,38 @@ function formsView(){
     el('div', { className: 'stats' },
       el('div', { className: 'stat lilac' }, el('span', { textContent: 'Новые, ждут пак' }), el('b', { textContent: by('new') })),
       el('div', { className: 'stat lime' }, el('span', { textContent: 'Пак в работе' }), el('b', { textContent: by('draft') })),
-      el('div', { className: 'stat ink' }, el('span', { textContent: 'Опубликовано' }), el('b', { textContent: by('published') + by('sent') })),
-      el('div', { className: 'stat' }, el('span', { textContent: 'Заполняются сейчас' }), el('b', { textContent: by('empty') }))),
-    el('div', { className: 'card' }, el('div', { className: 'top', style: 'margin-bottom:6px' }, el('h2', { textContent: `Все анкеты · ${all.length}`, style: 'margin:0' }), search), formsTable(all),
-      el('div', { className: 'sub', style: 'margin-top:10px', textContent: `Голосовых всего: ${voices}` })),
+      el('div', { className: 'stat hot' }, el('span', { textContent: 'Горящие: игра через 3 дня или раньше' }), el('b', { textContent: all.filter(([, f]) => isHot(f)).length })),
+      el('div', { className: 'stat ink' }, el('span', { textContent: 'Опубликовано' }), el('b', { textContent: by('published') + by('sent') }))),
+    el('div', { className: 'card' }, el('div', { className: 'top', style: 'margin-bottom:6px' }, el('h2', { textContent: `Все анкеты · ${all.length}`, style: 'margin:0' }),
+      el('div', { className: 'row' }, sortSelect(all), search)), formsTable(all),
+      el('div', { className: 'sub', style: 'margin-top:10px', textContent: `Заполняются сейчас: ${by('empty')} · голосовых всего: ${voices}` })),
   ];
+}
+function sortSelect(all){
+  const s = el('select', { className: 'sortsel', 'aria-label': 'Сортировка' },
+    el('option', { value: 'new', textContent: 'Сначала новые' }), el('option', { value: 'soon', textContent: 'Скоро игра' }));
+  s.value = sortMode;
+  s.onchange = () => { sortMode = s.value; const t = $('formsTable'); if(t) t.replaceWith(formsTable(all)); };
+  return s;
+}
+function sorted(all){
+  if(sortMode !== 'soon') return all;
+  // ближайшие игры сверху, прошедшие и без даты в конце
+  const key = ([, f]) => { const d = daysLeft(gameDateOf(f)); return d === null ? 1e6 : d < 0 ? 1e5 - d : d; };
+  return [...all].sort((a, b) => key(a) - key(b));
 }
 function formsTable(all){
   const q = query.trim().toLowerCase();
-  const rows = all.filter(([id, f]) => !q || [metaOf(f).hero, metaOf(f).avito, id].join(' ').toLowerCase().includes(q));
+  const rows = sorted(all).filter(([id, f]) => !q || [metaOf(f).hero, metaOf(f).avito, id].join(' ').toLowerCase().includes(q));
   if(!rows.length) return el('div', { id: 'formsTable', className: 'empty', textContent: all.length ? 'Ничего не нашлось.' : 'Анкет пока нет. Отправьте покупателю ссылку на анкету.' });
   const tbody = el('tbody');
   for(const [id, f] of rows){
     const m = metaOf(f), c = counts(f);
-    const tr = el('tr', {},
+    const tr = el('tr', { className: isHot(f) ? 'hot' : '' },
       el('td', {}, el('div', { className: 'who' }, el('span', { className: 'ava', textContent: initials(m.hero) }),
         el('div', {}, el('b', { textContent: m.hero || 'Без имени' }), el('small', { textContent: `${occLabel(m)} · ${m.avito || 'ник не указан'}` })))),
       el('td', {}, pill(statusOf(f))),
+      el('td', {}, datePill(f)),
       el('td', { className: 'hide-m num', textContent: `${roundsOf(m)} × 30` }),
       el('td', { className: 'hide-m', textContent: `${c.answers} отв · ${c.guests} гост · ${c.voices} гс` }),
       el('td', { className: 'hide-m muted', textContent: date(m.createdAt) }));
@@ -337,7 +437,7 @@ function formsTable(all){
     tbody.append(tr);
   }
   return el('table', { id: 'formsTable', className: 'table' },
-    el('thead', {}, el('tr', {}, ...['Герой и покупатель', 'Статус', 'Раунды', 'Материалы', 'Создана'].map(t => el('th', { textContent: t })))), tbody);
+    el('thead', {}, el('tr', {}, ...['Герой и покупатель', 'Статус', 'Игра', 'Раунды', 'Материалы', 'Создана'].map(t => el('th', { textContent: t })))), tbody);
 }
 
 function formView(id){
@@ -375,9 +475,106 @@ function formView(id){
         el('div', { className: 'card' }, el('div', { className: 'top', style: 'margin-bottom:10px' }, el('h2', { textContent: 'Ответы', style: 'margin:0' }), textBtn),
           el('div', { className: 'answers', textContent: formText(id) })),
         voicesCard(id)),
-      el('div', { className: 'stack' }, packCard(id, o))),
+      el('div', { className: 'stack' }, dealCard(id), templatesCard(id), packCard(id, o))),
   ];
 }
+
+// заметки, цена, оплата и дата игры: видит только оператор
+function dealCard(id){
+  const f = forms[id], a = f.admin || {};
+  const date = el('input', { type: 'date', value: gameDateOf(f) });
+  const price = el('input', { type: 'number', min: 0, step: 10, placeholder: '0', value: a.price ?? '' });
+  const paid = el('input', { type: 'checkbox', checked: !!a.paid });
+  const notes = el('textarea', { placeholder: 'Договорённости, пожелания, что обещал', value: a.notes || '' });
+  notes.style.minHeight = '90px';
+  const ok = el('span', { className: 'ok' });
+  const save = el('button', { type: 'button', className: 'btn sm', textContent: 'Сохранить' });
+  [date, price, paid, notes].forEach(i => { i.addEventListener('input', () => { editingNote = true; ok.textContent = ''; }); i.addEventListener('change', () => { editingNote = true; }); });
+  save.onclick = async () => {
+    try{
+      await update(ref(db, `forms/${id}/admin`), { gameDate: date.value || null, price: price.value === '' ? null : Number(price.value), paid: paid.checked, notes: notes.value.trim() || null });
+      editingNote = false; ok.textContent = 'Сохранено';
+    }catch(e){ ok.textContent = ''; alert('Не сохранилось: ' + e.message); }
+  };
+  const head = el('div', { className: 'top', style: 'margin-bottom:12px' }, el('h2', { textContent: 'Заказ', style: 'margin:0' }),
+    a.paid ? el('span', { className: 'pill paid', textContent: a.price ? `Оплачено ${a.price} ₽` : 'Оплачено' }) : datePill(f));
+  return el('div', { className: 'card' }, head,
+    el('div', { className: 'grid2', style: 'margin-bottom:10px' },
+      el('label', { className: 'field' }, 'Дата игры', date), el('label', { className: 'field' }, 'Цена, ₽', price)),
+    el('label', { className: 'check', style: 'margin-bottom:10px' }, paid, 'Оплачено'),
+    el('label', { className: 'field' }, 'Заметки', notes),
+    el('div', { className: 'row', style: 'margin-top:10px' }, save, ok));
+}
+
+// готовые ответы покупателю с подставленными ссылками
+function templatesCard(id){
+  const card = el('div', { className: 'card' }, el('h2', { textContent: 'Ответить на Авито' }),
+    el('p', { className: 'muted', style: 'margin:-6px 0 10px; font-size:13px', textContent: 'Текст копируется с подставленными именем и ссылками.' }));
+  const row = el('div', { className: 'tplbtns' });
+  for(const [key, title] of DEFAULT_TEMPLATES){
+    const b = el('button', { type: 'button', className: 'btn ghost sm', textContent: title });
+    b.onclick = () => copy(fillTemplate(tplText(key), id), b);
+    row.append(b);
+  }
+  card.append(row);
+  return card;
+}
+
+function templatesView(){
+  const list = el('div', { className: 'card' });
+  for(const [key, title] of DEFAULT_TEMPLATES){
+    const ta = el('textarea', { value: tplText(key) });
+    const ok = el('span', { className: 'ok' });
+    const save = el('button', { type: 'button', className: 'btn sm', textContent: 'Сохранить' });
+    const reset = el('button', { type: 'button', className: 'btn ghost sm', textContent: 'Вернуть исходный' });
+    const cp = el('button', { type: 'button', className: 'btn ghost sm', textContent: 'Копировать' });
+    ta.oninput = () => { editingNote = true; ok.textContent = ''; };
+    save.onclick = async () => { try{ await set(ref(db, `settings/templates/${key}`), ta.value); editingNote = false; ok.textContent = 'Сохранено'; }catch(e){ alert('Не сохранилось: ' + e.message); } };
+    reset.onclick = async () => { ta.value = DEFAULT_TEMPLATES.find(t => t[0] === key)[2]; try{ await set(ref(db, `settings/templates/${key}`), null); editingNote = false; ok.textContent = 'Вернул'; }catch(e){ alert(e.message); } };
+    cp.onclick = () => copy(fillTemplate(ta.value), cp);
+    list.append(el('div', { className: 'tpl' }, el('b', { textContent: title }), ta, el('div', { className: 'tplbtns' }, save, cp, reset, ok)));
+  }
+  return [
+    el('div', { className: 'top' }, el('div', {}, el('h1', { textContent: 'Шаблоны для Авито' }),
+      el('div', { className: 'sub', textContent: 'Подстановки: {hero} имя героя, {anketa} ссылка на анкету, {demo} демо, {guests} ссылка для гостей, {link} ссылка на игру. В карточке анкеты они заполняются сами.' }))),
+    list,
+  ];
+}
+
+/* ── предпросмотр пака в стиле игры ── */
+function closePreview(){ const p = document.querySelector('.pv'); if(p) p.remove(); }
+function openPreview(board){
+  closePreview();
+  let ri = 0;
+  const grid = el('div', { className: 'pvgrid' });
+  const q = el('div', { className: 'pvq' }, el('small', { textContent: 'Нажмите на клетку, чтобы увидеть вопрос и ответ.' }));
+  const tabs = el('div', { className: 'pvtabs' });
+  const draw = () => {
+    const r = board.rounds[ri];
+    tabs.replaceChildren(...board.rounds.map((x, i) => { const b = el('button', { type: 'button', className: i === ri ? 'on' : '', textContent: x.name || `Раунд ${i + 1}` }); b.onclick = () => { ri = i; draw(); }; return b; }));
+    grid.replaceChildren(...r.categories.map(c => el('div', { className: 'pvcat', textContent: c.name })));
+    for(let row = 0; row < 5; row++){
+      for(const c of r.categories){
+        const qq = c.questions[row];
+        if(!qq){ grid.append(el('div')); continue; }
+        const cell = el('button', { type: 'button', className: 'pvcell', textContent: qq.value }, qq.modifier ? el('i', { title: MOD_LABELS[qq.modifier] }) : null);
+        cell.onclick = () => {
+          grid.querySelectorAll('.pvcell').forEach(x => x.classList.remove('sel')); cell.classList.add('sel');
+          q.replaceChildren(el('small', { textContent: `${c.name} · ${qq.value}${qq.modifier ? ' · ' + (MOD_LABELS[qq.modifier] || qq.modifier) : ''}` }),
+            el('p', { textContent: qq.question || '(пусто)' }), el('div', { className: 'a', textContent: 'Ответ: ' + (qq.answer || '(пусто)') }));
+        };
+        grid.append(cell);
+      }
+    }
+  };
+  const close = el('button', { type: 'button', className: 'close', textContent: 'Закрыть' }); close.onclick = closePreview;
+  const box = el('div', { className: 'pvbox' }, el('div', { className: 'pvtop' }, el('b', { textContent: board.title || 'Пак' }), tabs, close), grid, q);
+  const pv = el('div', { className: 'pv' }, box);
+  pv.onclick = e => { if(e.target === pv) closePreview(); };
+  document.body.append(pv);
+  draw();
+}
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closePreview(); });
 
 function voicesCard(id){
   const f = forms[id];
@@ -468,6 +665,8 @@ function editorCard(oid, card = el('div', { className: 'card' })){
     }
     rounds.append(d);
   });
+  const prev = el('button', { type: 'button', className: 'btn lilac sm', textContent: 'Предпросмотр как в игре' });
+  prev.onclick = () => openPreview(draft);
   const check = el('button', { type: 'button', className: 'btn ghost sm', textContent: 'Проверить' });
   const save = el('button', { type: 'button', className: 'btn ghost sm', textContent: 'Сохранить' });
   const pub = el('button', { type: 'button', className: 'btn', textContent: o.packId ? 'Обновить опубликованный пак' : 'Опубликовать' });
@@ -484,7 +683,7 @@ function editorCard(oid, card = el('div', { className: 'card' })){
       await update(ref(db, `orders/${oid}`), { status: 'published', packId, draft });
     }catch(e){ err.textContent = 'Ошибка: ' + e.message; }
   };
-  card.append(el('div', { style: 'margin-bottom:10px' }, title), rounds, err, ok, el('div', { className: 'row', style: 'margin-top:12px' }, check, save, pub));
+  card.append(el('div', { style: 'margin-bottom:10px' }, title), rounds, err, ok, el('div', { className: 'row', style: 'margin-top:12px' }, prev, check, save, pub));
   return card;
 }
 function bind(input, obj, key){
@@ -534,6 +733,29 @@ function orderView(oid){
     el('h2', { textContent: o.theme || 'Пак' }), el('div', { className: 'muted', textContent: `Авито: ${o.contact || '—'} · создан ${dateTime(o.createdAt)}` })), editorCard(oid)];
 }
 
+/* ── уведомления в браузере, пока панель открыта ── */
+function notifyLabel(){
+  const p = window.Notification ? Notification.permission : 'denied';
+  $('notifyBtn').textContent = p === 'granted' ? 'Уведомления включены' : p === 'denied' ? 'Уведомления запрещены' : 'Включить уведомления';
+  $('notifyBtn').disabled = p !== 'default';
+}
+$('notifyBtn').onclick = async () => { if(window.Notification){ await Notification.requestPermission(); notifyLabel(); } };
+function notifyNewForms(){
+  const done = new Set(Object.entries(forms).filter(([, f]) => (f.buyer || {}).done).map(([id]) => id));
+  if(knownDone){
+    for(const id of done){
+      if(knownDone.has(id)) continue;
+      const m = metaOf(forms[id]);
+      if(window.Notification && Notification.permission === 'granted'){
+        const n = new Notification('Новая анкета', { body: `${m.hero || 'Без имени'} · ${occLabel(m)} · ${m.avito || 'ник не указан'}`, icon: '/favicon.png' });
+        n.onclick = () => { window.focus(); show('form', id); n.close(); };
+      }
+    }
+  }
+  knownDone = done;
+}
+notifyLabel();
+
 /* ── вход и подписки ── */
 document.querySelectorAll('.nav[data-view]').forEach(b => b.onclick = () => show(b.dataset.view));
 $('logout').onclick = () => signOut(auth);
@@ -551,7 +773,8 @@ onAuthStateChanged(auth, user => {
   if(!signedIn){ forms = {}; orders = {}; return; }
   $('who').textContent = user.email || '';
   const fail = what => () => { $('main').replaceChildren(el('div', { className: 'card err', textContent: `Нет доступа к ${what}. Проверьте правила базы.` })); };
-  stops.push(onValue(ref(db, 'forms'), s => { forms = s.val() || {}; render(); }, fail('анкетам')));
+  stops.push(onValue(ref(db, 'forms'), s => { forms = s.val() || {}; notifyNewForms(); render(); }, fail('анкетам')));
+  stops.push(onValue(ref(db, 'settings/templates'), s => { templates = s.val() || {}; }, () => {}));
   stops.push(onValue(ref(db, 'orders'), s => { orders = s.val() || {}; render(); }, fail('заказам')));
   render(true);
 });

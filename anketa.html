@@ -100,11 +100,13 @@
       <label><input type="radio" name="rounds" value="1" checked>1 раунд · 30 вопросов</label>
       <label><input type="radio" name="rounds" value="2">2 раунда · 60 вопросов</label>
     </div>
-
+    <div class="row">
+      <label class="f">Сколько будет игроков
         <select id="players"></select>
       </label>
       <label class="f">Ваше имя на Авито <input id="avito" maxlength="80" autocomplete="off" placeholder="Чтобы я понял, чья анкета"></label>
     </div>
+    <label class="f">Когда игра, если уже знаете <input id="gameDate" type="date" style="color-scheme:dark"></label>
     <div class="err" id="err1" role="alert"></div>
     <button class="btn block" type="submit" id="next1">Дальше</button>
   </form>
@@ -156,6 +158,15 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getDatabase, ref, get, set, update, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { OCCASIONS, HERO_LABEL, TOPICS, BUYER, BUYER_END, GUEST, setOf } from "./anketa-schema.js";
+import { SITE } from "./config.js";
+
+// сообщить владельцу о готовой анкете (один раз с этого устройства), если настроен адрес уведомлений
+function notifyOwner(){
+  if(!SITE.notifyUrl || !formId || !meta) return;
+  try{ if(localStorage.getItem('notified-' + formId)) return; localStorage.setItem('notified-' + formId, '1'); }catch(e){}
+  const body = JSON.stringify({ id: formId, hero: meta.hero, occasion: (OCCASIONS[meta.occasion] || {}).label || '', avito: meta.avito || '', rounds: meta.rounds || 1, gameDate: meta.gameDate || '' });
+  fetch(SITE.notifyUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body }).catch(() => {});
+}
 
 const app = initializeApp({
   apiKey: "AIzaSyD2BJ0Stblry4i3wD_ml0d7WqVsPDwW8RM",
@@ -352,6 +363,7 @@ function renderStep1(){
     const r = document.querySelector(`input[name=occ][value="${meta.occasion}"]`); if(r) r.checked = true;
     $('hero').value = meta.hero; $('avito').value = meta.avito || '';
     const rr = document.querySelector(`input[name=rounds][value="${meta.rounds || 1}"]`); if(rr) rr.checked = true;
+    $('gameDate').value = meta.gameDate || '';
   }
   $('next1').disabled = false;
   syncHeroLabel();
@@ -367,13 +379,14 @@ $('step1').addEventListener('submit', async e => {
   if(!hero){ $('err1').textContent = 'Напишите, про кого игра.'; return; }
   $('next1').disabled = true; $('err1').textContent = '';
   if(formId && meta){   // вернулись назад: правим повод и героя в той же анкете
-    const upd = { occasion: occValue(), hero, players: Number($('players').value), rounds: roundsValue(), avito: $('avito').value.trim() };
+    const upd = { occasion: occValue(), hero, players: Number($('players').value), rounds: roundsValue(), avito: $('avito').value.trim(), gameDate: $('gameDate').value || null };
     try{ await update(ref(db, `forms/${formId}/meta`), upd); Object.assign(meta, upd); page = 0; renderStep2(); }
     catch(err){ $('err1').textContent = 'Не получилось сохранить. Проверьте интернет и попробуйте ещё раз.'; $('next1').disabled = false; }
     return;
   }
   const id = newId();
   const m = { occasion: occValue(), hero, players: Number($('players').value), rounds: roundsValue(), avito: $('avito').value.trim(), uid: auth.currentUser.uid, createdAt: serverTimestamp() };
+  if($('gameDate').value) m.gameDate = $('gameDate').value;
   try{
     await set(ref(db, `forms/${id}/meta`), m);
     formId = id; meta = m; answers = {};
@@ -461,6 +474,7 @@ $('back2').addEventListener('click', async () => {
 
 function showDone(){
   update(ref(db, `forms/${formId}/buyer`), { done: '1', updatedAt: serverTimestamp() }).catch(() => {});
+  notifyOwner();
   $('code').textContent = formId;
   $('guestLink').value = linkFor(formId, true);
   show('done');
